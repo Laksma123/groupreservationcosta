@@ -170,24 +170,27 @@ def apply_normalized_face_uv(obj):
             uv_layer[loop_idx].uv = (u, w)
 
 
-def apply_corridor_runner_uv(obj, y_center=7.97, uv_width_y=2.20, pitch_x=1.10, x_offset=0.25):
+def apply_corridor_runner_uv(obj, y_center=7.96, uv_width_y=2.04, pitch_x=1.02, x_offset=0.20):
     """
     Maps the 2048x1024 corridor_tile.png symmetrically along the corridor:
-    - U = 0.5 is locked to y_center (7.97m, exact midpoint between Pillar corridor face Y=7.14m and Corridor Wall Y=8.80m)
-    - U spans width uv_width_y (2.20m), so the central medallion + triangles (U=0.25..0.75) spans 1.10m,
-      flanked symmetrically by plain dark charcoal ceramic tiles on both pillar side and wall side.
-    - V tiles along world X with period pitch_x = 1.10m (1:1 square aspect ratio for every medallion).
+    - Computes world coordinates directly from obj.location + v.co (avoiding stale matrix_world before scene update).
+    - U = 0.5 is locked to y_center (7.96m, exact midpoint between Pillar corridor face Y=7.10m and Corridor Wall Y=8.82m).
+    - U spans width uv_width_y (2.04m), so the central medallion + triangles (U=0.25..0.75) spans 1.02m (Y=7.45..8.47m),
+      flanked symmetrically by 0.35m of plain dark charcoal ceramic tiles on both the pillar side and wall side.
+    - V tiles along world X with period pitch_x = 1.02m (1:1 square aspect ratio for every medallion).
     """
     me = obj.data
     if not me.uv_layers:
         me.uv_layers.new(name="UVMap")
     uv_layer = me.uv_layers.active.data
-    mat_world = obj.matrix_world
+    ox, oy = obj.location.x, obj.location.y
     for poly in me.polygons:
         for loop_idx in poly.loop_indices:
-            v_world = mat_world @ me.vertices[me.loops[loop_idx].vertex_index].co
-            u = 0.5 + (v_world.y - y_center) / uv_width_y
-            v = (v_world.x - x_offset) / pitch_x
+            v_co = me.vertices[me.loops[loop_idx].vertex_index].co
+            wx = ox + v_co.x
+            wy = oy + v_co.y
+            u = 0.5 + (wy - y_center) / uv_width_y
+            v = (wx - x_offset) / pitch_x
             uv_layer[loop_idx].uv = (u, v)
 
 
@@ -656,15 +659,17 @@ def build_architecture(mats, arch_col):
         arch_col,
         uv_metric=0.58,
     )
-    # Corridor & Rotunda Geometric Black-and-White Tile Floor (X: -1.8..10.5, Y: 6.8..9.0)
+    # Corridor & Rotunda Geometric Black-and-White Tile Floor (X: -1.8..10.5, Y: 6.80..8.95)
+    corr_y_min = ROOM_WID_Y  # 6.80m
+    corr_y_max = 8.95        # Stops cleanly inside the right corridor wall
     corr_floor_obj = add_box(
         "Floor_Corridor_Tile",
-        (ROOM_LEN_X + 2.3, CORR_WID_Y + 0.4, 0.04),
-        ((ROOM_LEN_X - 1.7) * 0.5, ROOM_WID_Y + (CORR_WID_Y + 0.4) * 0.5, -0.02),
+        (ROOM_LEN_X + 2.3, corr_y_max - corr_y_min, 0.04),
+        ((ROOM_LEN_X - 1.7) * 0.5, (corr_y_min + corr_y_max) * 0.5, -0.02),
         mats["corridor_tile"],
         arch_col,
     )
-    apply_corridor_runner_uv(corr_floor_obj, y_center=7.97, uv_width_y=2.20, pitch_x=1.10, x_offset=0.25)
+    apply_corridor_runner_uv(corr_floor_obj, y_center=7.96, uv_width_y=2.04, pitch_x=1.02, x_offset=0.20)
 
     # 2. Outer Hull Window Wall (Y = 0.0, X = -0.85 to 10.4)
     # Continuous lower wainscoting along hull (Z = 0..0.86m)
@@ -775,8 +780,14 @@ def build_architecture(mats, arch_col):
     total_sb_len = sum(section_widths) + 4 * part_thick  # 4.14m
     sb_y_center = sb_y_start + total_sb_len * 0.5
 
-    # Backing wall behind Waiter Station
-    add_box("FwdWall_ServiceBack", (0.18, total_sb_len + 0.30, CEIL_H), (FWD_WALL_X - 0.05, sb_y_center, CEIL_H * 0.5), mats["wall_white"], arch_col)
+    # Backing wall behind Waiter Station (extends cleanly to corridor corner Y = 6.85m)
+    wall_sb_y_end = 6.85
+    wall_sb_len = wall_sb_y_end - 2.25
+    wall_sb_cy = (2.25 + wall_sb_y_end) * 0.5
+    add_box("FwdWall_ServiceBack", (0.18, wall_sb_len, CEIL_H), (FWD_WALL_X - 0.05, wall_sb_cy, CEIL_H * 0.5), mats["wall_white"], arch_col)
+    add_box("FwdWall_ServiceCornerRed", (0.20, 0.46, 0.72), (FWD_WALL_X - 0.04, 6.62, 0.48), mats["wall_red"], arch_col)
+    add_box("FwdWall_ServiceCornerPlinth", (0.22, 0.46, 0.15), (FWD_WALL_X - 0.04, 6.62, 0.075), mats["wall_white"], arch_col)
+    add_box("FwdWall_ServiceCornerRail", (0.22, 0.46, 0.06), (FWD_WALL_X - 0.04, 6.62, 0.88), mats["wall_white"], arch_col)
     # Main carcass & plinth
     add_box("Sideboard_Plinth", (0.62, total_sb_len, 0.04), (FWD_WALL_X + 0.31, sb_y_center, 0.02), mats["black_metal"], arch_col)
     add_box("Sideboard_Carcass", (0.62, total_sb_len, 0.84), (FWD_WALL_X + 0.31, sb_y_center, 0.46), mats["black_metal"], arch_col)
@@ -879,59 +890,69 @@ def build_architecture(mats, arch_col):
             rot=(0, math.pi * 0.5, 0),
         )
 
-    # Segment B (Y = 3.50..5.65m): Projecting White Service Bulkhead with White Door & Red Fire Sign at X = 10.4
-    add_box("AftBulkhead_Main", (0.45, 2.15, CEIL_H), (ROOM_LEN_X - 0.18, 4.575, CEIL_H * 0.5), mats["wall_white"], arch_col, bevel=0.006)
-    add_box("AftBulkhead_RedBase", (0.47, 0.95, 0.68), (ROOM_LEN_X - 0.18, 3.98, 0.49), mats["wall_red"], arch_col)
-    # White Service Door Frame + Door Leaf + Red Fire Safety Sign (at Y = 4.95m)
-    add_box("AftServiceDoor_Frame", (0.04, 0.96, 2.08), (ROOM_LEN_X - 0.41, 4.95, 1.04), mats["wall_white"], arch_col, bevel=0.004)
-    add_box("AftServiceDoor_Leaf", (0.02, 0.88, 2.02), (ROOM_LEN_X - 0.415, 4.95, 1.02), mats["wall_white"], arch_col)
-    fire_obj = add_box("AftServiceDoor_FireSign", (0.01, 0.34, 0.12), (ROOM_LEN_X - 0.43, 4.95, 1.48), mats["fire_sticker"], arch_col)
+    # Segment B (Y = 3.50..5.35m): Projecting White Service Bulkhead with White Door & Red Fire Sign at X = 10.4
+    add_box("AftBulkhead_Main", (0.45, 1.85, CEIL_H), (ROOM_LEN_X - 0.18, 4.425, CEIL_H * 0.5), mats["wall_white"], arch_col, bevel=0.006)
+    add_box("AftBulkhead_RedBase", (0.47, 0.85, 0.68), (ROOM_LEN_X - 0.18, 3.925, 0.49), mats["wall_red"], arch_col)
+    # White Service Door Frame + Door Leaf + Red Fire Safety Sign (at Y = 4.80m)
+    add_box("AftServiceDoor_Frame", (0.04, 0.90, 2.08), (ROOM_LEN_X - 0.41, 4.80, 1.04), mats["wall_white"], arch_col, bevel=0.004)
+    add_box("AftServiceDoor_Leaf", (0.02, 0.82, 2.02), (ROOM_LEN_X - 0.415, 4.80, 1.02), mats["wall_white"], arch_col)
+    fire_obj = add_box("AftServiceDoor_FireSign", (0.01, 0.34, 0.12), (ROOM_LEN_X - 0.43, 4.80, 1.48), mats["fire_sticker"], arch_col)
     apply_normalized_face_uv(fire_obj)
 
-    # 5. Classical Square Pillars & X-Cross Balustrade Railing along Corridor (Y = 6.80m)
-    pillar_coords = [
-        (-0.40, 6.80, True, True),
-        (3.65, 6.80, True, True),
-        (6.85, 6.80, True, True),
-        (10.05, 6.80, False, True),
+    # 5. Pillars & X-Cross Balustrade Railings (3 Wide Corridor Pillars + 1 Square Entrance Pillar + 2 Entrances)
+    # Sequence along X from Waiter Station (X = -0.17m) to Main Entrance Wall (X = 10.40m):
+    # - Entrance #2 (Waiter Station Entrance): X = -0.17m .. 1.05m (width 1.22m, completely open to Waiter Station)
+    # - Wide Corridor Pillar #3: X = 1.05m .. 2.65m (center X = 1.85m, Y = 6.80m, width 1.60m = ~3x standard pillar)
+    # - Corridor Railing #2 (1 "X"): X = 2.65m .. 3.75m (width 1.10m, n_bays = 1)
+    # - Wide Corridor Pillar #2: X = 3.75m .. 5.35m (center X = 4.55m, Y = 6.80m, width 1.60m)
+    # - Corridor Railing #1 (1 "X"): X = 5.35m .. 6.45m (width 1.10m, n_bays = 1)
+    # - Wide Corridor Pillar #1: X = 6.45m .. 8.05m (center X = 7.25m, Y = 6.80m, width 1.60m)
+    # - L-Shaped Corner Railing (2 "X" Siku):
+    #     * Arm 1 along corridor (1 "X"): X = 8.05m .. 9.18m at Y = 6.85m (width 1.13m, n_bays = 1)
+    #     * Arm 2 inward into room (1 "X"): Y = 6.85m .. 5.44m at X = 9.18m (length 1.41m, n_bays = 1)
+    # - Square Entrance Pillar (1x width = 0.58m): centered at X = 9.18m, Y = 5.15m (shifted inward & left with Entrance #1)
+    # - Entrance #1 (Main Entrance): X = 9.18m .. 10.40m (width 1.22m, matching Entrance #2)
+    pillar_specs = [
+        # (name_tag, px, py, pw_x, pw_y, has_corr_art, has_sconce, art_mat)
+        ("WideCorr_3", 1.85, 6.80, 1.60, 0.58, True, True, mats["art_1"]),
+        ("WideCorr_2", 4.55, 6.80, 1.60, 0.58, True, True, mats["art_3"]),
+        ("WideCorr_1", 7.25, 6.80, 1.60, 0.58, True, True, mats["art_1"]),
+        ("Entrance_Sq", 9.18, 5.15, 0.58, 0.58, False, True, None),
     ]
-    for p_idx, (px, py, has_corr_art, has_sconce) in enumerate(pillar_coords):
-        pw = 0.58
+    for p_idx, (p_tag, px, py, pw_x, pw_y, has_corr_art, has_sconce, art_m) in enumerate(pillar_specs):
         # White base plinth
-        add_box(f"Pillar_Plinth_{p_idx}", (pw + 0.06, pw + 0.06, 0.16), (px, py, 0.08), mats["wall_white"], arch_col, bevel=0.005)
+        add_box(f"Pillar_Plinth_{p_tag}", (pw_x + 0.06, pw_y + 0.06, 0.16), (px, py, 0.08), mats["wall_white"], arch_col, bevel=0.005)
         # White lower frame + Red recessed wainscoting panels on all 4 sides
-        add_box(f"Pillar_LowerWhite_{p_idx}", (pw, pw, 0.76), (px, py, 0.54), mats["wall_white"], arch_col, bevel=0.005)
-        add_box(f"Pillar_RedInset_X_{p_idx}", (pw + 0.015, pw - 0.12, 0.62), (px, py, 0.54), mats["wall_red"], arch_col)
-        add_box(f"Pillar_RedInset_Y_{p_idx}", (pw - 0.12, pw + 0.015, 0.62), (px, py, 0.54), mats["wall_red"], arch_col)
+        add_box(f"Pillar_LowerWhite_{p_tag}", (pw_x, pw_y, 0.76), (px, py, 0.54), mats["wall_white"], arch_col, bevel=0.005)
+        add_box(f"Pillar_RedInset_X_{p_tag}", (pw_x + 0.015, pw_y - 0.12, 0.62), (px, py, 0.54), mats["wall_red"], arch_col)
+        add_box(f"Pillar_RedInset_Y_{p_tag}", (pw_x - 0.12, pw_y + 0.015, 0.62), (px, py, 0.54), mats["wall_red"], arch_col)
         # Chair rail molding
-        add_box(f"Pillar_ChairRail_{p_idx}", (pw + 0.07, pw + 0.07, 0.065), (px, py, 0.94), mats["wall_white"], arch_col, bevel=0.008)
+        add_box(f"Pillar_ChairRail_{p_tag}", (pw_x + 0.07, pw_y + 0.07, 0.065), (px, py, 0.94), mats["wall_white"], arch_col, bevel=0.008)
         # Upper white classical shaft
-        add_box(f"Pillar_UpperShaft_{p_idx}", (pw, pw, CEIL_H - 0.96), (px, py, 0.96 + (CEIL_H - 0.96) * 0.5), mats["wall_white"], arch_col, bevel=0.006)
+        add_box(f"Pillar_UpperShaft_{p_tag}", (pw_x, pw_y, CEIL_H - 0.96), (px, py, 0.96 + (CEIL_H - 0.96) * 0.5), mats["wall_white"], arch_col, bevel=0.006)
         # Crown molding
-        add_box(f"Pillar_Crown_{p_idx}", (pw + 0.08, pw + 0.08, 0.08), (px, py, CEIL_H - 0.04), mats["wall_white"], arch_col, bevel=0.008)
+        add_box(f"Pillar_Crown_{p_tag}", (pw_x + 0.08, pw_y + 0.08, 0.08), (px, py, CEIL_H - 0.04), mats["wall_white"], arch_col, bevel=0.008)
 
-        # Framed Vertical Artwork on Corridor Face (+Y) and Side Face (+X) of Pillar (seen in 14.14.03 & 14.14.04(2))
-        if has_corr_art:
-            art_m = mats["art_1"] if p_idx % 2 == 0 else mats["art_3"]
-            # Corridor face (+Y)
-            add_box(f"Pillar_ArtFrame_Y_{p_idx}", (0.42, 0.025, 0.88), (px, py + pw * 0.5 + 0.012, 1.62), mats["black_metal"], arch_col, bevel=0.003)
-            add_box(f"Pillar_ArtMat_Y_{p_idx}", (0.37, 0.028, 0.82), (px, py + pw * 0.5 + 0.015, 1.62), mats["wall_white"], arch_col)
-            ao = add_box(f"Pillar_ArtPic_Y_{p_idx}", (0.28, 0.032, 0.68), (px, py + pw * 0.5 + 0.018, 1.62), art_m, arch_col)
+        # Framed Artwork on Corridor Face (+Y) of Wide Corridor Pillars
+        if has_corr_art and art_m is not None:
+            add_box(f"Pillar_ArtFrame_Y_{p_tag}", (0.52, 0.025, 0.92), (px, py + pw_y * 0.5 + 0.012, 1.64), mats["black_metal"], arch_col, bevel=0.003)
+            add_box(f"Pillar_ArtMat_Y_{p_tag}", (0.46, 0.028, 0.86), (px, py + pw_y * 0.5 + 0.015, 1.64), mats["wall_white"], arch_col)
+            ao = add_box(f"Pillar_ArtPic_Y_{p_tag}", (0.36, 0.032, 0.72), (px, py + pw_y * 0.5 + 0.018, 1.64), art_m, arch_col)
             apply_normalized_face_uv(ao)
 
-        # Murano Green & Gold 2-Arm Glass Wall Sconce on Dining Room Face (-Y) of Pillar (seen in 14.14.05 & 14.14.06)
+        # Murano Green & Gold 2-Arm Glass Wall Sconce on Dining Room Face (-Y) of Pillar
         if has_sconce:
-            sy = py - pw * 0.5 - 0.02
+            sy = py - pw_y * 0.5 - 0.02
             sz = 1.92
-            add_cylinder(f"Sconce_Backplate_{p_idx}", 0.065, 0.03, (px, sy, sz), mats["brass"], arch_col, rot=(math.pi * 0.5, 0, 0))
+            add_cylinder(f"Sconce_Backplate_{p_tag}", 0.065, 0.03, (px, sy, sz), mats["brass"], arch_col, rot=(math.pi * 0.5, 0, 0))
             for arm_side in (-1.0, 1.0):
                 ax = px + arm_side * 0.11
-                add_cylinder(f"Sconce_Arm_{p_idx}_{arm_side}", 0.016, 0.14, (px + arm_side * 0.055, sy - 0.06, sz - 0.03), mats["murano_glass"], arch_col, rot=(0.4, arm_side * 0.6, 0))
-                add_cylinder(f"Sconce_Cup_{p_idx}_{arm_side}", 0.042, 0.045, (ax, sy - 0.10, sz + 0.02), mats["murano_glass"], arch_col)
-                add_cylinder(f"Sconce_Bulb_{p_idx}_{arm_side}", 0.024, 0.065, (ax, sy - 0.10, sz + 0.065), mats["led_warm"], arch_col)
+                add_cylinder(f"Sconce_Arm_{p_tag}_{arm_side}", 0.016, 0.14, (px + arm_side * 0.055, sy - 0.06, sz - 0.03), mats["murano_glass"], arch_col, rot=(0.4, arm_side * 0.6, 0))
+                add_cylinder(f"Sconce_Cup_{p_tag}_{arm_side}", 0.042, 0.045, (ax, sy - 0.10, sz + 0.02), mats["murano_glass"], arch_col)
+                add_cylinder(f"Sconce_Bulb_{p_tag}_{arm_side}", 0.024, 0.065, (ax, sy - 0.10, sz + 0.065), mats["led_warm"], arch_col)
 
     # 6. X-Cross Balustrade Railings (Dark Walnut Handrail + Black Metal X-Lattice Bars)
-    def add_x_railing_segment(seg_name, p_start, p_end, n_bays=2):
+    def add_x_railing_segment(seg_name, p_start, p_end, n_bays=1):
         p0 = Vector(p_start)
         p1 = Vector(p_end)
         vec = p1 - p0
@@ -941,10 +962,10 @@ def build_architecture(mats, arch_col):
         rail_h = 0.88
 
         # Top dark walnut wooden handrail
-        add_box(f"Rail_TopWood_{seg_name}", (seg_len + 0.05, 0.085, 0.045), (mid.x, mid.y, rail_h), mats["wood_walnut"], arch_col, bevel=0.008, rot=(0, 0, yaw))
+        add_box(f"Rail_TopWood_{seg_name}", (seg_len + 0.04, 0.085, 0.045), (mid.x, mid.y, rail_h), mats["wood_walnut"], arch_col, bevel=0.008, rot=(0, 0, yaw))
         # Bottom black steel bar
         add_box(f"Rail_BotBar_{seg_name}", (seg_len, 0.035, 0.025), (mid.x, mid.y, 0.08), mats["black_metal"], arch_col, rot=(0, 0, yaw))
-        # End & intermediate vertical posts + X-cross diagonals
+        # End & intermediate vertical posts
         for b in range(n_bays + 1):
             t = b / n_bays
             pt = p0.lerp(p1, t)
@@ -954,8 +975,14 @@ def build_architecture(mats, arch_col):
         for b in range(n_bays):
             b0 = p0.lerp(p1, b / n_bays)
             b1 = p0.lerp(p1, (b + 1) / n_bays)
-            bm_mid = (b0 + b1) * 0.5
-            bay_w = (b1 - b0).length
+            # Inset vertical side bars framing the single 'X' (as seen in 14.14.03.jpeg)
+            inset_ratio = min(0.08 / max((b1 - b0).length, 0.1), 0.12)
+            inner0 = b0.lerp(b1, inset_ratio)
+            inner1 = b0.lerp(b1, 1.0 - inset_ratio)
+            for s_idx, isp in enumerate((inner0, inner1)):
+                add_box(f"Rail_InnerV_{seg_name}_{b}_{s_idx}", (0.020, 0.022, rail_h - 0.10), (isp.x, isp.y, 0.08 + (rail_h - 0.10) * 0.5), mats["black_metal"], arch_col, rot=(0, 0, yaw))
+            bm_mid = (inner0 + inner1) * 0.5
+            bay_w = (inner1 - inner0).length
             diag_h = rail_h - 0.12
             diag_len = math.hypot(bay_w, diag_h)
             pitch = math.atan2(diag_h, bay_w)
@@ -963,16 +990,16 @@ def build_architecture(mats, arch_col):
             for sign in (-1.0, 1.0):
                 obj = add_box(
                     f"Rail_XBar_{seg_name}_{b}_{sign}",
-                    (diag_len * 0.96, 0.022, 0.022),
+                    (diag_len * 0.98, 0.024, 0.024),
                     (bm_mid.x, bm_mid.y, 0.08 + diag_h * 0.5),
                     mats["black_metal"],
                     arch_col,
                 )
                 obj.rotation_euler = Euler((0.0, sign * pitch, yaw), 'XYZ')
-            # Center diamond ring at X intersection
+            # Center ring at X intersection
             add_cylinder(
                 f"Rail_CenterRing_{seg_name}_{b}",
-                0.042,
+                0.045,
                 0.026,
                 (bm_mid.x, bm_mid.y, 0.08 + diag_h * 0.5),
                 mats["black_metal"],
@@ -980,12 +1007,14 @@ def build_architecture(mats, arch_col):
                 rot=(math.pi * 0.5, 0, yaw),
             )
 
-    # Straight X-Cross Railing along Corridor (flush between Pillars 0..1, 1..2, 2..3 at Y = 6.85m; no protrusion into corridor)
-    add_x_railing_segment("Bay1_Straight", (-0.11, 6.85, 0.0), (3.36, 6.85, 0.0), n_bays=4)
-    # Bay 2 railing between Pillar 1 (3.65) and Pillar 2 (6.85)
-    add_x_railing_segment("Bay2_Straight", (3.94, 6.85, 0.0), (6.56, 6.85, 0.0), n_bays=3)
-    # Bay 3 railing between Pillar 2 (6.85) and Pillar 3 (10.05) - leaves entrance opening into Block 1
-    add_x_railing_segment("Bay3_Straight", (7.14, 6.85, 0.0), (9.05, 6.85, 0.0), n_bays=2)
+    # Note: Entrance #2 (X = -0.17m .. 1.05m) in front of Waiter Station has NO railing (open doorway)
+    # 1. Straight Corridor Railing #2 (1 "X") between Wide_Pillar_3 (X=2.65) and Wide_Pillar_2 (X=3.75)
+    add_x_railing_segment("Corridor_Bay2_1X", (2.65, 6.85, 0.0), (3.75, 6.85, 0.0), n_bays=1)
+    # 2. Straight Corridor Railing #1 (1 "X") between Wide_Pillar_2 (X=5.35) and Wide_Pillar_1 (X=6.45)
+    add_x_railing_segment("Corridor_Bay1_1X", (5.35, 6.85, 0.0), (6.45, 6.85, 0.0), n_bays=1)
+    # 3. L-Shaped Corner Railing ("2 X" membentuk siku) between Wide_Pillar_1 (X=8.05, Y=6.85) and Pillar_Entrance (X=9.18, Y=5.44)
+    add_x_railing_segment("Siku_Corridor_1X", (8.05, 6.85, 0.0), (9.18, 6.85, 0.0), n_bays=1)
+    add_x_railing_segment("Siku_Inward_1X", (9.18, 6.85, 0.0), (9.18, 5.44, 0.0), n_bays=1)
 
     # 7. Coffered Ceiling Grid (Z = 2.78m to 2.96m) with Red Beam Soffits & Red Accent Downlights
     # Base recessed ceiling slab at Z = COFFER_H (2.96m)
@@ -1066,13 +1095,13 @@ def populate_block1_tables(mats, furn_col):
     # Table 393: Near Wall end (X = 8.80m, ~0.50m from wall, 6-pax Maroon Velvet Chairs)
     build_table_assembly("393_Center_Aft", (8.80, 3.65), 2.05, 0.90, 0.0, chair_maroon, 6, mats, furn_col)
 
-    # 3. ROW C: CORRIDOR PILLAR & X-RAILING ROW (Ivory Chairs - 3 tables x 4 pax evenly distributed toward 407)
-    # Table 403 (R1): Shifted to X = 2.40m (generous 1.72m walkway behind chairs to Waiter Station)
-    build_table_assembly("403_Railing_FwdBay", (2.40, 5.98), 1.40, 0.88, math.pi * 0.5, chair_ivory, 4, mats, furn_col)
-    # Table 405 (R2): Evenly distributed at X = 5.42m between 403 and 407
-    build_table_assembly("405_Railing_MidBay", (5.42, 5.98), 1.40, 0.88, math.pi * 0.5, chair_ivory, 4, mats, furn_col)
-    # Table 407 (R3): At X = 8.45m near Entrance
-    build_table_assembly("407_Railing_AftBay", (8.45, 5.98), 1.40, 0.88, math.pi * 0.5, chair_ivory, 4, mats, furn_col)
+    # 3. ROW C: CORRIDOR PILLAR & X-RAILING ROW (Ivory Chairs - 3 tables x 4 pax aligned with the 3 railing bays)
+    # Table 403 (R1): At X = 2.85m behind Corridor_Bay2_1X & Wide_Pillar_3 (leaving Entrance #2 X=-0.17..1.05m completely clear)
+    build_table_assembly("403_Railing_FwdBay", (2.85, 6.02), 1.40, 0.88, math.pi * 0.5, chair_ivory, 4, mats, furn_col)
+    # Table 405 (R2): Evenly distributed at X = 5.50m behind Corridor_Bay1_1X & Wide_Pillar_2
+    build_table_assembly("405_Railing_MidBay", (5.50, 6.02), 1.40, 0.88, math.pi * 0.5, chair_ivory, 4, mats, furn_col)
+    # Table 407 (R3): At X = 8.15m tucked neatly inside the 2-"X" L-shaped corner railing (Siku_Corridor_1X & Siku_Inward_1X)
+    build_table_assembly("407_Railing_AftBay", (8.15, 6.02), 1.40, 0.88, math.pi * 0.5, chair_ivory, 4, mats, furn_col)
 
 
 # ==============================================================================
