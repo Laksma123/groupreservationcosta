@@ -1076,3 +1076,181 @@ dialog::backdrop {
     right: 16px;
   }
 }
+
+/* ============================================================================
+   STAGE 1: 4-LAYER CUTAWAY SELECTOR & 3D DECK PLACEHOLDER BADGES
+   ============================================================================ */
+.hero-overlay {
+  max-width: 495px;
+  bottom: 20px;
+}
+
+.hero-card {
+  padding: 18px 20px;
+  gap: 10px;
+}
+
+.cutaway-layer-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 2px 0;
+}
+
+.cutaway-layer-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 11px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.04);
+  color: #e2e8f0;
+  font-family: var(--font-sans);
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.cutaway-layer-btn:hover {
+  background: rgba(255, 255, 255, 0.11);
+  border-color: rgba(255, 255, 255, 0.32);
+  transform: translateX(2px);
+}
+
+.cutaway-layer-btn.active {
+  background: linear-gradient(135deg, rgba(245, 196, 67, 0.24), rgba(14, 116, 144, 0.28));
+  border-color: var(--costa-gold);
+  box-shadow: 0 6px 20px rgba(245, 196, 67, 0.22);
+}
+
+.cl-tag {
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  padding: 4px 8px;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #f8fafc;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.cl-tag-d7 {
+  background: rgba(16, 185, 129, 0.22);
+  color: #6ee7b7;
+  border: 1px solid rgba(16, 185, 129, 0.45);
+}
+
+.cl-tag-d6 {
+  background: rgba(245, 196, 67, 0.28);
+  color: var(--costa-gold-bright);
+  border: 1px solid rgba(245, 196, 67, 0.6);
+}
+
+.cl-tag-d5 {
+  background: rgba(249, 115, 22, 0.24);
+  color: #fdba74;
+  border: 1px solid rgba(249, 115, 22, 0.5);
+}
+
+.cl-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.cl-info strong {
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.cl-info small {
+  font-size: 10.5px;
+  color: #94a3b8;
+}
+
+.cutaway-layer-btn.active .cl-info small {
+  color: #e2e8f0;
+}
+
+/* 3D Deck Cutaway Floating Labels */
+.ship-deck-label {
+  pointer-events: auto;
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 700;
+  color: #f8fafc;
+  background: rgba(8, 19, 36, 0.86);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+.ship-deck-label.is-hidden {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.ship-deck-label.sdl-colombina {
+  border-color: #fb923c;
+  color: #fed7aa;
+}
+
+.ship-deck-label.sdl-meneghino {
+  border-color: #f43f5e;
+  color: #fecdd3;
+}
+
+.ship-deck-label.sdl-rugantino {
+  border-color: #10b981;
+  color: #a7f3d0;
+}
+
+.ship-deck-label.sdl-placeholder {
+  border-color: rgba(255, 255, 255, 0.28);
+  color: #cbd5e1;
+  font-size: 10px;
+}
+
+/* Stage 2 Sidebar: 2-Block Filter Tabs */
+.block-filter-bar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+  background: rgba(0, 0, 0, 0.28);
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.block-filter-btn {
+  padding: 6px 6px;
+  border-radius: 7px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #94a3b8;
+  font-family: var(--font-sans);
+  font-size: 10.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.block-filter-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.block-filter-btn.active {
+  background: rgba(245, 196, 67, 0.2);
+  border-color: rgba(245, 196, 67, 0.55);
+  color: var(--costa-gold-bright);
+}
+

@@ -27,126 +27,264 @@ if (bookingDialog && !('closedBy' in HTMLDialogElement.prototype)) {
 }
 
 // ============================================================================
-// 1. DRS TABLE METADATA & ACCESS CODE PRESETS
+// 1. DRS 2-BLOCK TABLE METADATA (24 TABLES / 112 SEATS TOTAL) & ACCESS PRESETS
+//    - Block 1 (Portside): 10 Tables (52 Seats)
+//    - Block 2 (Starboardside): 14 Tables (60 Seats)
 // ============================================================================
 const TABLE_CATALOG = [
+  // --- BLOCK 1: PORTSIDE (10 TABLES • 52 SEATS) ---
   {
     num: '301',
+    block: 'B1',
     nodeKey: '301_Window_Booth',
     pax: 4,
-    zone: 'Row A • Jendela Laut (Sofa Booth)',
+    zone: 'Block 1 Port • Jendela Laut (Sofa Booth)',
     chairDesc: 'Sofa Banquette Merah + 2 Kursi Ivory',
   },
   {
     num: '303',
+    block: 'B1',
     nodeKey: '303_Window_Bay1',
     pax: 6,
-    zone: 'Row A • Jendela Laut (Bay 1)',
+    zone: 'Block 1 Port • Jendela Laut (Bay 1)',
     chairDesc: '6 Kursi Ivory Leatherette • Panorama Laut',
   },
   {
     num: '305',
+    block: 'B1',
     nodeKey: '305_Window_Bay2',
     pax: 6,
-    zone: 'Row A • Jendela Laut (Bay 2)',
+    zone: 'Block 1 Port • Jendela Laut (Bay 2)',
     chairDesc: '6 Kursi Ivory Leatherette • Panorama Laut',
   },
   {
     num: '307',
+    block: 'B1',
     nodeKey: '307_Window_Bay3',
     pax: 6,
-    zone: 'Row A • Jendela Laut (Bay 3)',
+    zone: 'Block 1 Port • Jendela Laut (Bay 3)',
     chairDesc: '6 Kursi Ivory Leatherette • Dekat Lukisan',
   },
   {
     num: '399',
+    block: 'B1',
     nodeKey: '399_Center_Fwd',
     pax: 6,
-    zone: 'Row B • Baris Tengah (Dekat Station)',
-    chairDesc: '6 Kursi Burgundy Velvet • Orientasi Baru',
+    zone: 'Block 1 Port • Baris Tengah (Dekat Station)',
+    chairDesc: '6 Kursi Burgundy Velvet • Orientasi Tengah',
   },
   {
     num: '397',
+    block: 'B1',
     nodeKey: '397_Center_Mid',
     pax: 6,
-    zone: 'Row B • Baris Tengah (Sentral)',
-    chairDesc: '6 Kursi Burgundy Velvet • Orientasi Baru',
+    zone: 'Block 1 Port • Baris Tengah (Sentral)',
+    chairDesc: '6 Kursi Burgundy Velvet • Orientasi Tengah',
   },
   {
     num: '393',
+    block: 'B1',
     nodeKey: '393_Center_Aft',
     pax: 6,
-    zone: 'Row B • Baris Tengah (Dekat Pintu)',
-    chairDesc: '6 Kursi Burgundy Velvet • Orientasi Baru',
+    zone: 'Block 1 Port • Baris Tengah (Dekat Pintu)',
+    chairDesc: '6 Kursi Burgundy Velvet • Orientasi Tengah',
   },
   {
     num: '403',
+    block: 'B1',
     nodeKey: '403_Railing_FwdBay',
     pax: 4,
-    zone: 'Row C • Sisi Pagar X-Cross (Bay 1)',
-    chairDesc: '4 Kursi Ivory Leatherette • Jalur Lega Station',
+    zone: 'Block 1 Port • Sisi Pagar X-Cross (Bay 1)',
+    chairDesc: '4 Kursi Ivory Leatherette • Jalur Station',
   },
   {
     num: '405',
+    block: 'B1',
     nodeKey: '405_Railing_MidBay',
     pax: 4,
-    zone: 'Row C • Sisi Pagar X-Cross (Bay 2)',
+    zone: 'Block 1 Port • Sisi Pagar X-Cross (Bay 2)',
     chairDesc: '4 Kursi Ivory Leatherette • Koridor Medali',
   },
   {
     num: '407',
+    block: 'B1',
     nodeKey: '407_Railing_AftBay',
     pax: 4,
-    zone: 'Row C • Sisi Pagar X-Cross (Pintu Masuk)',
+    zone: 'Block 1 Port • Sisi Pagar X-Cross (Pintu Masuk)',
     chairDesc: '4 Kursi Ivory Leatherette • Dekat Pintu Masuk',
+  },
+
+  // --- BLOCK 2: STARBOARDSIDE (14 TABLES • 60 SEATS) ---
+  {
+    num: '468',
+    block: 'B2',
+    nodeKey: '468_B2_Railing_Fwd',
+    pax: 4,
+    zone: 'Block 2 Stbd • Pagar X-Cross (Bay 1)',
+    chairDesc: '4 Kursi Ivory Leatherette • Koridor Medali',
+  },
+  {
+    num: '470',
+    block: 'B2',
+    nodeKey: '470_B2_Railing_Mid',
+    pax: 4,
+    zone: 'Block 2 Stbd • Pagar X-Cross (Bay 2)',
+    chairDesc: '4 Kursi Ivory Leatherette • Koridor Medali',
+  },
+  {
+    num: '472',
+    block: 'B2',
+    nodeKey: '472_B2_Railing_Aft',
+    pax: 4,
+    zone: 'Block 2 Stbd • Pagar X-Cross (Pintu Masuk)',
+    chairDesc: '4 Kursi Ivory Leatherette • Dekat Pintu Masuk',
+  },
+  {
+    num: '462',
+    block: 'B2',
+    nodeKey: '462_B2_Center_Fwd',
+    pax: 6,
+    zone: 'Block 2 Stbd • Baris Tengah (Depan)',
+    chairDesc: '6 Kursi Burgundy Velvet • Jarak Lega 1.15m',
+  },
+  {
+    num: '460',
+    block: 'B2',
+    nodeKey: '460_B2_Center_Mid',
+    pax: 6,
+    zone: 'Block 2 Stbd • Baris Tengah (Sentral)',
+    chairDesc: '6 Kursi Burgundy Velvet • Orientasi Tengah',
+  },
+  {
+    num: '458',
+    block: 'B2',
+    nodeKey: '458_B2_Center_Aft',
+    pax: 6,
+    zone: 'Block 2 Stbd • Baris Tengah (Dekat Pintu)',
+    chairDesc: '6 Kursi Burgundy Velvet • Orientasi Tengah',
+  },
+  {
+    num: '466',
+    block: 'B2',
+    nodeKey: '466_B2_Entrance2_Sofa1',
+    pax: 4,
+    zone: 'Block 2 Stbd • Sofa Pintu Masuk Kedua (#1)',
+    chairDesc: 'Sofa Banquette Merah + 2 Kursi Ivory Sejajar Dinding',
+  },
+  {
+    num: '464',
+    block: 'B2',
+    nodeKey: '464_B2_Entrance2_Sofa2',
+    pax: 4,
+    zone: 'Block 2 Stbd • Sofa Pintu Masuk Kedua (#2)',
+    chairDesc: 'Sofa Banquette Merah + 2 Kursi Ivory Sejajar Dinding',
+  },
+  {
+    num: '384',
+    block: 'B2',
+    nodeKey: '384_B2_Sofa_4Pax_1',
+    pax: 4,
+    zone: 'Block 2 Stbd • Dinding Sofa Dalam (4P #1)',
+    chairDesc: 'Sofa Banquette Merah + 2 Kursi Ivory',
+  },
+  {
+    num: '382',
+    block: 'B2',
+    nodeKey: '382_B2_Sofa_2Pax_1',
+    pax: 2,
+    zone: 'Block 2 Stbd • Dinding Sofa Dalam (2P #1)',
+    chairDesc: 'Sofa Banquette Merah + 1 Kursi Ivory',
+  },
+  {
+    num: '380',
+    block: 'B2',
+    nodeKey: '380_B2_Sofa_4Pax_2',
+    pax: 4,
+    zone: 'Block 2 Stbd • Dinding Sofa Dalam (4P #2)',
+    chairDesc: 'Sofa Banquette Merah + 2 Kursi Ivory',
+  },
+  {
+    num: '378',
+    block: 'B2',
+    nodeKey: '378_B2_Sofa_2Pax_2',
+    pax: 2,
+    zone: 'Block 2 Stbd • Dinding Sofa Dalam (2P #2)',
+    chairDesc: 'Sofa Banquette Merah + 1 Kursi Ivory',
+  },
+  {
+    num: '376',
+    block: 'B2',
+    nodeKey: '376_B2_Sofa_2Pax_3',
+    pax: 2,
+    zone: 'Block 2 Stbd • Dinding Sofa Dalam (2P #3)',
+    chairDesc: 'Sofa Banquette Merah + 1 Kursi Ivory',
+  },
+  {
+    num: '374',
+    block: 'B2',
+    nodeKey: '374_B2_Sofa_4Pax_3',
+    pax: 4,
+    zone: 'Block 2 Stbd • Dinding Sofa Dalam (4P #3)',
+    chairDesc: 'Sofa Banquette Merah + 2 Kursi Ivory • Dekat Piring',
   },
 ];
 
 const ACCESS_PRESETS = {
   A98XKJ90: {
     code: 'A98XKJ90',
-    groupName: 'Milano Tech Incentive Group',
+    groupName: 'Milano Tech Incentive Group (2-Block Allocation)',
+    targetPax: 44,
+    lockedTables: ['301', '407', '374', '376'],
+    recommended: ['399', '397', '403', '405', '468', '470', '462', '460'],
+  },
+  DIAMOND28: {
+    code: 'DIAMOND28',
+    groupName: 'Costa Club Diamond Family Reunion',
     targetPax: 28,
-    lockedTables: ['301', '407'],
-    recommended: ['303', '305', '399', '397', '403'],
+    lockedTables: ['393', '407', '472', '458'],
+    recommended: ['466', '464', '462', '460', '384', '380'],
   },
-  DIAMOND16: {
-    code: 'DIAMOND16',
-    groupName: 'Costa Club Diamond Family',
-    targetPax: 16,
-    lockedTables: ['393', '405', '407'],
-    recommended: ['301', '303', '399'],
-  },
-  FAM52ALL: {
-    code: 'FAM52ALL',
-    groupName: 'Full Starboard Block 1 Charter',
-    targetPax: 52,
+  CHARTER112: {
+    code: 'CHARTER112',
+    groupName: 'Full 2-Block Arlecchino Charter (24 Meja)',
+    targetPax: 112,
     lockedTables: [],
-    recommended: ['301', '303', '305', '307', '399', '397', '393', '403', '405', '407'],
+    recommended: TABLE_CATALOG.map((t) => t.num),
   },
 };
 
-// Walk Mode Viewpoint Presets (Three.js Y-up coordinates)
+// Walk Mode Viewpoint Presets across both Block 1, Central Medallion Corridor, and Block 2
+// (Blender Y = 0..17.46m maps to Three.js Z = 0..-17.46m)
 const WALK_SPOTS = {
-  entrance: {
-    pos: new THREE.Vector3(9.55, 1.62, -7.85),
-    yaw: Math.PI * 0.26, // Looking from Bay 3 entrance into the dining room
+  corridor: {
+    pos: new THREE.Vector3(5.2, 1.62, -8.73),
+    yaw: Math.PI * 0.5, // Looking down the central black-and-white medallion corridor
+    pitch: -0.05,
+  },
+  entrance2: {
+    pos: new THREE.Vector3(0.55, 1.62, -10.2),
+    yaw: 0.08, // Looking from Entrance 2 through the 1.15m gap between Sofa 466/464 and Maroon 462
     pitch: -0.06,
   },
-  corridor: {
-    pos: new THREE.Vector3(1.20, 1.62, -7.97),
-    yaw: -Math.PI * 0.48, // Looking along the symmetrical medallion corridor
-    pitch: -0.08,
-  },
-  center: {
-    pos: new THREE.Vector3(7.60, 1.62, -4.85),
-    yaw: Math.PI * 0.38, // Looking across maroon velvet chairs & ocean windows
+  b1_center: {
+    pos: new THREE.Vector3(7.6, 1.62, -4.5),
+    yaw: Math.PI * 0.35, // Looking across Block 1 maroon velvet chairs & ocean windows
     pitch: -0.05,
   },
-  station: {
-    pos: new THREE.Vector3(1.15, 1.62, -2.55),
-    yaw: -Math.PI * 0.38, // Looking from Double Waiter Station & Sofa across Block 1
+  b1_station: {
+    pos: new THREE.Vector3(0.4, 1.62, -2.5),
+    yaw: -Math.PI * 0.38, // Looking from Block 1 Double Waiter Station & Sofa 301
     pitch: -0.05,
+  },
+  b2_center: {
+    pos: new THREE.Vector3(5.2, 1.62, -13.2),
+    yaw: -Math.PI * 0.25, // Looking across Block 2 center maroon tables 462, 460, 458
+    pitch: -0.05,
+  },
+  b2_sofa: {
+    pos: new THREE.Vector3(6.8, 1.62, -15.6),
+    yaw: Math.PI * 0.72, // Looking along Block 2 inboard banquette sofa tables 384..374
+    pitch: -0.06,
   },
 };
 
@@ -173,13 +311,13 @@ labelRenderer.setSize(window.innerWidth, window.innerHeight);
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x071426);
-scene.fog = new THREE.FogExp2(0x071426, 0.008);
+scene.fog = new THREE.FogExp2(0x071426, 0.0045);
 
 // Perspective Camera (Used in Hero Ship, Bird's-Eye Mode, and Walk Mode)
-const perspCamera = new THREE.PerspectiveCamera(44, window.innerWidth / window.innerHeight, 0.1, 400);
+const perspCamera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 500);
 
-// Orthographic Camera (Used in Top-View 2D Mode with 3D Render)
-const orthoFrustumH = 11.2;
+// Orthographic Camera (Used in Top-View 2D Mode framing BOTH Block 1 & Block 2)
+const orthoFrustumH = 20.4;
 const aspect = window.innerWidth / window.innerHeight;
 const orthoCamera = new THREE.OrthographicCamera(
   (-orthoFrustumH * aspect) / 2,
@@ -187,7 +325,7 @@ const orthoCamera = new THREE.OrthographicCamera(
   orthoFrustumH / 2,
   -orthoFrustumH / 2,
   0.1,
-  100
+  120
 );
 
 let activeCamera = perspCamera;
@@ -195,204 +333,295 @@ let activeCamera = perspCamera;
 const controls = new OrbitControls(perspCamera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.06;
-controls.maxDistance = 120;
+controls.maxDistance = 150;
 controls.minDistance = 1.2;
 
-// Lighting for both Ship Exterior and Interior Restaurant
+// Exterior & Global Lighting
 const ambientLight = new THREE.AmbientLight(0xfff6e8, 1.45);
 scene.add(ambientLight);
 
-const hemiLight = new THREE.HemisphereLight(0xdbeafe, 0x3b2314, 1.15);
-hemiLight.position.set(0, 25, 0);
+const hemiLight = new THREE.HemisphereLight(0xdbeafe, 0x3b2314, 1.2);
+hemiLight.position.set(0, 32, 0);
 scene.add(hemiLight);
 
-const sunLight = new THREE.DirectionalLight(0xfffbeb, 2.2);
-sunLight.position.set(18, 28, 22);
+const sunLight = new THREE.DirectionalLight(0xfffbeb, 2.35);
+sunLight.position.set(28, 42, 34);
 sunLight.castShadow = true;
 sunLight.shadow.mapSize.set(2048, 2048);
 scene.add(sunLight);
 
-// Warm interior fill lights positioned over Block 1 (X: 0..10, Y: 2.6, Z: -1..-7)
+// Warm interior fill lights positioned over BOTH Block 1 (Z: -2..-6), Corridor (Z: -8.73), and Block 2 (Z: -11..-16)
 const interiorLightGroup = new THREE.Group();
 scene.add(interiorLightGroup);
 [
-  [2.2, 2.55, -2.0, 0xffe4b5, 4.5],
-  [6.0, 2.55, -2.0, 0xffe4b5, 4.5],
-  [8.8, 2.55, -2.0, 0xffe4b5, 4.5],
-  [2.5, 2.55, -5.2, 0xffd6a5, 4.0],
-  [6.0, 2.55, -5.2, 0xffd6a5, 4.0],
-  [8.8, 2.55, -5.2, 0xffd6a5, 4.0],
-  [4.8, 2.55, -7.9, 0xfff0d4, 3.8],
+  // Block 1 (Portside)
+  [2.2, 2.55, -2.2, 0xffe4b5, 4.2],
+  [6.0, 2.55, -2.2, 0xffe4b5, 4.2],
+  [8.8, 2.55, -2.2, 0xffe4b5, 4.2],
+  [2.5, 2.55, -5.4, 0xffd6a5, 3.8],
+  [6.0, 2.55, -5.4, 0xffd6a5, 3.8],
+  [8.8, 2.55, -5.4, 0xffd6a5, 3.8],
+  // Central Medallion Corridor
+  [1.5, 2.55, -8.73, 0xfff0d4, 3.8],
+  [6.2, 2.55, -8.73, 0xfff0d4, 3.8],
+  // Block 2 (Starboardside)
+  [-0.5, 2.55, -13.0, 0xffe4b5, 4.2],
+  [3.6, 2.55, -12.2, 0xffe4b5, 4.2],
+  [7.6, 2.55, -12.2, 0xffe4b5, 4.2],
+  [2.2, 2.55, -15.8, 0xffd6a5, 4.0],
+  [6.0, 2.55, -15.8, 0xffd6a5, 4.0],
+  [9.2, 2.55, -15.8, 0xffd6a5, 4.0],
 ].forEach(([lx, ly, lz, col, intensity]) => {
-  const pt = new THREE.PointLight(col, intensity, 9.5, 1.4);
+  const pt = new THREE.PointLight(col, intensity, 10.5, 1.35);
   pt.position.set(lx, ly, lz);
   interiorLightGroup.add(pt);
 });
 interiorLightGroup.visible = false;
 
 // ============================================================================
-// 3. STAGE 1: 3D HERO CRUISE SHIP (COSTA SMERALDA CUTAWAY MODEL)
+// 3. STAGE 1: COSTA SMERALDA OUTER 3D MODEL & 4-LAYER CUTAWAY SYSTEM
 // ============================================================================
 const shipStageGroup = new THREE.Group();
-const shipUpperDecksGroup = new THREE.Group(); // Lifts up during cutaway zoom-in!
 scene.add(shipStageGroup);
 
-let deck6CutawayMesh = null;
-let shipHotspotLabel = null;
-let oceanMesh = null;
+// Mediterranean Sea & Wake Foam
+const seaGeo = new THREE.PlaneGeometry(380, 380, 64, 64);
+seaGeo.rotateX(-Math.PI / 2);
+const seaMat = new THREE.MeshStandardMaterial({
+  color: 0x083e66,
+  roughness: 0.20,
+  metalness: 0.38,
+});
+const oceanMesh = new THREE.Mesh(seaGeo, seaMat);
+oceanMesh.position.y = -0.05;
+shipStageGroup.add(oceanMesh);
 
-function buildHeroCruiseShip() {
-  // 1. Mediterranean Sea Surface
-  const seaGeo = new THREE.PlaneGeometry(260, 260, 64, 64);
-  seaGeo.rotateX(-Math.PI / 2);
-  const seaMat = new THREE.MeshStandardMaterial({
-    color: 0x0a4b78,
-    roughness: 0.22,
-    metalness: 0.35,
-  });
-  oceanMesh = new THREE.Mesh(seaGeo, seaMat);
-  oceanMesh.position.y = -2.2;
-  shipStageGroup.add(oceanMesh);
+// Named references to the 5 structural ship layer roots loaded from costa_smeralda_ship.glb
+const shipLayerNodes = {
+  L0: null, // Ship_Layer0_Base_Deck4Down (Not cutaway)
+  L1: null, // Ship_Layer1_Deck5 (Colombina Aft)
+  L2: null, // Ship_Layer2_Deck6 (Meneghino Aft + Arlecchino 2-Block Mid)
+  L3: null, // Ship_Layer3_Deck7 (Rugantino Aft + Colosseo Mid)
+  L4: null, // Ship_Layer4_Top_Deck8ToMuffler (Unified top block)
+};
 
-  // Helper to create elongated ship hull/deck profiles along X axis
-  function makeShipDeckLayer(length, width, height, yPos, colorHex, emissiveHex = 0x000000, emissiveInt = 0) {
-    const shape = new THREE.Shape();
-    const hw = width / 2;
-    const hl = length / 2;
-    const bowLen = length * 0.24;
-    const sternLen = length * 0.08;
+// Target Y lift offsets (in Three.js Y-up units) for each cutaway layer
+const shipLayerTargetY = { L1: 0, L2: 0, L3: 0, L4: 0 };
+let currentCutawayMode = 'full'; // 'full' | 'deck7' | 'deck6' | 'deck5'
 
-    shape.moveTo(-hl + sternLen, -hw);
-    shape.lineTo(hl - bowLen, -hw);
-    shape.quadraticCurveTo(hl, -hw * 0.35, hl, 0);
-    shape.quadraticCurveTo(hl, hw * 0.35, hl - bowLen, hw);
-    shape.lineTo(-hl + sternLen, hw);
-    shape.quadraticCurveTo(-hl, hw * 0.85, -hl, 0);
-    shape.quadraticCurveTo(-hl, -hw * 0.85, -hl + sternLen, -hw);
+const shipClickableArlecchinoMeshes = [];
+let arlecchinoHitboxMesh = null;
 
-    const extrude = new THREE.ExtrudeGeometry(shape, {
-      depth: height,
-      bevelEnabled: true,
-      bevelThickness: 0.08,
-      bevelSize: 0.08,
-      bevelSegments: 2,
+// Floating 3D CSS2D Labels attached to the cutaway decks
+const deckCutawayLabels = {
+  colombina: null,
+  meneghino: null,
+  arlecchinoMain: null,
+  arlecchinoPh: null,
+  rugantino: null,
+};
+
+function makeDeckLabel(htmlText, extraClass, posVec3, parentNode, onClick = null) {
+  const el = document.createElement(onClick ? 'button' : 'div');
+  if (onClick) el.type = 'button';
+  el.className = `${extraClass} is-hidden`;
+  el.innerHTML = htmlText;
+  if (onClick) {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      onClick();
     });
-    extrude.rotateX(-Math.PI / 2);
-    const mat = new THREE.MeshStandardMaterial({
-      color: colorHex,
-      roughness: 0.3,
-      metalness: 0.15,
-      emissive: emissiveHex,
-      emissiveIntensity: emissiveInt,
-      transparent: true,
-      opacity: 1.0,
-    });
-    const mesh = new THREE.Mesh(extrude, mat);
-    mesh.position.y = yPos;
-    return mesh;
   }
-
-  // Lower Dark Navy Hull (Decks 1-3)
-  shipStageGroup.add(makeShipDeckLayer(44, 6.8, 2.2, -2.2, 0x0a1931));
-  // Gold Costa Ribbon Line
-  shipStageGroup.add(makeShipDeckLayer(44.4, 6.88, 0.18, -0.05, 0xf5c443, 0xf5c443, 0.25));
-  // Lower White Hull (Decks 4-5)
-  shipStageGroup.add(makeShipDeckLayer(45.2, 7.0, 1.3, 0.1, 0xf8fafc));
-
-  // DECK 6 (ROMA) BASE LAYER — Where Ristorante Arlecchino lives!
-  const deck6Base = makeShipDeckLayer(45.6, 7.1, 0.95, 1.4, 0xe2e8f0);
-  shipStageGroup.add(deck6Base);
-
-  // Interactive Glowing Cutaway Bay on Deck 6 Mid-Ship Starboard (+Z side of ship)
-  const cutawayGeo = new THREE.BoxGeometry(10.5, 1.02, 2.4);
-  const cutawayMat = new THREE.MeshPhysicalMaterial({
-    color: 0xf5c443,
-    emissive: 0xf59e0b,
-    emissiveIntensity: 0.55,
-    roughness: 0.15,
-    transmission: 0.45,
-    transparent: true,
-    opacity: 0.92,
-  });
-  deck6CutawayMesh = new THREE.Mesh(cutawayGeo, cutawayMat);
-  deck6CutawayMesh.position.set(1.5, 1.92, 2.65);
-  deck6CutawayMesh.name = 'Deck6_Arlecchino_Cutaway_Zone';
-  shipStageGroup.add(deck6CutawayMesh);
-
-  // Glowing wireframe border around Deck 6 Cutaway Zone
-  const cutEdges = new THREE.LineSegments(
-    new THREE.EdgesGeometry(cutawayGeo),
-    new THREE.LineBasicMaterial({ color: 0xffffff })
-  );
-  deck6CutawayMesh.add(cutEdges);
-
-  // CSS2D Hotspot Button anchored directly to Deck 6 Starboard on the 3D Ship
-  const hsDiv = document.createElement('button');
-  hsDiv.type = 'button';
-  hsDiv.className = 'ship-hotspot-marker';
-  hsDiv.innerHTML = '<span>📍 DECK 6 • RISTORANTE ARLECCHINO (KLIK ZOOM-IN)</span>';
-  hsDiv.addEventListener('click', (e) => {
-    e.stopPropagation();
-    enterInteriorBlock1();
-  });
-  shipHotspotLabel = new CSS2DObject(hsDiv);
-  shipHotspotLabel.position.set(0, 1.35, 0);
-  deck6CutawayMesh.add(shipHotspotLabel);
-
-  // Upper Passenger Balcony Decks (Decks 7 to 17) — Placed in shipUpperDecksGroup for Cutaway lift!
-  for (let d = 0; d < 7; d++) {
-    const y = 2.4 + d * 0.72;
-    const len = 43.5 - d * 1.4;
-    const wid = 6.7 - d * 0.12;
-    const deckSlab = makeShipDeckLayer(len, wid, 0.46, y, 0xffffff);
-    const glassStrip = makeShipDeckLayer(len - 0.5, wid + 0.06, 0.24, y + 0.46, 0x38bdf8, 0x0284c7, 0.35);
-    shipUpperDecksGroup.add(deckSlab, glassStrip);
-  }
-
-  // Iconic Costa Yellow Funnel with Blue 'C' Crest at Mid-Aft
-  const funnelGeo = new THREE.CylinderGeometry(1.15, 1.55, 4.2, 24);
-  funnelGeo.scale(1.6, 1.0, 0.85);
-  const funnelMat = new THREE.MeshStandardMaterial({
-    color: 0xf5c443,
-    roughness: 0.25,
-    metalness: 0.1,
-    transparent: true,
-    opacity: 1.0,
-  });
-  const funnelMesh = new THREE.Mesh(funnelGeo, funnelMat);
-  funnelMesh.position.set(-5.5, 9.2, 0);
-  funnelMesh.rotation.z = 0.18;
-  shipUpperDecksGroup.add(funnelMesh);
-
-  // Dark Navy Funnel Cap
-  const capGeo = new THREE.CylinderGeometry(1.12, 1.16, 0.55, 24);
-  capGeo.scale(1.6, 1.0, 0.85);
-  const capMesh = new THREE.Mesh(
-    capGeo,
-    new THREE.MeshStandardMaterial({ color: 0x0a1931, transparent: true, opacity: 1.0 })
-  );
-  capMesh.position.set(-5.85, 11.2, 0);
-  capMesh.rotation.z = 0.18;
-  shipUpperDecksGroup.add(capMesh);
-
-  shipStageGroup.add(shipUpperDecksGroup);
+  const obj = new CSS2DObject(el);
+  obj.position.copy(posVec3);
+  parentNode.add(obj);
+  return { obj, el };
 }
 
-buildHeroCruiseShip();
+const loaderOverlay = document.getElementById('loading-overlay');
+const gltfLoader = new GLTFLoader();
+
+let shipGlbLoaded = false;
+let interiorGlbLoaded = false;
+function checkAllLoaded() {
+  if (shipGlbLoaded && interiorGlbLoaded) {
+    loaderOverlay.classList.add('is-hidden');
+  }
+}
+
+// Load the 80%+ accurate Costa Smeralda 4-Layer Cutaway GLB generated by Blender
+gltfLoader.load(
+  './costa_smeralda_ship.glb',
+  (gltf) => {
+    const shipModel = gltf.scene;
+    shipStageGroup.add(shipModel);
+
+    shipModel.traverse((child) => {
+      if (child.name === 'Ship_Layer0_Base_Deck4Down') shipLayerNodes.L0 = child;
+      if (child.name === 'Ship_Layer1_Deck5') shipLayerNodes.L1 = child;
+      if (child.name === 'Ship_Layer2_Deck6') shipLayerNodes.L2 = child;
+      if (child.name === 'Ship_Layer3_Deck7') shipLayerNodes.L3 = child;
+      if (child.name === 'Ship_Layer4_Top_Deck8ToMuffler') shipLayerNodes.L4 = child;
+
+      if (child.isMesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+
+        // Make the 2-Block Arlecchino inside Deck 6 & its golden hitbox clickable!
+        if (child.name === 'L2_Arlecchino_2Block_Active_Hitbox') {
+          arlecchinoHitboxMesh = child;
+          shipClickableArlecchinoMeshes.push(child);
+        } else if (
+          child.parent &&
+          (child.parent.name === 'L2_Arlecchino_2Block_RealModel' ||
+            (child.parent.parent && child.parent.parent.name === 'L2_Arlecchino_2Block_RealModel'))
+        ) {
+          shipClickableArlecchinoMeshes.push(child);
+        }
+      }
+    });
+
+    // Attach 3D CSS2D Labels to each Cutaway Deck Layer
+    // Note: Blender (X, Y, Z) -> Three.js (X, Z_up, -Y)
+    if (shipLayerNodes.L1) {
+      deckCutawayLabels.colombina = makeDeckLabel(
+        '📍 DECK 5 BELAKANG • RISTORANTE LA COLOMBINA (Placeholder 978 Kursi)',
+        'ship-deck-label sdl-colombina',
+        new THREE.Vector3(-25.5, 2.9, 0.0),
+        shipLayerNodes.L1
+      );
+    }
+
+    if (shipLayerNodes.L2) {
+      deckCutawayLabels.meneghino = makeDeckLabel(
+        '📍 DECK 6 BELAKANG • RISTORANTE IL MENEGHINO (Placeholder 886 Kursi)',
+        'ship-deck-label sdl-meneghino',
+        new THREE.Vector3(-25.8, 3.8, 0.0),
+        shipLayerNodes.L2
+      );
+
+      deckCutawayLabels.arlecchinoPh = makeDeckLabel(
+        '⏳ Arlecchino Blok Lainnya & Colosseo (Placeholder)',
+        'ship-deck-label sdl-placeholder',
+        new THREE.Vector3(5.2, 3.8, -1.8),
+        shipLayerNodes.L2
+      );
+
+      deckCutawayLabels.arlecchinoMain = makeDeckLabel(
+        '<span>⭐ DECK 6 TENGAH • RISTORANTE ARLECCHINO (2 BLOK SELESAI — KLIK MASUK)</span>',
+        'ship-hotspot-marker',
+        new THREE.Vector3(-1.5, 3.95, 1.85),
+        shipLayerNodes.L2,
+        () => enterInterior2Blocks()
+      );
+      // Show main hotspot by default
+      deckCutawayLabels.arlecchinoMain.el.classList.remove('is-hidden');
+    }
+
+    if (shipLayerNodes.L3) {
+      deckCutawayLabels.rugantino = makeDeckLabel(
+        '📍 DECK 7 BELAKANG • RISTORANTE IL RUGANTINO (Placeholder 546 Kursi)',
+        'ship-deck-label sdl-rugantino',
+        new THREE.Vector3(-25.6, 4.6, 0.0),
+        shipLayerNodes.L3
+      );
+    }
+
+    shipGlbLoaded = true;
+    checkAllLoaded();
+  },
+  undefined,
+  (err) => {
+    console.error('Error loading costa_smeralda_ship.glb:', err);
+    shipGlbLoaded = true;
+    checkAllLoaded();
+  }
+);
+
+// Set 4-Layer Cutaway State on the Costa Smeralda 3D Model
+function setShipCutawayLayer(layerMode, animateCam = true) {
+  currentCutawayMode = layerMode;
+
+  document.querySelectorAll('.cutaway-layer-btn').forEach((btn) => {
+    btn.classList.toggle('active', btn.dataset.cutawayLayer === layerMode);
+  });
+
+  // Hide all deck placeholder labels first, then show the active deck's labels
+  if (deckCutawayLabels.colombina) {
+    deckCutawayLabels.colombina.el.classList.toggle('is-hidden', layerMode !== 'deck5');
+  }
+  if (deckCutawayLabels.meneghino) {
+    deckCutawayLabels.meneghino.el.classList.toggle('is-hidden', layerMode !== 'deck6');
+  }
+  if (deckCutawayLabels.arlecchinoPh) {
+    deckCutawayLabels.arlecchinoPh.el.classList.toggle('is-hidden', layerMode !== 'deck6');
+  }
+  if (deckCutawayLabels.rugantino) {
+    deckCutawayLabels.rugantino.el.classList.toggle('is-hidden', layerMode !== 'deck7');
+  }
+  if (deckCutawayLabels.arlecchinoMain) {
+    const showArl = currentStage === 'ship' && (layerMode === 'full' || layerMode === 'deck6');
+    deckCutawayLabels.arlecchinoMain.el.classList.toggle('is-hidden', !showArl);
+  }
+
+  if (layerMode === 'full') {
+    // All layers closed (Full Costa Smeralda Ship)
+    shipLayerTargetY.L1 = 0;
+    shipLayerTargetY.L2 = 0;
+    shipLayerTargetY.L3 = 0;
+    shipLayerTargetY.L4 = 0;
+    document.getElementById('stage-title').textContent =
+      'Kapal Utuh Costa Smeralda — Sistem Cutaway 4 Lapis';
+    if (animateCam) {
+      animateCameraTo(new THREE.Vector3(34, 17, 46), new THREE.Vector3(0, 5.2, 0), 900);
+    }
+  } else if (layerMode === 'deck7') {
+    // Cutaway Layer 3: Lift Deck 8–Muffler (L4) up to expose Deck 7 (Il Rugantino Aft)
+    shipLayerTargetY.L1 = 0;
+    shipLayerTargetY.L2 = 0;
+    shipLayerTargetY.L3 = 0;
+    shipLayerTargetY.L4 = 8.5;
+    document.getElementById('stage-title').textContent =
+      'Cutaway Lapis 3: Deck 7 "Positano" — Ristorante Il Rugantino (Placeholder)';
+    if (animateCam) {
+      animateCameraTo(new THREE.Vector3(-18, 15.5, 32), new THREE.Vector3(-12, 4.2, 0), 900);
+    }
+  } else if (layerMode === 'deck6') {
+    // Cutaway Layer 2: Lift Deck 7 (L3) & Deck 8–Muffler (L4) to expose Deck 6 (2-Block Arlecchino & Il Meneghino)
+    shipLayerTargetY.L1 = 0;
+    shipLayerTargetY.L2 = 0;
+    shipLayerTargetY.L3 = 6.5;
+    shipLayerTargetY.L4 = 13.5;
+    document.getElementById('stage-title').textContent =
+      'Cutaway Lapis 2: Deck 6 "Roma" — 2 Blok Arlecchino (100% Detail) & Il Meneghino';
+    if (animateCam) {
+      animateCameraTo(new THREE.Vector3(5, 13.5, 24), new THREE.Vector3(-3.5, 3.2, 0), 900);
+    }
+  } else if (layerMode === 'deck5') {
+    // Cutaway Layer 1: Lift Deck 6 (L2), Deck 7 (L3), & Deck 8–Muffler (L4) to expose Deck 5 (La Colombina Aft)
+    // Base Deck 4 & Below (L0) stays fixed!
+    shipLayerTargetY.L1 = 0;
+    shipLayerTargetY.L2 = 5.5;
+    shipLayerTargetY.L3 = 11.0;
+    shipLayerTargetY.L4 = 17.5;
+    document.getElementById('stage-title').textContent =
+      'Cutaway Lapis 1: Deck 5 "Taormina" — Ristorante La Colombina (Placeholder)';
+    if (animateCam) {
+      animateCameraTo(new THREE.Vector3(-18, 14.0, 32), new THREE.Vector3(-14, 2.5, 0), 900);
+    }
+  }
+}
 
 // ============================================================================
-// 4. STAGE 2: LOAD BLENDER GLB & BUILD INTERACTIVE TABLE OVERLAYS
+// 4. STAGE 2: LOAD 2-BLOCK ARLECCHINO GLB & BUILD 24 INTERACTIVE TABLE OVERLAYS
 // ============================================================================
 const restaurantGroup = new THREE.Group();
 restaurantGroup.visible = false;
 scene.add(restaurantGroup);
 
 const ceilingMeshes = [];
-const tableRegistry = new Map(); // num -> { meta, meshes, topMesh, glassPad, glassBorder, labelObj, boxCenter, boxSize }
+const tableRegistry = new Map(); // num -> { meta, meshes, topMesh, glassPad, glassBorder, labelObj, labelEl, center, size }
 const interactiveMeshes = []; // All meshes that trigger table hover/click
-
-const loaderOverlay = document.getElementById('loading-overlay');
-const gltfLoader = new GLTFLoader();
 
 gltfLoader.load(
   './arlecchino_block1.glb',
@@ -400,24 +629,26 @@ gltfLoader.load(
     const model = gltf.scene;
     restaurantGroup.add(model);
 
-    // 1. Classify meshes inside the loaded Blender .glb
+    // 1. Classify meshes inside the loaded 2-Block Blender .glb
     model.traverse((child) => {
       if (!child.isMesh) return;
       child.castShadow = true;
       child.receiveShadow = true;
 
       const n = child.name || '';
-      // Ceiling & overhead lighting objects (hidden in Bird's-Eye & Top-2D modes; shown in Walk mode)
+      // Ceiling & overhead lighting objects for BOTH Block 1 and Block 2
       if (
         n.startsWith('Ceiling_') ||
         n.startsWith('CeilBeam_') ||
+        n.startsWith('B2_CeilBeam_') ||
         n.startsWith('RedSpot_') ||
+        n.startsWith('B2_RedSpot_') ||
         n.startsWith('Corr_Downlight_')
       ) {
         ceilingMeshes.push(child);
       }
 
-      // Associate table & chair meshes with their DRS table number
+      // Associate table & chair meshes with their DRS table number across all 24 tables
       for (const meta of TABLE_CATALOG) {
         if (
           n.includes(meta.nodeKey) ||
@@ -448,7 +679,7 @@ gltfLoader.load(
       }
     });
 
-    // 2. Build 3D Glassmorphism Pre-Selection Pads & Floating Typography Labels for each of the 10 tables
+    // 2. Build 3D Glassmorphism Pre-Selection Pads & Floating Typography Labels for all 24 tables
     model.updateMatrixWorld(true);
 
     for (const meta of TABLE_CATALOG) {
@@ -459,9 +690,8 @@ gltfLoader.load(
       box.getCenter(entry.center);
       box.getSize(entry.size);
 
-      // Glassmorphic Pad hovering 10mm above the clean Carrara marble tabletop
-      const padW = Math.max(entry.size.x - 0.03, 0.5);
-      const padD = Math.max(entry.size.z - 0.03, 0.5);
+      const padW = Math.max(entry.size.x - 0.03, 0.45);
+      const padD = Math.max(entry.size.z - 0.03, 0.45);
       const padH = 0.018;
       const padGeo = new THREE.BoxGeometry(padW, padH, padD);
 
@@ -518,9 +748,9 @@ gltfLoader.load(
       entry.labelEl = markerEl;
     }
 
-    // Apply initial preset & hide loading screen
     applyAccessPreset(currentPresetKey);
-    loaderOverlay.classList.add('is-hidden');
+    interiorGlbLoaded = true;
+    checkAllLoaded();
   },
   undefined,
   (err) => {
@@ -536,6 +766,7 @@ let currentStage = 'ship'; // 'ship' | 'interior'
 let currentCamMode = 'bird'; // 'bird' | 'top2d' | 'walk'
 let top2dFlipped = false;
 let showTableNumbers = true;
+let activeBlockFilter = 'all'; // 'all' | 'B1' | 'B2'
 
 let currentPresetKey = 'A98XKJ90';
 let selectedTables = new Set();
@@ -574,9 +805,6 @@ function setHeroShipCamera(instant = false) {
   controls.maxPolarAngle = Math.PI * 0.48;
 
   shipStageGroup.visible = true;
-  shipUpperDecksGroup.position.y = 0;
-  if (shipHotspotLabel) shipHotspotLabel.element.style.display = 'flex';
-
   restaurantGroup.visible = false;
   interiorLightGroup.visible = false;
   updateTableMarkersVisibility();
@@ -584,47 +812,38 @@ function setHeroShipCamera(instant = false) {
   document.getElementById('hero-ship-ui').hidden = false;
   document.getElementById('interior-ui').hidden = true;
   document.getElementById('btn-back-ship').hidden = true;
-  document.getElementById('stage-title').textContent =
-    'Kapal Utuh Costa Smeralda — Pilih Deck Restoran';
 
-  const shipCamPos = new THREE.Vector3(24, 14, 34);
-  const shipTarget = new THREE.Vector3(0, 2.5, 0);
   if (instant) {
-    perspCamera.position.copy(shipCamPos);
-    controls.target.copy(shipTarget);
+    setShipCutawayLayer('full', false);
+    perspCamera.position.set(34, 17, 46);
+    controls.target.set(0, 5.2, 0);
     controls.update();
   } else {
-    animateCameraTo(shipCamPos, shipTarget, 900);
+    // Return to Deck 6 Cutaway view on the ship so the user sees the 2-Block Arlecchino in context
+    setShipCutawayLayer('deck6', true);
   }
 }
 
 setHeroShipCamera(true);
 
-// Trigger Cutaway Animation on Hero Ship -> Zoom-In to Deck 6 Block 1
-function enterInteriorBlock1() {
+// Trigger Cutaway Animation on Hero Ship -> Zoom-In to Deck 6 (2-Block Ristorante Arlecchino)
+function enterInterior2Blocks() {
   if (currentStage === 'interior') return;
-  if (shipHotspotLabel) shipHotspotLabel.element.style.display = 'none';
 
-  // Animate upper ship decks lifting up while camera zooms into Deck 6 Starboard cutaway
-  const startLift = performance.now();
-  const liftDur = 750;
+  // Ensure Deck 6 cutaway is lifted before zooming into the 2-Block Arlecchino bay
+  setShipCutawayLayer('deck6', false);
 
-  function stepCutaway(now) {
-    const t = Math.min(1, (now - startLift) / liftDur);
-    const ease = 1 - Math.pow(1 - t, 3);
-    shipUpperDecksGroup.position.y = ease * 9.5;
-    if (t < 1) {
-      requestAnimationFrame(stepCutaway);
-    }
-  }
-  requestAnimationFrame(stepCutaway);
+  // Hide ship floating labels during zoom-in
+  Object.values(deckCutawayLabels).forEach((lbl) => {
+    if (lbl && lbl.el) lbl.el.classList.add('is-hidden');
+  });
 
   animateCameraTo(
-    new THREE.Vector3(4.5, 3.2, 6.2),
-    new THREE.Vector3(1.5, 1.9, 2.6),
-    750,
+    new THREE.Vector3(-0.5, 5.2, 6.8),
+    new THREE.Vector3(-1.5, 3.0, 1.5),
+    820,
     () => {
-      // Switch to Stage 2: Interior Ristorante Arlecchino Block 1
+      // Switch to Stage 2: Interior Ristorante Arlecchino (Full 2 Blocks: 24 Tables)
       currentStage = 'interior';
       shipStageGroup.visible = false;
       restaurantGroup.visible = true;
@@ -634,7 +853,7 @@ function enterInteriorBlock1() {
       document.getElementById('interior-ui').hidden = false;
       document.getElementById('btn-back-ship').hidden = false;
       document.getElementById('stage-title').textContent =
-        'Deck 6 "Roma" • Ristorante Arlecchino (Starboard Block 1)';
+        'Deck 6 "Roma" • Ristorante Arlecchino (Block 1 Port & Block 2 Stbd • 24 Meja)';
 
       setInteriorCameraMode('bird');
       updateTableMarkersVisibility();
@@ -642,7 +861,7 @@ function enterInteriorBlock1() {
   );
 }
 
-// Toggle Ceiling / Roof visibility (Hidden in Bird's-Eye & Top-2D, Visible in Walk Mode)
+// Toggle Ceiling / Roof visibility for BOTH Block 1 and Block 2
 function setCeilingVisible(vis) {
   for (const m of ceilingMeshes) {
     m.visible = vis;
@@ -653,15 +872,17 @@ function updateTableMarkersVisibility() {
   const shouldShow = currentStage === 'interior' && showTableNumbers;
   for (const [, entry] of tableRegistry) {
     if (!entry.labelEl) continue;
-    entry.labelEl.classList.toggle('is-hidden', !shouldShow);
+    const matchBlock =
+      activeBlockFilter === 'all' || entry.meta.block === activeBlockFilter;
+    entry.labelEl.classList.toggle('is-hidden', !(shouldShow && matchBlock));
   }
 }
 
 // ============================================================================
-// 6. THREE INTERIOR CAMERA MODES: BIRD'S-EYE, TOP-VIEW 2D, WALK MODE
+// 6. THREE INTERIOR CAMERA MODES: BIRD'S-EYE, TOP-VIEW 2D, WALK MODE (2 BLOCKS)
 // ============================================================================
-let walkYaw = WALK_SPOTS.entrance.yaw;
-let walkPitch = WALK_SPOTS.entrance.pitch;
+let walkYaw = WALK_SPOTS.corridor.yaw;
+let walkPitch = WALK_SPOTS.corridor.pitch;
 const walkKeys = { forward: false, backward: false, left: false, right: false };
 let isDraggingLook = false;
 let prevPointer = { x: 0, y: 0 };
@@ -669,7 +890,6 @@ let prevPointer = { x: 0, y: 0 };
 function setInteriorCameraMode(mode) {
   currentCamMode = mode;
 
-  // Update active button UI
   document.querySelectorAll('.mode-btn').forEach((btn) => {
     btn.classList.toggle('active', btn.dataset.camMode === mode);
   });
@@ -678,7 +898,7 @@ function setInteriorCameraMode(mode) {
   walkHud.hidden = mode !== 'walk';
 
   if (mode === 'bird') {
-    // 1. BIRD'S-EYE MODE (Roof Hidden + 3D Perspective Orbit)
+    // 1. BIRD'S-EYE MODE (Both Block 1 & Block 2 Ceilings Hidden + 3D Perspective Orbit)
     setCeilingVisible(false);
     activeCamera = perspCamera;
     perspCamera.fov = 42;
@@ -690,24 +910,23 @@ function setInteriorCameraMode(mode) {
     controls.enablePan = true;
     controls.maxPolarAngle = Math.PI * 0.47;
 
-    const zSign = top2dFlipped ? 1 : -1;
     const targetPos = top2dFlipped
-      ? new THREE.Vector3(4.75, 10.5, 6.2)
-      : new THREE.Vector3(11.8, 9.6, -12.4);
-    const lookTarget = new THREE.Vector3(4.75, 0.65, -4.35);
+      ? new THREE.Vector3(-7.8, 14.2, -8.73)
+      : new THREE.Vector3(16.8, 14.2, -8.73);
+    const lookTarget = new THREE.Vector3(4.35, 0.55, -8.73);
     animateCameraTo(targetPos, lookTarget, 750);
   } else if (mode === 'top2d') {
-    // 2. TOP-VIEW 2D MODE (Orthographic 90° Overhead with identical 3D Render & Roof Hidden)
+    // 2. TOP-VIEW 2D MODE (Orthographic 90° Overhead framing BOTH Block 1 & Block 2)
     setCeilingVisible(false);
     camAnim = null;
     activeCamera = orthoCamera;
 
-    const centerX = 4.65;
-    const centerZ = -4.45;
-    orthoCamera.position.set(centerX, 16.0, centerZ);
+    const centerX = 4.35;
+    const centerZ = -8.73; // Exact midpoint of Central Medallion Corridor!
+    orthoCamera.position.set(centerX, 22.0, centerZ);
     orthoCamera.up.set(0, 0, top2dFlipped ? -1 : 1);
     orthoCamera.lookAt(centerX, 0.0, centerZ);
-    orthoCamera.zoom = 1.05;
+    orthoCamera.zoom = 1.04;
     orthoCamera.updateProjectionMatrix();
 
     controls.object = orthoCamera;
@@ -717,7 +936,7 @@ function setInteriorCameraMode(mode) {
     controls.enablePan = true;
     controls.update();
   } else if (mode === 'walk') {
-    // 3. WALK MODE (First-Person Eye-Level 1.62m + Ceiling Restored!)
+    // 3. WALK MODE (First-Person Eye-Level 1.62m + Both Block Ceilings Restored!)
     setCeilingVisible(true);
     camAnim = null;
     activeCamera = perspCamera;
@@ -726,12 +945,12 @@ function setInteriorCameraMode(mode) {
     perspCamera.updateProjectionMatrix();
 
     controls.enabled = false;
-    teleportWalkTo('entrance');
+    teleportWalkTo('corridor');
   }
 }
 
 function teleportWalkTo(spotKey) {
-  const spot = WALK_SPOTS[spotKey] || WALK_SPOTS.entrance;
+  const spot = WALK_SPOTS[spotKey] || WALK_SPOTS.corridor;
   perspCamera.position.copy(spot.pos);
   walkYaw = spot.yaw;
   walkPitch = spot.pitch;
@@ -753,7 +972,7 @@ function syncWalkCameraLook() {
 }
 
 // ============================================================================
-// 7. GLASSMORPHISM PRE-SELECTION HOVER & TABLE SELECTION LOGIC
+// 7. GLASSMORPHISM PRE-SELECTION HOVER & TABLE SELECTION LOGIC (24 TABLES)
 // ============================================================================
 const hoverCard = document.getElementById('hover-glass-card');
 
@@ -833,7 +1052,7 @@ function applyAccessPreset(presetKey) {
 }
 
 function syncSelectionUI() {
-  const preset = ACCESS_PRESETS[currentPresetKey];
+  const preset = ACCESS_PRESETS[currentPresetKey] || ACCESS_PRESETS.A98XKJ90;
   let totalPax = 0;
 
   for (const [num, entry] of tableRegistry) {
@@ -847,7 +1066,6 @@ function syncSelectionUI() {
     }
   }
 
-  // Update Sidebar Pax Metrics
   document.getElementById('selected-pax-count').textContent = String(totalPax);
   document.getElementById('target-pax-count').textContent = String(preset.targetPax);
   document.getElementById('selected-table-count').textContent = `${selectedTables.size} Meja`;
@@ -873,10 +1091,14 @@ function syncSelectionUI() {
     pill.style.color = '#6ee7b7';
   }
 
-  // Rebuild Sidebar Table List
+  // Rebuild Sidebar Table List (Filtered by All / Block 1 / Block 2)
   const listEl = document.getElementById('sidebar-table-list');
   listEl.innerHTML = '';
-  for (const meta of TABLE_CATALOG) {
+  const visibleTables = TABLE_CATALOG.filter(
+    (meta) => activeBlockFilter === 'all' || meta.block === activeBlockFilter
+  );
+
+  for (const meta of visibleTables) {
     const isSel = selectedTables.has(meta.num);
     const isLock = lockedTables.has(meta.num);
     const row = document.createElement('div');
@@ -907,7 +1129,7 @@ function syncSelectionUI() {
 }
 
 // ============================================================================
-// 8. RAYCASTING (3D HOVER & CLICK FOR BOTH SHIP & INTERIOR TABLES)
+// 8. RAYCASTING (3D HOVER & CLICK FOR BOTH SHIP & 24 INTERIOR TABLES)
 // ============================================================================
 const raycaster = new THREE.Raycaster();
 const pointerNDC = new THREE.Vector2();
@@ -933,11 +1155,13 @@ canvas.addEventListener('pointermove', (event) => {
   updatePointerNDC(event);
   raycaster.setFromCamera(pointerNDC, activeCamera);
 
-  if (currentStage === 'ship' && deck6CutawayMesh) {
-    const hits = raycaster.intersectObject(deck6CutawayMesh, false);
-    const hitDeck6 = hits.length > 0;
-    canvas.style.cursor = hitDeck6 ? 'pointer' : 'grab';
-    deck6CutawayMesh.material.emissiveIntensity = hitDeck6 ? 0.95 : 0.55;
+  if (currentStage === 'ship' && shipClickableArlecchinoMeshes.length > 0) {
+    const hits = raycaster.intersectObjects(shipClickableArlecchinoMeshes, false);
+    const hitArl = hits.length > 0;
+    canvas.style.cursor = hitArl ? 'pointer' : 'grab';
+    if (arlecchinoHitboxMesh && arlecchinoHitboxMesh.material) {
+      arlecchinoHitboxMesh.material.emissiveIntensity = hitArl ? 1.15 : 0.65;
+    }
     return;
   }
 
@@ -976,10 +1200,10 @@ window.addEventListener('pointerup', (event) => {
   updatePointerNDC(event);
   raycaster.setFromCamera(pointerNDC, activeCamera);
 
-  if (currentStage === 'ship' && deck6CutawayMesh) {
-    const hits = raycaster.intersectObject(deck6CutawayMesh, false);
+  if (currentStage === 'ship' && shipClickableArlecchinoMeshes.length > 0) {
+    const hits = raycaster.intersectObjects(shipClickableArlecchinoMeshes, false);
     if (hits.length > 0) {
-      enterInteriorBlock1();
+      enterInterior2Blocks();
     }
     return;
   }
@@ -993,10 +1217,29 @@ window.addEventListener('pointerup', (event) => {
 });
 
 // ============================================================================
-// 9. UI EVENT LISTENERS (BUTTONS, SWITCH, KEYBOARD WALK, DIALOG)
+// 9. UI EVENT LISTENERS (4-LAYER CUTAWAY, BLOCK FILTER, SWITCH, WALK, DIALOG)
 // ============================================================================
-document.getElementById('btn-enter-deck6').addEventListener('click', enterInteriorBlock1);
+document.getElementById('btn-enter-deck6').addEventListener('click', enterInterior2Blocks);
 document.getElementById('btn-back-ship').addEventListener('click', () => setHeroShipCamera(false));
+
+// 4-Layer Ship Cutaway Selector Buttons
+document.querySelectorAll('.cutaway-layer-btn').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    setShipCutawayLayer(btn.dataset.cutawayLayer, true);
+  });
+});
+
+// Block 1 / Block 2 Filter Buttons in Sidebar
+document.querySelectorAll('.block-filter-btn').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    activeBlockFilter = btn.dataset.blockFilter;
+    document.querySelectorAll('.block-filter-btn').forEach((b) => {
+      b.classList.toggle('active', b === btn);
+    });
+    syncSelectionUI();
+    updateTableMarkersVisibility();
+  });
+});
 
 document.getElementById('access-preset').addEventListener('change', (e) => {
   applyAccessPreset(e.target.value);
@@ -1064,7 +1307,7 @@ window.addEventListener('keyup', (e) => {
 
 // Auto-Recommend Adjacent Tables & Clear
 document.getElementById('btn-auto-recommend').addEventListener('click', () => {
-  const preset = ACCESS_PRESETS[currentPresetKey];
+  const preset = ACCESS_PRESETS[currentPresetKey] || ACCESS_PRESETS.A98XKJ90;
   selectedTables.clear();
   for (const tNum of preset.recommended) {
     if (!lockedTables.has(tNum)) selectedTables.add(tNum);
@@ -1077,18 +1320,20 @@ document.getElementById('btn-clear-selection').addEventListener('click', () => {
   syncSelectionUI();
 });
 
-// Confirm Booking Modal Dialog (Opened with showModal() per modern-web-guidance)
+// Confirm Booking Modal Dialog
 document.getElementById('btn-confirm-booking').addEventListener('click', () => {
-  const preset = ACCESS_PRESETS[currentPresetKey];
+  const preset = ACCESS_PRESETS[currentPresetKey] || ACCESS_PRESETS.A98XKJ90;
   const chosenList = TABLE_CATALOG.filter((t) => selectedTables.has(t.num));
   const totalSeats = chosenList.reduce((acc, t) => acc + t.pax, 0);
-  const tableNumsStr = chosenList.map((t) => `#${t.num} (${t.pax}P)`).join(', ');
+  const b1List = chosenList.filter((t) => t.block === 'B1').map((t) => `#${t.num} (${t.pax}P)`);
+  const b2List = chosenList.filter((t) => t.block === 'B2').map((t) => `#${t.num} (${t.pax}P)`);
 
   document.getElementById('dialog-summary-content').innerHTML = `
     <div><strong>Kode Akses DRS:</strong> ${preset.code} — ${preset.groupName}</div>
-    <div><strong>Restoran &amp; Lokasi:</strong> Ristorante Arlecchino • Deck 6 (Roma) Starboard Block 1</div>
-    <div><strong>Daftar Meja Terpilih (${chosenList.length} Meja):</strong> ${tableNumsStr}</div>
-    <div><strong>Total Kapasitas Kursi:</strong> ${totalSeats} Kursi (Target Grup: ${preset.targetPax} Pax)</div>
+    <div><strong>Restoran &amp; Lokasi:</strong> Ristorante Arlecchino • Deck 6 "Roma" (2 Blok: Portside &amp; Starboardside)</div>
+    <div><strong>Meja Block 1 Portside (${b1List.length}):</strong> ${b1List.join(', ') || '-'}</div>
+    <div><strong>Meja Block 2 Starboard (${b2List.length}):</strong> ${b2List.join(', ') || '-'}</div>
+    <div><strong>Total Kapasitas Kursi:</strong> ${totalSeats} Kursi dari ${chosenList.length} Meja (Target Grup: ${preset.targetPax} Pax)</div>
     <div><strong>Status Sinkronisasi:</strong> Siap dikirim ke Onboard Maitre D' &amp; Costa DRS</div>
   `;
   bookingDialog.showModal();
@@ -1137,16 +1382,24 @@ function animate(now) {
     camAnim.update(now);
   }
 
-  // 2. Stage 1: Subtle ship & ocean animation
+  // 2. Stage 1: Costa Smeralda 4-Layer Cutaway Smooth Vertical Interpolation & Ocean Motion
   if (currentStage === 'ship') {
-    shipStageGroup.position.y = Math.sin(now * 0.0015) * 0.12;
+    shipStageGroup.position.y = Math.sin(now * 0.0014) * 0.08;
+
+    const lerpRate = Math.min(1.0, dt * 6.5);
+    for (const key of ['L1', 'L2', 'L3', 'L4']) {
+      const node = shipLayerNodes[key];
+      if (node) {
+        node.position.y += (shipLayerTargetY[key] - node.position.y) * lerpRate;
+      }
+    }
     controls.update();
   }
 
-  // 3. Stage 2: Interior Walk Mode movement or OrbitControls update
+  // 3. Stage 2: Interior Walk Mode movement (across Block 1, Corridor, and Block 2) or OrbitControls
   if (currentStage === 'interior') {
     if (currentCamMode === 'walk') {
-      const speed = 3.2 * dt;
+      const speed = 3.4 * dt;
       const forwardFlat = new THREE.Vector3(-Math.sin(walkYaw), 0, -Math.cos(walkYaw));
       const rightFlat = new THREE.Vector3(Math.cos(walkYaw), 0, -Math.sin(walkYaw));
 
@@ -1155,16 +1408,16 @@ function animate(now) {
       if (walkKeys.right) perspCamera.position.addScaledVector(rightFlat, speed);
       if (walkKeys.left) perspCamera.position.addScaledVector(rightFlat, -speed);
 
-      // Keep walk camera inside Block 1 & Corridor bounds
-      perspCamera.position.x = Math.max(-1.2, Math.min(10.1, perspCamera.position.x));
-      perspCamera.position.z = Math.max(-8.55, Math.min(-0.55, perspCamera.position.z));
+      // Keep walk camera inside the 2-Block Arlecchino bounds (X: -1.85..10.1, Z: -17.0..-0.55)
+      perspCamera.position.x = Math.max(-1.85, Math.min(10.1, perspCamera.position.x));
+      perspCamera.position.z = Math.max(-17.0, Math.min(-0.55, perspCamera.position.z));
       perspCamera.position.y = 1.62;
       syncWalkCameraLook();
     } else {
       controls.update();
     }
 
-    // 4. Smoothly animate Glassmorphism Pre-Selection & Selection Pads on the 10 tables
+    // 4. Smoothly animate Glassmorphism Pre-Selection & Selection Pads on all 24 tables
     for (const [num, entry] of tableRegistry) {
       if (!entry.glassPad) continue;
       const isHov = hoveredTableNum === num;
@@ -1190,7 +1443,6 @@ function animate(now) {
         targetOp = isHov ? 0.62 : 0.46;
         targetBorderOp = 0.95;
       } else if (isHov) {
-        // Pre-Selection Glassmorphism Glow!
         mat.color.setHex(0x38bdf8);
         mat.emissive.setHex(0x0ea5e9);
         bMat.color.setHex(0xbae6fd);
