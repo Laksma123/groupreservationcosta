@@ -644,13 +644,13 @@ def build_table_assembly(table_id, center_xy, length_x, width_y, yaw_rad, chair_
 # ARCHITECTURAL STRUCTURE: FLOOR, WINDOWS, PILLARS, X-RAILING, COFFERED CEILING
 # ==============================================================================
 def build_architecture(mats, arch_col):
-    # Pintu Masuk Kedua widened 2x (to 2.50m: X = -1.35m .. 1.15m), shifting the forward wall, sofa & waiter station back to X = -1.70m..-2.35m
-    FWD_WALL_X = -1.70
-    EXT_LEN_X = ROOM_LEN_X - FWD_WALL_X  # 12.10m
-    EXT_MID_X = (FWD_WALL_X + ROOM_LEN_X) * 0.5  # 4.35m
+    # Pintu Masuk Kedua width set to half of 2.50m (= 1.25m: X = -0.10m .. 1.15m), advancing the forward wall, sofa & waiter station into the room
+    FWD_WALL_X = -0.45
+    EXT_LEN_X = ROOM_LEN_X - FWD_WALL_X  # 10.85m
+    EXT_MID_X = (FWD_WALL_X + ROOM_LEN_X) * 0.5  # 4.975m
 
     # 1. Floors
-    # Main Dining Room Carpet Floor (X: -1.70..10.4, Y: 0..7.58)
+    # Main Dining Room Carpet Floor (X: -0.45..10.4, Y: 0..7.58)
     add_box(
         "Floor_Dining_Carpet",
         (EXT_LEN_X, ROOM_WID_Y, 0.04),
@@ -659,10 +659,10 @@ def build_architecture(mats, arch_col):
         arch_col,
         uv_metric=0.58,
     )
-    # Corridor & Rotunda Geometric Black-and-White Tile Floor (X: -2.65..10.5, Y: 7.58..9.73)
+    # Corridor & Rotunda Geometric Black-and-White Tile Floor (X: -1.40..10.5, Y: 7.58..9.73)
     corr_y_min = ROOM_WID_Y          # 7.58m
     corr_y_max = ROOM_WID_Y + 2.15   # 9.73m (stops cleanly inside the right corridor wall)
-    corr_x_min = -2.65
+    corr_x_min = -1.40
     corr_x_max = ROOM_LEN_X + 0.10
     corr_floor_obj = add_box(
         "Floor_Corridor_Tile",
@@ -743,25 +743,25 @@ def build_architecture(mats, arch_col):
         for side_x in (wx0 + 0.16, wx1 - 0.16):
             add_box(f"RomanBlind_VBand_{w_idx}_{side_x:.1f}", (0.038, 0.075, 0.46), (side_x, 0.03, 2.29), mats["wall_red"], arch_col)
 
-    # 3. Waiter Station, Sofa Wall & 2-Step Recessed Wall at 2nd Entrance (shifted back -1.25m so Pintu Masuk Kedua is 2x wider = 2.50m!)
+    # 3. Waiter Station, Sofa Wall & 2-Step Recessed Wall at 2nd Entrance (advanced +1.25m so Pintu Masuk Kedua is half of 2.50m = 1.25m!)
     # Looking from inside the room toward the Waiter Station wall:
-    # - Pintu Masuk Kedua: X = -1.35m .. 1.15m (width 2.50m = 2x previous 1.25m width!)
-    # - LEFT corner (Y = 0.00..2.25m, anchored at Window corner): 9 Decorative Plates + Red Banquette Sofa (wall face at X = -1.70m)
+    # - Pintu Masuk Kedua: X = -0.10m .. 1.15m (width 1.25m = exact half of 2.50m!)
+    # - LEFT corner (Y = 0.00..2.25m, anchored at Window corner): 9 Decorative Plates + Red Banquette Sofa (wall face at X = -0.45m)
     # - RIGHT corner from Pintu Masuk Kedua (Y = 7.58m going inward in -Y):
-    #     1) Wall Segment 1 (sejajar pintu masuk kedua, length 1.50m: Y = 6.08..7.58m) at X = -1.35m (with red wainscoting & table chart)
-    #     2) Lekukan 1 + Wall Segment 2 (steps inward -0.35m to X = -1.70m, length 0.75m: Y = 5.33..6.08m, with white service door)
-    #     3) Lekukan 2 + Waiter Station Niche (steps inward -0.65m = exact station width to X = -2.35m, remaining length = 3.08m: Y = 2.25..5.33m)
-    #        so the Waiter Station front (X = -1.70m) sits completely flush inside the recessed niche!
-    SOFA_WALL_X = -1.70
-    SEG1_WALL_X = -1.35
-    SEG2_WALL_X = -1.70
-    STATION_BACK_X = -2.35  # Recessed by exact station depth (0.65m) behind SEG2_WALL_X (-1.70m)
+    #     1) Wall Segment 1 (sejajar pintu masuk kedua, length 1.50m: Y = 6.08..7.58m) at X = -0.10m (with red wainscoting & table chart)
+    #     2) Lekukan 1 + Wall Segment 2 (steps inward -0.35m to X = -0.45m, length 0.75m: Y = 5.33..6.08m, with white service door)
+    #     3) Lekukan 2 + Waiter Station Niche (steps inward -0.65m = exact station width to X = -1.10m, remaining length = 3.08m: Y = 2.25..5.33m)
+    #        so the Waiter Station front (X = -0.45m) sits completely flush inside the recessed niche!
+    SOFA_WALL_X = -0.45
+    SEG1_WALL_X = -0.10
+    SEG2_WALL_X = -0.45
+    STATION_BACK_X = -1.10  # Recessed by exact station depth (0.65m) behind SEG2_WALL_X (-0.45m)
 
-    # Extra carpet strip covering the recessed Waiter Station floor & entrance alcove (X: -2.40..-1.35, Y: 0..7.58)
+    # Extra carpet strip covering the recessed Waiter Station floor & entrance alcove (X: -1.15..-0.10, Y: 0..7.58)
     add_box(
         "Floor_Dining_Carpet_Alcove",
         (1.10, ROOM_WID_Y, 0.04),
-        (-1.90, ROOM_WID_Y * 0.5, -0.02),
+        (-0.65, ROOM_WID_Y * 0.5, -0.02),
         mats["carpet"],
         arch_col,
         uv_metric=0.58,
@@ -1064,7 +1064,7 @@ def build_architecture(mats, arch_col):
         arch_col,
     )
     # Longitudinal & Transverse Coffered Ceiling Beams (aligned with RoofSupport_403_405 at X=3.475 and Entrance_Sq at X=10.15)
-    beam_xs = [-1.50, 1.15, 3.475, 6.48, 10.15]
+    beam_xs = [-0.45, 1.15, 3.475, 6.48, 10.15]
     beam_ys = [0.25, 2.95, ROOM_WID_Y - 1.65, ROOM_WID_Y]
     for bx in beam_xs:
         # White stepped beam casing
@@ -1116,13 +1116,13 @@ def populate_block1_tables(mats, furn_col):
     chair_ivory = create_chair_template("Template_Chair_Ivory", mats["leather_ivory"], mats["chair_leg"], furn_col)
     chair_maroon = create_chair_template("Template_Chair_Maroon", mats["velvet_maroon"], mats["chair_leg"], furn_col)
 
-    # 1. ROW A: WINDOW SIDE (Ivory Chairs - Sofa Booth 301 moves back with Sofa Wall to X = -0.57m; 303, 305, 307 span Y=0.30..2.40m)
-    # Table 301 (Window Booth): Attached to Red Banquette Sofa at X = -1.70m (4-pax booth, 2 ivory chairs facing sofa)
-    build_table_assembly("301_Window_Booth", (-0.57, 1.15), 1.45, 0.88, math.pi * 0.5, chair_ivory, 4, mats, furn_col, skip_side_b=True)
-    # Table 303: Evenly spaced at X = 2.62m (Y = 1.35m -> tabletop ends at Y = 2.40m)
-    build_table_assembly("303_Window_Bay1", (2.62, 1.35), 2.10, 0.90, math.pi * 0.5, chair_ivory, 6, mats, furn_col)
-    # Table 305: Evenly spaced at X = 5.81m (Y = 1.35m -> tabletop ends at Y = 2.40m)
-    build_table_assembly("305_Window_Bay2", (5.81, 1.35), 2.10, 0.90, math.pi * 0.5, chair_ivory, 6, mats, furn_col)
+    # 1. ROW A: WINDOW SIDE (Ivory Chairs - Sofa Booth 301 advances with Sofa Wall to X = 0.68m; 303, 305, 307 span Y=0.30..2.40m)
+    # Table 301 (Window Booth): Attached to Red Banquette Sofa at X = -0.45m (4-pax booth, 2 ivory chairs facing sofa)
+    build_table_assembly("301_Window_Booth", (0.68, 1.15), 1.45, 0.88, math.pi * 0.5, chair_ivory, 4, mats, furn_col, skip_side_b=True)
+    # Table 303: Evenly spaced at X = 3.45m (Y = 1.35m -> tabletop ends at Y = 2.40m)
+    build_table_assembly("303_Window_Bay1", (3.45, 1.35), 2.10, 0.90, math.pi * 0.5, chair_ivory, 6, mats, furn_col)
+    # Table 305: Evenly spaced at X = 6.22m (Y = 1.35m -> tabletop ends at Y = 2.40m)
+    build_table_assembly("305_Window_Bay2", (6.22, 1.35), 2.10, 0.90, math.pi * 0.5, chair_ivory, 6, mats, furn_col)
     # Table 307: By Window 3 at X = 9.00m (Y = 1.35m -> tabletop ends at Y = 2.40m)
     build_table_assembly("307_Window_Bay3", (9.00, 1.35), 2.10, 0.90, math.pi * 0.5, chair_ivory, 6, mats, furn_col)
 
