@@ -1,0 +1,11 @@
+# Blender backup files
+*.blend1
+*.blend2
+
+# macOS system files
+.DS_Store
+
+# Temporary high-res PDF debug crops in scratch (keep scripts and textures!)
+scratch/ship_map/
+scratch/*.png
+!scratch/textures/*.png
