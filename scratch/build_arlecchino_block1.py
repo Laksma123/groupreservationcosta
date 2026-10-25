@@ -14,10 +14,10 @@ OUT_DIR = "/Users/dianjulie/Documents/Map Project"
 RENDER_DIR = "/Users/dianjulie/Documents/Map Project/scratch/renders"
 os.makedirs(RENDER_DIR, exist_ok=True)
 
-# Room Physical Dimensions (widened to 7.50m so all 3 table rows have a generous ~1.0m clear gap between rows)
+# Room Physical Dimensions (widened to 7.58m so Row C tables at Y=6.58m are 100% flush with Pillar inner face at Y=7.28m)
 ROOM_LEN_X = 10.40   # X: 0.0 (Aft/Rotunda wall) to 10.40m (Forward/Service wall)
-ROOM_WID_Y = 7.50    # Y: 0.0 (Outer Hull Window wall) to 7.50m (Pillar/Railing line)
-CORR_WID_Y = 2.00    # Y: 7.50m to 9.50m (Black & White Geometric Tiled Corridor)
+ROOM_WID_Y = 7.58    # Y: 0.0 (Outer Hull Window wall) to 7.58m (Pillar/Railing line)
+CORR_WID_Y = 2.00    # Y: 7.58m to 9.58m (Black & White Geometric Tiled Corridor)
 CEIL_H = 2.78        # Z: Main ceiling soffit height
 COFFER_H = 2.96      # Z: Recessed coffer height
 
@@ -644,13 +644,13 @@ def build_table_assembly(table_id, center_xy, length_x, width_y, yaw_rad, chair_
 # ARCHITECTURAL STRUCTURE: FLOOR, WINDOWS, PILLARS, X-RAILING, COFFERED CEILING
 # ==============================================================================
 def build_architecture(mats, arch_col):
-    # Extend the Waiter Station / Sofa wall back by 0.85m (X = -0.85m) so Table 403 & Waiter Station have generous clearance
-    FWD_WALL_X = -0.85
-    EXT_LEN_X = ROOM_LEN_X - FWD_WALL_X  # 11.25m
-    EXT_MID_X = (FWD_WALL_X + ROOM_LEN_X) * 0.5  # 4.775m
+    # Pintu Masuk Kedua widened 2x (to 2.50m: X = -1.35m .. 1.15m), shifting the forward wall, sofa & waiter station back to X = -1.70m..-2.35m
+    FWD_WALL_X = -1.70
+    EXT_LEN_X = ROOM_LEN_X - FWD_WALL_X  # 12.10m
+    EXT_MID_X = (FWD_WALL_X + ROOM_LEN_X) * 0.5  # 4.35m
 
     # 1. Floors
-    # Main Dining Room Carpet Floor (X: -0.85..10.4, Y: 0..6.8)
+    # Main Dining Room Carpet Floor (X: -1.70..10.4, Y: 0..7.58)
     add_box(
         "Floor_Dining_Carpet",
         (EXT_LEN_X, ROOM_WID_Y, 0.04),
@@ -659,13 +659,15 @@ def build_architecture(mats, arch_col):
         arch_col,
         uv_metric=0.58,
     )
-    # Corridor & Rotunda Geometric Black-and-White Tile Floor (X: -1.8..10.5, Y: 7.50..9.65)
-    corr_y_min = ROOM_WID_Y          # 7.50m
-    corr_y_max = ROOM_WID_Y + 2.15   # 9.65m (stops cleanly inside the right corridor wall)
+    # Corridor & Rotunda Geometric Black-and-White Tile Floor (X: -2.65..10.5, Y: 7.58..9.73)
+    corr_y_min = ROOM_WID_Y          # 7.58m
+    corr_y_max = ROOM_WID_Y + 2.15   # 9.73m (stops cleanly inside the right corridor wall)
+    corr_x_min = -2.65
+    corr_x_max = ROOM_LEN_X + 0.10
     corr_floor_obj = add_box(
         "Floor_Corridor_Tile",
-        (ROOM_LEN_X + 2.3, corr_y_max - corr_y_min, 0.04),
-        ((ROOM_LEN_X - 1.7) * 0.5, (corr_y_min + corr_y_max) * 0.5, -0.02),
+        (corr_x_max - corr_x_min, corr_y_max - corr_y_min, 0.04),
+        ((corr_x_min + corr_x_max) * 0.5, (corr_y_min + corr_y_max) * 0.5, -0.02),
         mats["corridor_tile"],
         arch_col,
     )
@@ -741,24 +743,25 @@ def build_architecture(mats, arch_col):
         for side_x in (wx0 + 0.16, wx1 - 0.16):
             add_box(f"RomanBlind_VBand_{w_idx}_{side_x:.1f}", (0.038, 0.075, 0.46), (side_x, 0.03, 2.29), mats["wall_red"], arch_col)
 
-    # 3. Waiter Station, Sofa Wall & 2-Step Recessed Wall at 2nd Entrance (matched to 14.14.06.jpeg & 14.14.05.jpeg)
+    # 3. Waiter Station, Sofa Wall & 2-Step Recessed Wall at 2nd Entrance (shifted back -1.25m so Pintu Masuk Kedua is 2x wider = 2.50m!)
     # Looking from inside the room toward the Waiter Station wall:
-    # - LEFT corner (Y = 0.00..2.25m, anchored at Window corner): 9 Decorative Plates + Red Banquette Sofa (wall face at X = -0.45m)
-    # - RIGHT corner from Pintu Masuk Kedua (Y = 7.50m going inward in -Y):
-    #     1) Wall Segment 1 (sejajar pintu masuk kedua, length 1.50m: Y = 6.00..7.50m) at X = -0.10m (with red wainscoting & table chart)
-    #     2) Lekukan 1 + Wall Segment 2 (steps inward -0.35m to X = -0.45m, length 0.75m: Y = 5.25..6.00m, with white service door)
-    #     3) Lekukan 2 + Waiter Station Niche (steps inward -0.65m = exact station width to X = -1.10m, remaining length = 3.00m: Y = 2.25..5.25m)
-    #        so the Waiter Station front (X = -0.45m) sits completely flush inside the recessed niche!
-    SOFA_WALL_X = -0.45
-    SEG1_WALL_X = -0.10
-    SEG2_WALL_X = -0.45
-    STATION_BACK_X = -1.10  # Recessed by exact station depth (0.65m) behind SEG2_WALL_X (-0.45m)
+    # - Pintu Masuk Kedua: X = -1.35m .. 1.15m (width 2.50m = 2x previous 1.25m width!)
+    # - LEFT corner (Y = 0.00..2.25m, anchored at Window corner): 9 Decorative Plates + Red Banquette Sofa (wall face at X = -1.70m)
+    # - RIGHT corner from Pintu Masuk Kedua (Y = 7.58m going inward in -Y):
+    #     1) Wall Segment 1 (sejajar pintu masuk kedua, length 1.50m: Y = 6.08..7.58m) at X = -1.35m (with red wainscoting & table chart)
+    #     2) Lekukan 1 + Wall Segment 2 (steps inward -0.35m to X = -1.70m, length 0.75m: Y = 5.33..6.08m, with white service door)
+    #     3) Lekukan 2 + Waiter Station Niche (steps inward -0.65m = exact station width to X = -2.35m, remaining length = 3.08m: Y = 2.25..5.33m)
+    #        so the Waiter Station front (X = -1.70m) sits completely flush inside the recessed niche!
+    SOFA_WALL_X = -1.70
+    SEG1_WALL_X = -1.35
+    SEG2_WALL_X = -1.70
+    STATION_BACK_X = -2.35  # Recessed by exact station depth (0.65m) behind SEG2_WALL_X (-1.70m)
 
-    # Extra carpet strip covering the recessed Waiter Station floor & entrance alcove (X: -1.15..-0.45, Y: 0..7.50)
+    # Extra carpet strip covering the recessed Waiter Station floor & entrance alcove (X: -2.40..-1.35, Y: 0..7.58)
     add_box(
         "Floor_Dining_Carpet_Alcove",
-        (0.80, ROOM_WID_Y, 0.04),
-        (-0.80, ROOM_WID_Y * 0.5, -0.02),
+        (1.10, ROOM_WID_Y, 0.04),
+        (-1.90, ROOM_WID_Y * 0.5, -0.02),
         mats["carpet"],
         arch_col,
         uv_metric=0.58,
@@ -781,14 +784,14 @@ def build_architecture(mats, arch_col):
             col=arch_col,
             rot=(0, math.pi * 0.5, 0),
         )
-    # Red Banquette Sofa Booth anchored at Window Corner (Y = 0.12..2.18m, X = -0.45..+0.19m)
+    # Red Banquette Sofa Booth anchored at Window Corner (Y = 0.12..2.18m, X = -1.70..-1.06m)
     add_box("Fwd_Banquette_Base", (0.62, 2.06, 0.44), (SOFA_WALL_X + 0.31, 1.15, 0.22), mats["wood_walnut"], arch_col, bevel=0.01)
     add_box("Fwd_Banquette_Seat", (0.64, 2.06, 0.10), (SOFA_WALL_X + 0.32, 1.15, 0.46), mats["velvet_maroon"], arch_col, bevel=0.025)
     add_box("Fwd_Banquette_Back", (0.18, 2.06, 0.58), (SOFA_WALL_X + 0.09, 1.15, 0.78), mats["velvet_maroon"], arch_col, bevel=0.025)
 
-    # --- 2-STEP RECESSED WALL FROM PINTU MASUK KEDUA (Y = 7.50m -> 5.25m) ---
-    # Step 1: Wall Segment 1 aligned with Pintu Masuk Kedua (Y = 6.00..7.50m, length = 1.50m, front face at X = -0.10m)
-    seg1_y0, seg1_y1 = 6.00, ROOM_WID_Y  # 6.00..7.50m (1.50m)
+    # --- 2-STEP RECESSED WALL FROM PINTU MASUK KEDUA (Y = 7.58m -> 5.33m) ---
+    # Step 1: Wall Segment 1 aligned with Pintu Masuk Kedua (Y = 6.08..7.58m, length = 1.50m, front face at X = -1.35m)
+    seg1_y0, seg1_y1 = ROOM_WID_Y - 1.50, ROOM_WID_Y  # 6.08..7.58m (1.50m)
     seg1_len = seg1_y1 - seg1_y0
     seg1_cy = (seg1_y0 + seg1_y1) * 0.5
     add_box("FwdStep1_Wall_White", (0.38, seg1_len, CEIL_H), (SEG1_WALL_X - 0.19, seg1_cy, CEIL_H * 0.5), mats["wall_white"], arch_col, bevel=0.005)
@@ -797,17 +800,17 @@ def build_architecture(mats, arch_col):
     add_box("FwdStep1_Wall_ChairRail", (0.045, seg1_len + 0.02, 0.065), (SEG1_WALL_X + 0.012, seg1_cy, 0.88), mats["wall_white"], arch_col, bevel=0.006)
     add_box("FwdStep1_Wall_Crown", (0.05, seg1_len + 0.02, 0.08), (SEG1_WALL_X + 0.015, seg1_cy, CEIL_H - 0.04), mats["wall_white"], arch_col, bevel=0.006)
     # Costa Smeralda Table Layout Chart plaque on Wall Segment 1 (seen in 14.14.06.jpeg)
-    add_box("FwdStep1_ChartPlaque", (0.015, 0.42, 0.68), (SEG1_WALL_X + 0.01, 6.75, 1.68), mats["art_2"], arch_col)
+    add_box("FwdStep1_ChartPlaque", (0.015, 0.42, 0.68), (SEG1_WALL_X + 0.01, seg1_cy, 1.68), mats["art_2"], arch_col)
 
-    # Lekukan 1 Return (at Y = 6.00m, stepping inward from X = -0.10m to X = -0.45m)
+    # Lekukan 1 Return (at Y = 6.08m, stepping inward from X = -1.35m to X = -1.70m)
     ret1_dx = SEG1_WALL_X - SEG2_WALL_X  # 0.35m
     ret1_cx = (SEG1_WALL_X + SEG2_WALL_X) * 0.5
     add_box("FwdStep1_Return_Red", (ret1_dx - 0.04, 0.02, 0.68), (ret1_cx, seg1_y0 - 0.005, 0.50), mats["wall_red"], arch_col)
     add_box("FwdStep1_Return_Plinth", (ret1_dx, 0.04, 0.16), (ret1_cx, seg1_y0 - 0.01, 0.08), mats["wall_white"], arch_col)
     add_box("FwdStep1_Return_ChairRail", (ret1_dx + 0.02, 0.045, 0.065), (ret1_cx, seg1_y0 - 0.012, 0.88), mats["wall_white"], arch_col)
 
-    # Step 2: Wall Segment 2 (recessed to X = -0.45m, Y = 5.25..6.00m, width = 0.75m, with white service door as in 14.14.06.jpeg)
-    seg2_y0, seg2_y1 = 5.25, 6.00
+    # Step 2: Wall Segment 2 (recessed to X = -1.70m, Y = 5.33..6.08m, width = 0.75m, with white service door as in 14.14.06.jpeg)
+    seg2_y0, seg2_y1 = seg1_y0 - 0.75, seg1_y0
     seg2_len = seg2_y1 - seg2_y0
     seg2_cy = (seg2_y0 + seg2_y1) * 0.5
     add_box("FwdStep2_Wall_White", (0.68, seg2_len, CEIL_H), (SEG2_WALL_X - 0.34, seg2_cy, CEIL_H * 0.5), mats["wall_white"], arch_col, bevel=0.005)
@@ -818,17 +821,17 @@ def build_architecture(mats, arch_col):
         add_box(f"FwdStep2_JambRed_{jamb_y:.2f}", (0.02, 0.06, 0.68), (SEG2_WALL_X + 0.005, jamb_y, 0.50), mats["wall_red"], arch_col)
     add_box("FwdStep2_Wall_ChairRail", (0.04, seg2_len, 0.055), (SEG2_WALL_X + 0.01, seg2_cy, 0.88), mats["wall_white"], arch_col)
 
-    # Step 3 (Lekukan 2): Double Waiter Service Sideboard Station recessed by its exact depth (0.65m) into X = -1.10..-0.45m
-    # Spanning the remaining space Y = 2.25m to 5.25m (total length = 3.00m)
+    # Step 3 (Lekukan 2): Double Waiter Service Sideboard Station recessed by its exact depth (0.65m) into X = -2.35..-1.70m
+    # Spanning the remaining space Y = 2.25m to seg2_y0 (5.33m, total length = 3.08m)
     sb_y_start = 2.25
-    sb_y_end = 5.25
+    sb_y_end = seg2_y0
     part_thick = 0.035
-    avail_sec_sum = (sb_y_end - sb_y_start) - 4 * part_thick  # 2.86m divided in 1:3:1:3 ratio
-    w_short = round(avail_sec_sum * (0.5 / 4.0), 4)          # 0.3575m
-    w_long = round(avail_sec_sum * (1.5 / 4.0), 4)           # 1.0725m
+    avail_sec_sum = (sb_y_end - sb_y_start) - 4 * part_thick  # 2.94m divided in 1:3:1:3 ratio
+    w_short = round(avail_sec_sum * (0.5 / 4.0), 4)
+    w_long = round(avail_sec_sum * (1.5 / 4.0), 4)
     section_widths = [w_short, w_long, w_short, w_long]
-    total_sb_len = sum(section_widths) + 4 * part_thick      # 3.00m exact
-    sb_y_center = sb_y_start + total_sb_len * 0.5            # 3.75m
+    total_sb_len = sum(section_widths) + 4 * part_thick
+    sb_y_center = sb_y_start + total_sb_len * 0.5
 
     # Backing wall & side return walls of the recessed Waiter Station alcove (X = -1.10m)
     add_box("FwdWall_ServiceBack", (0.18, total_sb_len + 0.10, CEIL_H), (STATION_BACK_X - 0.09, sb_y_center, CEIL_H * 0.5), mats["wall_white"], arch_col)
@@ -937,21 +940,20 @@ def build_architecture(mats, arch_col):
             rot=(0, math.pi * 0.5, 0),
         )
 
-    # 5. Pillars & X-Cross Balustrade Railings (shifted to ROOM_WID_Y = 7.50m):
-    # - 3 Wide Corridor Pillars (width 1.65m = ~3x standard pillar) along Y = 7.50m
-    # - 1 Square Entrance Pillar (Entrance_Sq at X = 10.15m, Y = 5.85m) aligned (sejajar) with tembok pintu masuk pertama (X = 10.15..10.40m)
-    #   and Lubang Pintu Masuk Pertama (Y = 4.25..5.56m at X = 10.15m)
-    # - 1 Free-Standing Square Roof-Support Pillar (RoofSupport_403_405 at X = 4.35m, Y = 5.85m) between Table 403 and Table 405 (seen in 14.14.05.jpeg)
+    # 5. Pillars & X-Cross Balustrade Railings (shifted to ROOM_WID_Y = 7.58m):
+    # - 3 Wide Corridor Pillars (width 1.65m = ~3x standard pillar) along Y = 7.58m
+    # - 1 Square Entrance Pillar (Entrance_Sq at X = 10.15m, Y = 5.93m) aligned (sejajar) with tembok pintu masuk pertama (X = 10.15..10.40m)
+    # - 1 Free-Standing Square Roof-Support Pillar (RoofSupport_403_405 at X = 3.475m, Y = 5.93m) centered between Table 403 (X=1.975) and Table 405 (X=4.975)
     # - 2 Entrance Openings:
-    #     * Lubang Pintu Masuk #1 (Main Entrance): Y = 4.25m .. 5.56m at X = 10.15m (width 1.31m, between tembok pintu masuk pertama & Pillar_Entrance)
-    #     * Lubang Pintu Masuk #2 (Waiter Station Entrance): X = -0.10m .. 1.15m at Y = 7.50m (width 1.25m, leading to 2-step recessed wall & Waiter Station)
+    #     * Lubang Pintu Masuk #1 (Main Entrance): Y = 4.25m .. 5.64m at X = 10.15m (width 1.39m, untouched)
+    #     * Lubang Pintu Masuk #2 (Waiter Station Entrance): X = -1.35m .. 1.15m at Y = 7.58m (width 2.50m = 2x wider!)
     pillar_specs = [
         # (name_tag, px, py, pw_x, pw_y, has_corr_art, has_sconce, art_mat)
         ("WideCorr_3", 1.975, ROOM_WID_Y, 1.65, 0.58, True, True, mats["art_1"]),
         ("WideCorr_2", 4.975, ROOM_WID_Y, 1.65, 0.58, True, True, mats["art_3"]),
         ("WideCorr_1", 7.975, ROOM_WID_Y, 1.65, 0.58, True, True, mats["art_1"]),
         ("Entrance_Sq", 10.15, ROOM_WID_Y - 1.65, 0.58, 0.58, False, False, None),
-        ("RoofSupport_403_405", 4.35, ROOM_WID_Y - 1.65, 0.54, 0.54, False, False, None),
+        ("RoofSupport_403_405", 3.475, ROOM_WID_Y - 1.65, 0.54, 0.54, False, False, None),
     ]
     for p_idx, (p_tag, px, py, pw_x, pw_y, has_corr_art, has_sconce, art_m) in enumerate(pillar_specs):
         # White base plinth
@@ -1056,13 +1058,13 @@ def build_architecture(mats, arch_col):
     # Base recessed ceiling slab at Z = COFFER_H (2.96m)
     add_box(
         "Ceiling_Recessed_Slab",
-        (ROOM_LEN_X + 2.6, ROOM_WID_Y + CORR_WID_Y + 0.8, 0.08),
-        ((ROOM_LEN_X - 1.0) * 0.5, (ROOM_WID_Y + CORR_WID_Y) * 0.5, COFFER_H + 0.04),
+        (EXT_LEN_X + 2.0, ROOM_WID_Y + CORR_WID_Y + 0.8, 0.08),
+        (EXT_MID_X, (ROOM_WID_Y + CORR_WID_Y) * 0.5, COFFER_H + 0.04),
         mats["ceiling_dark"],
         arch_col,
     )
-    # Longitudinal & Transverse Coffered Ceiling Beams (aligned with RoofSupport_403_405 and Entrance_Sq at Y = ROOM_WID_Y - 1.65)
-    beam_xs = [-0.45, 1.98, 4.35, 7.98, 10.15]
+    # Longitudinal & Transverse Coffered Ceiling Beams (aligned with RoofSupport_403_405 at X=3.475 and Entrance_Sq at X=10.15)
+    beam_xs = [-1.50, 1.15, 3.475, 6.48, 10.15]
     beam_ys = [0.25, 2.95, ROOM_WID_Y - 1.65, ROOM_WID_Y]
     for bx in beam_xs:
         # White stepped beam casing
@@ -1070,39 +1072,41 @@ def build_architecture(mats, arch_col):
         # Venetian red soffit inset strip on beam underside
         add_box(f"CeilBeam_X_Red_{bx:.1f}", (0.22, ROOM_WID_Y + 0.1, 0.012), (bx, ROOM_WID_Y * 0.5, CEIL_H - 0.008), mats["wall_red"], arch_col)
     for by in beam_ys:
-        add_box(f"CeilBeam_Y_White_{by:.1f}", (EXT_LEN_X + 0.2, 0.42, 0.174), (EXT_MID_X, by, CEIL_H + 0.093), mats["wall_white"], arch_col, bevel=0.006)
-        add_box(f"CeilBeam_Y_Red_{by:.1f}", (EXT_LEN_X + 0.1, 0.22, 0.012), (EXT_MID_X, by, CEIL_H - 0.004), mats["wall_red"], arch_col)
+        add_box(f"CeilBeam_Y_White_{by:.1f}", (EXT_LEN_X + 0.6, 0.42, 0.174), (EXT_MID_X - 0.2, by, CEIL_H + 0.093), mats["wall_white"], arch_col, bevel=0.006)
+        add_box(f"CeilBeam_Y_Red_{by:.1f}", (EXT_LEN_X + 0.5, 0.22, 0.012), (EXT_MID_X - 0.2, by, CEIL_H - 0.004), mats["wall_red"], arch_col)
 
     # Red Glowing Downlight Spots along the Ceiling Beams (signature Arlecchino detail in all photos!)
     for bx in beam_xs[:-1]:
         for by in [1.5, 4.35, 6.65]:
             add_cylinder(f"RedSpot_X_{bx:.1f}_{by:.1f}", 0.038, 0.010, (bx, by, CEIL_H - 0.016), mats["led_red"], arch_col)
     for by in beam_ys:
-        for bx in [0.7, 3.15, 6.15, 9.05]:
+        for bx in [-0.2, 2.3, 5.0, 8.3]:
             add_cylinder(f"RedSpot_Y_{bx:.1f}_{by:.1f}", 0.038, 0.010, (bx, by, CEIL_H - 0.012), mats["led_red"], arch_col)
 
-    # Corridor flat white ceiling (Y = 7.50..9.65m) + Warm Cove Downlights
+    # Corridor flat white ceiling (Y = 7.58..9.73m) + Warm Cove Downlights
     add_box(
         "Ceiling_Corridor_Flat",
-        (ROOM_LEN_X + 2.6, CORR_WID_Y + 0.4, 0.17),
-        ((ROOM_LEN_X - 1.0) * 0.5, ROOM_WID_Y + CORR_WID_Y * 0.5 + 0.15, CEIL_H + 0.095),
+        (corr_x_max - corr_x_min, CORR_WID_Y + 0.4, 0.17),
+        ((corr_x_min + corr_x_max) * 0.5, ROOM_WID_Y + CORR_WID_Y * 0.5 + 0.15, CEIL_H + 0.095),
         mats["wall_white"],
         arch_col,
     )
-    for cx_light in [0.5, 2.8, 5.2, 7.6, 9.8]:
+    for cx_light in [-1.2, 1.2, 3.6, 6.0, 8.4, 10.0]:
         add_cylinder(f"Corr_Downlight_{cx_light:.1f}", 0.05, 0.01, (cx_light, ROOM_WID_Y + 1.05, CEIL_H - 0.005), mats["led_warm"], arch_col)
 
-    # 8. Inboard Corridor Wall & Opposite Partition (shifted to Y = 9.65m)
+    # 8. Inboard Corridor Wall & Opposite Partition (shifted to Y = 9.73m & X = -2.65m)
     upper_corr_h = CEIL_H - 0.88
     upper_corr_z = 0.88 + upper_corr_h * 0.5
-    corr_wall_y = ROOM_WID_Y + 2.15  # 9.65m
-    add_box("Inboard_CorrWall_Upper", (ROOM_LEN_X + 2.3, 0.20, upper_corr_h), ((ROOM_LEN_X - 1.7) * 0.5, corr_wall_y, upper_corr_z), mats["wall_white"], arch_col)
-    add_box("Inboard_CorrWall_Red", (ROOM_LEN_X + 2.3, 0.22, 0.72), ((ROOM_LEN_X - 1.7) * 0.5, corr_wall_y - 0.02, 0.48), mats["wall_red"], arch_col)
-    add_box("Inboard_CorrWall_Plinth", (ROOM_LEN_X + 2.3, 0.24, 0.15), ((ROOM_LEN_X - 1.7) * 0.5, corr_wall_y - 0.03, 0.075), mats["wall_white"], arch_col)
-    add_box("Inboard_CorrWall_Rail", (ROOM_LEN_X + 2.3, 0.24, 0.06), ((ROOM_LEN_X - 1.7) * 0.5, corr_wall_y - 0.03, 0.88), mats["wall_white"], arch_col)
-    # Entrance Rotunda Back Wall at X = -1.8m (for views looking toward corridor entrance)
-    add_box("Rotunda_EndWall_Upper", (0.20, 4.20, upper_corr_h), (-1.80, ROOM_WID_Y + 0.10, upper_corr_z), mats["wall_white"], arch_col)
-    add_box("Rotunda_EndWall_Red", (0.22, 4.20, 0.72), (-1.78, ROOM_WID_Y + 0.10, 0.48), mats["wall_red"], arch_col)
+    corr_wall_y = ROOM_WID_Y + 2.15  # 9.73m
+    corr_wall_len = corr_x_max - corr_x_min
+    corr_wall_cx = (corr_x_min + corr_x_max) * 0.5
+    add_box("Inboard_CorrWall_Upper", (corr_wall_len, 0.20, upper_corr_h), (corr_wall_cx, corr_wall_y, upper_corr_z), mats["wall_white"], arch_col)
+    add_box("Inboard_CorrWall_Red", (corr_wall_len, 0.22, 0.72), (corr_wall_cx, corr_wall_y - 0.02, 0.48), mats["wall_red"], arch_col)
+    add_box("Inboard_CorrWall_Plinth", (corr_wall_len, 0.24, 0.15), (corr_wall_cx, corr_wall_y - 0.03, 0.075), mats["wall_white"], arch_col)
+    add_box("Inboard_CorrWall_Rail", (corr_wall_len, 0.24, 0.06), (corr_wall_cx, corr_wall_y - 0.03, 0.88), mats["wall_white"], arch_col)
+    # Entrance Rotunda Back Wall at X = -2.65m (for views looking toward corridor entrance)
+    add_box("Rotunda_EndWall_Upper", (0.20, 4.20, upper_corr_h), (corr_x_min, ROOM_WID_Y + 0.10, upper_corr_z), mats["wall_white"], arch_col)
+    add_box("Rotunda_EndWall_Red", (0.22, 4.20, 0.72), (corr_x_min + 0.02, ROOM_WID_Y + 0.10, 0.48), mats["wall_red"], arch_col)
 
 
 # ==============================================================================
@@ -1112,31 +1116,31 @@ def populate_block1_tables(mats, furn_col):
     chair_ivory = create_chair_template("Template_Chair_Ivory", mats["leather_ivory"], mats["chair_leg"], furn_col)
     chair_maroon = create_chair_template("Template_Chair_Maroon", mats["velvet_maroon"], mats["chair_leg"], furn_col)
 
-    # 1. ROW A: WINDOW SIDE (Ivory Chairs - Sofa Booth 301 stays anchored at Y=1.15m corner; 303, 305, 307 span Y=0.30..2.40m)
-    # Table 301 (Window Booth): Attached to Red Banquette Sofa at X = -0.45m (4-pax booth, 2 ivory chairs facing sofa)
-    build_table_assembly("301_Window_Booth", (0.68, 1.15), 1.45, 0.88, math.pi * 0.5, chair_ivory, 4, mats, furn_col, skip_side_b=True)
-    # Table 303: Evenly spaced at X = 3.45m (Y = 1.35m -> tabletop ends at Y = 2.40m)
-    build_table_assembly("303_Window_Bay1", (3.45, 1.35), 2.10, 0.90, math.pi * 0.5, chair_ivory, 6, mats, furn_col)
-    # Table 305: Evenly spaced at X = 6.22m (Y = 1.35m -> tabletop ends at Y = 2.40m)
-    build_table_assembly("305_Window_Bay2", (6.22, 1.35), 2.10, 0.90, math.pi * 0.5, chair_ivory, 6, mats, furn_col)
+    # 1. ROW A: WINDOW SIDE (Ivory Chairs - Sofa Booth 301 moves back with Sofa Wall to X = -0.57m; 303, 305, 307 span Y=0.30..2.40m)
+    # Table 301 (Window Booth): Attached to Red Banquette Sofa at X = -1.70m (4-pax booth, 2 ivory chairs facing sofa)
+    build_table_assembly("301_Window_Booth", (-0.57, 1.15), 1.45, 0.88, math.pi * 0.5, chair_ivory, 4, mats, furn_col, skip_side_b=True)
+    # Table 303: Evenly spaced at X = 2.62m (Y = 1.35m -> tabletop ends at Y = 2.40m)
+    build_table_assembly("303_Window_Bay1", (2.62, 1.35), 2.10, 0.90, math.pi * 0.5, chair_ivory, 6, mats, furn_col)
+    # Table 305: Evenly spaced at X = 5.81m (Y = 1.35m -> tabletop ends at Y = 2.40m)
+    build_table_assembly("305_Window_Bay2", (5.81, 1.35), 2.10, 0.90, math.pi * 0.5, chair_ivory, 6, mats, furn_col)
     # Table 307: By Window 3 at X = 9.00m (Y = 1.35m -> tabletop ends at Y = 2.40m)
     build_table_assembly("307_Window_Bay3", (9.00, 1.35), 2.10, 0.90, math.pi * 0.5, chair_ivory, 6, mats, furn_col)
 
-    # 2. ROW B: MIDDLE / CENTER ROW (Maroon Velvet Chairs - centered at Y = 4.14m -> 1.00m clear gap to Row A & 1.00m clear gap to Row C!)
-    # Table 399: Near Waiter Station end (X = 3.50m, Y = 4.14m, 6-pax Maroon Velvet Chairs)
-    build_table_assembly("399_Center_Fwd", (3.50, 4.14), 2.05, 0.90, 0.0, chair_maroon, 6, mats, furn_col)
-    # Table 397: Middle Center (X = 6.15m, Y = 4.14m, 6-pax Maroon Velvet Chairs)
-    build_table_assembly("397_Center_Mid", (6.15, 4.14), 2.05, 0.90, 0.0, chair_maroon, 6, mats, furn_col)
-    # Table 393: Near Wall end (X = 8.80m, Y = 4.14m, 6-pax Maroon Velvet Chairs)
-    build_table_assembly("393_Center_Aft", (8.80, 4.14), 2.05, 0.90, 0.0, chair_maroon, 6, mats, furn_col)
+    # 2. ROW B: MIDDLE / CENTER ROW (Maroon Velvet Chairs - shifted toward Waiter Station so gap to X=10.40m wall is ~3x larger = 1.45m!)
+    # Table 399: Near Waiter Station end (X = 2.30m, Y = 4.14m, 6-pax Maroon Velvet Chairs)
+    build_table_assembly("399_Center_Fwd", (2.30, 4.14), 2.05, 0.90, 0.0, chair_maroon, 6, mats, furn_col)
+    # Table 397: Middle Center (X = 5.00m, Y = 4.14m, 6-pax Maroon Velvet Chairs)
+    build_table_assembly("397_Center_Mid", (5.00, 4.14), 2.05, 0.90, 0.0, chair_maroon, 6, mats, furn_col)
+    # Table 393: ~1.45m clear gap (3x previous gap) from X=10.17m wall face (X = 7.70m, Y = 4.14m, 6-pax Maroon Velvet Chairs)
+    build_table_assembly("393_Center_Aft", (7.70, 4.14), 2.05, 0.90, 0.0, chair_maroon, 6, mats, furn_col)
 
-    # 3. ROW C: CORRIDOR PILLAR & X-RAILING ROW (Ivory Chairs - centered at Y = 6.58m -> tabletop spans Y=5.88..7.28m, 1.00m clear gap from Row B!)
-    # Table 403 (R1): At X = 2.75m, Y = 6.58m (left of RoofSupport_403_405)
-    build_table_assembly("403_Railing_FwdBay", (2.75, 6.58), 1.40, 0.88, math.pi * 0.5, chair_ivory, 4, mats, furn_col)
-    # Table 405 (R2): At X = 5.95m, Y = 6.58m (right of RoofSupport_403_405)
-    build_table_assembly("405_Railing_MidBay", (5.95, 6.58), 1.40, 0.88, math.pi * 0.5, chair_ivory, 4, mats, furn_col)
-    # Table 407 (R3): At X = 9.15m, Y = 6.58m (tucked inside the 2-"X" L-shaped corner railing)
-    build_table_assembly("407_Railing_AftBay", (9.15, 6.58), 1.40, 0.88, math.pi * 0.5, chair_ivory, 4, mats, furn_col)
+    # 3. ROW C: CORRIDOR PILLAR & X-RAILING ROW (Ivory Chairs - 1 pillar 1 table centered at X=1.975, 4.975, 7.975, flush at Y=6.58m!)
+    # Table 403 (R1): Centered on WideCorr_3 (X = 1.975m, Y = 6.58m -> tabletop +Y edge at 7.280m, 100% flush with pillar face at 7.2825m!)
+    build_table_assembly("403_Railing_FwdBay", (1.975, 6.58), 1.40, 0.88, math.pi * 0.5, chair_ivory, 4, mats, furn_col)
+    # Table 405 (R2): Centered on WideCorr_2 (X = 4.975m, Y = 6.58m -> 100% flush with pillar face!)
+    build_table_assembly("405_Railing_MidBay", (4.975, 6.58), 1.40, 0.88, math.pi * 0.5, chair_ivory, 4, mats, furn_col)
+    # Table 407 (R3): Centered on WideCorr_1 (X = 7.975m, Y = 6.58m -> 100% flush with pillar face!)
+    build_table_assembly("407_Railing_AftBay", (7.975, 6.58), 1.40, 0.88, math.pi * 0.5, chair_ivory, 4, mats, furn_col)
 
 
 # ==============================================================================
