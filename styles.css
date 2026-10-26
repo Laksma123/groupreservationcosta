@@ -1,24 +1,57 @@
+/* ============================================================================
+   COSTA SMERALDA — GROUP DINING RESERVATION SYSTEM (DRS 3D PORTAL)
+   Strictly adheres to Official Costa Interface Guidelines (/costaassets):
+   - Primary Brand Blue:  #0071A3 (bar accent, focus rings, active outline states)
+   - Primary Action Gold: #F9B000 (ONE primary action per screen, dark ink #0A2A38)
+   - Typography:          Poppins (UI & Headings) + Monospace (Codes, Table IDs)
+   - Costa Yellow Dot:    '.' in #F9B000 (20% larger than headline text)
+   - Surfaces:            Crisp White (#FFFFFF) with hairlines (#CBD5E1, #E2E8F0)
+   ============================================================================ */
+
 :root {
-  --bg-deep: #06101e;
-  --glass-bg: rgba(10, 22, 40, 0.72);
-  --glass-bg-hover: rgba(18, 36, 64, 0.84);
-  --glass-border: rgba(255, 255, 255, 0.16);
-  --glass-highlight: rgba(245, 196, 67, 0.45);
-  --costa-gold: #f5c443;
-  --costa-gold-bright: #ffe07d;
-  --costa-blue: #1b6ef3;
-  --venetian-red: #a91d2c;
-  --emerald-sel: #10b981;
-  --cyan-hover: #38bdf8;
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --accent-color: #f5c443;
-  --focus-color: #38bdf8;
-  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-display: 'Cinzel', Georgia, serif;
+  /* Institutional Palette (/costaassets/InterfaceGuidelines.md & Color Palettes) */
+  --brand:          #0071A3;
+  --brand-hover:    #005982;
+  --brand-dim:      #EBF5FA;
+  --brand-border:   #6DAAC9;
+
+  --sel:            #F9B000;
+  --sel-hover:      #EC9700;
+  --sel-dim:        #FFF8E8;
+
+  --ink:            #0A2A38;
+  --muted:          #5F7079;
+  --faint:          #94A6AE;
+
+  /* Surfaces & Hairlines */
+  --surface:        #FFFFFF;
+  --surface-inner:  #F8FAFC;
+  --surface-hover:  #F1F5F9;
+  --border-card:    #CBD5E1;
+  --border-inner:   #E2E8F0;
+
+  /* Status Triples (background / border / ink) */
+  --good-bg:        #F1F9F5;
+  --good-border:    #C9E5D6;
+  --good-ink:       #1F7A54;
+
+  --warn-bg:        #FFF8E8;
+  --warn-border:    #F7DFA6;
+  --warn-ink:       #6B4E00;
+
+  --bad-bg:         #FCF2F0;
+  --bad-border:     #EFCFC8;
+  --bad-ink:        #B3402E;
+
+  /* Typography */
+  --font-sans:      'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono:      'SF Mono', 'Consolas', 'Courier New', monospace;
+
+  /* Single Radius Token */
+  --radius:         10px;
 }
 
-* {
+*, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -28,19 +61,265 @@ html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background: var(--bg-deep);
-  color: var(--text-main);
+  background-color: #07192B;
+  color: var(--ink);
   font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 1.4;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   user-select: none;
 }
 
-/* 3D Canvas & CSS2D Overlay Layer */
+/* Vector SVG Icon Base (Zero Emoji Rule) */
+.v-icon {
+  width: 15px;
+  height: 15px;
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+/* 3px Official Costa Blue Top Accent Line */
+.top-accent-line {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background-color: var(--brand);
+  z-index: 40;
+}
+
+/* ============================================================================
+   1. FIXED TOP MASTHEAD (54px height, crisp white surface)
+   ============================================================================ */
+.masthead {
+  position: fixed;
+  top: 3px;
+  left: 0;
+  right: 0;
+  height: 54px;
+  background-color: var(--surface);
+  border-bottom: 1px solid var(--border-card);
+  box-shadow: 0 2px 10px rgba(10, 42, 56, 0.08);
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  z-index: 30;
+}
+
+.masthead-left {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  flex-shrink: 0;
+}
+
+.brand-logo {
+  width: 30px;
+  height: 36px;
+  object-fit: contain;
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-title-row {
+  display: flex;
+  align-items: baseline;
+}
+
+.brand-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.25px;
+  line-height: 1.15;
+}
+
+/* Official Costa Yellow Dot Rule (20% larger than text point) */
+.title-dot {
+  color: var(--sel);
+  font-size: 1.2em;
+  font-weight: 800;
+  line-height: 0;
+  margin-left: 1px;
+}
+
+.brand-sub {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: 0.55px;
+  text-transform: uppercase;
+}
+
+.masthead-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.masthead-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Segmented Outline Pill Group (Costa Desktop Pattern) */
+.outline-pill-group {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--surface-inner);
+  border: 1px solid var(--border-inner);
+  border-radius: 8px;
+  padding: 3px;
+  gap: 3px;
+}
+
+.outline-pill-btn {
+  height: 30px;
+  padding: 0 11px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-sans);
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  transition: background-color 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+
+.outline-pill-btn:hover {
+  color: var(--ink);
+  background-color: var(--surface-hover);
+}
+
+.outline-pill-btn.active {
+  background-color: var(--surface);
+  color: var(--brand);
+  border-color: var(--border-card);
+  font-weight: 700;
+  box-shadow: 0 1px 2px rgba(10, 42, 56, 0.06);
+}
+
+.outline-pill-btn:focus-visible,
+button:focus-visible,
+select:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+/* Interior Toolbar inside Masthead */
+.interior-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.interior-toolbar[hidden] {
+  display: none !important;
+}
+
+.toolbar-sep {
+  width: 1px;
+  height: 22px;
+  background-color: var(--border-inner);
+}
+
+.compact-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 7px;
+  border: 1px solid var(--border-inner);
+  background-color: var(--surface-inner);
+  color: var(--ink);
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+input[type="checkbox"][switch] {
+  accent-color: var(--brand);
+  cursor: pointer;
+}
+
+.icon-btn {
+  height: 32px;
+  padding: 0 9px;
+  border-radius: 7px;
+  border: 1px solid var(--border-inner);
+  background-color: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.icon-btn:hover {
+  background-color: var(--surface-hover);
+  border-color: var(--border-card);
+}
+
+/* Access Token Selector (Monospace per Costa Guidelines: "If a value can be mistyped, it is monospaced") */
+.token-pill {
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 7px;
+  border: 1px solid var(--border-card);
+  background-color: var(--surface-inner);
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.token-lbl {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+}
+
+.token-select {
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ============================================================================
+   2. 3D VIEWPORT & STAGE CONTAINERS (content-visibility optimization)
+   ============================================================================ */
 #canvas-stage {
   position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
+  top: 57px;
+  left: 0;
+  right: 0;
+  bottom: 0;
   z-index: 1;
 }
 
@@ -49,6 +328,7 @@ html, body {
   height: 100%;
   display: block;
   outline: none;
+  touch-action: none;
 }
 
 #css2d-layer {
@@ -58,924 +338,754 @@ html, body {
   z-index: 2;
 }
 
-/* Glassmorphism Base Utility */
-.glass-panel {
-  background: var(--glass-bg);
-  backdrop-filter: blur(20px) saturate(165%);
-  -webkit-backdrop-filter: blur(20px) saturate(165%);
-  border: 1px solid var(--glass-border);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+/* Fast view switching via content-visibility: hidden (per modern-web-guidance) */
+.view-panel {
+  display: none;
 }
 
-/* Topbar */
-.topbar {
-  position: fixed;
-  top: 14px;
-  left: 16px;
-  right: 16px;
-  height: 64px;
-  border-radius: 16px;
-  padding: 0 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  z-index: 20;
+.view-panel.is-active {
+  display: block;
 }
 
-.brand-cluster {
-  display: flex;
-  align-items: center;
-  gap: 14px;
+@supports (content-visibility: hidden) {
+  .view-panel {
+    display: block;
+    content-visibility: hidden;
+    pointer-events: none;
+  }
+  .view-panel.is-active {
+    content-visibility: visible;
+  }
 }
 
-.costa-crest {
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #f5c443 0%, #d99b16 100%);
-  color: #071936;
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 24px;
-  display: grid;
-  place-items: center;
-  box-shadow: 0 4px 15px rgba(245, 196, 67, 0.35);
+/* Base Floating Costa Card (Solid White Surface, Clean Hairline, Floating Shadow) */
+.costa-card {
+  background-color: var(--surface);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgba(10, 42, 56, 0.18);
+  color: var(--ink);
 }
 
-.brand-eyebrow {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  color: var(--costa-gold);
-  text-transform: uppercase;
-}
-
-.brand-heading {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text-main);
-  letter-spacing: -0.01em;
-}
-
-.stage-nav {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.access-token-box {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  padding: 6px 12px;
-  border-radius: 10px;
-}
-
-.token-label {
-  font-size: 11px;
-  color: var(--text-muted);
-  font-weight: 600;
-}
-
-.token-select {
-  background: transparent;
-  color: var(--costa-gold-bright);
-  border: none;
-  font-family: var(--font-sans);
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  outline: none;
-}
-
-.token-select option {
-  background: #0b192e;
-  color: #fff;
-}
-
-/* Stage 1: Hero Ship Overlay */
-.hero-overlay {
-  position: fixed;
-  left: 24px;
-  bottom: 28px;
-  z-index: 15;
-  max-width: 460px;
-  pointer-events: auto;
-}
-
-.hero-card {
-  padding: 24px;
-  border-radius: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.hero-badge {
-  align-self: flex-start;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: rgba(245, 196, 67, 0.16);
-  color: var(--costa-gold);
-  border: 1px solid rgba(245, 196, 67, 0.35);
-}
-
-.hero-card h2 {
-  font-size: 22px;
-  font-weight: 800;
-  line-height: 1.25;
-}
-
-.hero-card p {
-  font-size: 13px;
-  line-height: 1.55;
-  color: #cbd5e1;
-}
-
-.deck-Specs-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  background: rgba(0, 0, 0, 0.25);
-  padding: 10px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.spec-item {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.spec-k {
-  font-size: 10px;
-  color: var(--text-muted);
-}
-
-.spec-v {
-  font-size: 11px;
-  font-weight: 700;
-  color: #fff;
-}
-
-.hero-hint {
-  font-size: 11.5px;
-  color: var(--text-muted);
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  padding-top: 10px;
-}
-
-/* Buttons */
-.btn-primary-gold {
+/* ============================================================================
+   3. BUTTONS (Strictly ONE Yellow #F9B000 Primary Button per Screen, Dark Ink!)
+   ============================================================================ */
+.btn-costa-primary {
   width: 100%;
-  padding: 13px 18px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 235, 150, 0.5);
-  background: linear-gradient(135deg, #f5c443 0%, #e09f15 100%);
-  color: #061326;
-  font-family: var(--font-sans);
-  font-size: 13.5px;
-  font-weight: 800;
-  cursor: pointer;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
-  box-shadow: 0 8px 24px rgba(245, 196, 67, 0.3);
-}
-
-.btn-primary-gold:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 12px 28px rgba(245, 196, 67, 0.45);
-}
-
-.btn-primary-gold:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-  box-shadow: none;
-}
-
-.btn-pill, .btn-secondary {
-  padding: 8px 14px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 8px;
+  border: 1px solid #D99900;
+  background-color: var(--sel);
+  color: var(--ink); /* Dark #0A2A38 on #F9B000 gives 8:1 contrast ratio! */
   font-family: var(--font-sans);
   font-size: 12.5px;
   font-weight: 700;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  justify-content: center;
+  gap: 8px;
+  transition: background-color 0.14s ease;
 }
 
-.btn-pill:hover, .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.16);
-  border-color: var(--costa-gold);
+.btn-costa-primary:hover:not(:disabled) {
+  background-color: var(--sel-hover);
 }
 
-/* Stage 2: Interior Camera Mode Dock */
-.interior-overlay {
+.btn-costa-primary:disabled {
+  background-color: var(--surface-hover);
+  border-color: var(--border-inner);
+  color: var(--faint);
+  cursor: not-allowed;
+}
+
+.btn-neutral-sm {
+  height: 32px;
+  padding: 0 11px;
+  border-radius: 7px;
+  border: 1px solid var(--border-card);
+  background-color: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: background-color 0.12s ease;
+}
+
+.btn-neutral-sm:hover {
+  background-color: var(--surface-hover);
+}
+
+.btn-neutral-xs {
+  height: 26px;
+  padding: 0 8px;
+  border-radius: 5px;
+  border: 1px solid var(--border-card);
+  background-color: var(--surface-inner);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-neutral-xs:hover {
+  background-color: var(--surface-hover);
+}
+
+/* ============================================================================
+   4. STAGE 1: COMPACT SHIP INSPECTOR CARD (Bottom-Left, 340px max)
+   ============================================================================ */
+.ship-card-wrap {
   position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 12;
+  left: 18px;
+  bottom: 18px;
+  z-index: 15;
+  width: 345px;
+  pointer-events: auto;
 }
 
-.camera-dock {
-  position: absolute;
-  top: 88px;
-  left: 16px;
-  padding: 8px 12px;
-  border-radius: 16px;
+.ship-inspector-card {
+  padding: 15px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.card-eyebrow {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  color: var(--brand);
+  text-transform: uppercase;
+}
+
+/* Costa Yellow Vertical Line Rule (/costaassets/text guidelines 2.png) */
+.card-headline-row {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+}
+
+.yellow-bar {
+  width: 4px;
+  border-radius: 2px;
+  background-color: var(--sel);
+  flex-shrink: 0;
+}
+
+.card-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.2;
+}
+
+.card-sub {
+  font-size: 11.5px;
+  color: var(--muted);
+  line-height: 1.4;
+  margin-top: 2px;
+}
+
+.ship-layer-mini-list {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-inner);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.layer-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  pointer-events: auto;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 10px;
+  background-color: var(--surface);
+  border: none;
+  border-bottom: 1px solid var(--border-inner);
+  font-family: var(--font-sans);
+  font-size: 11.5px;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
 }
 
-.mode-group {
-  display: flex;
-  gap: 6px;
+.layer-row:last-child {
+  border-bottom: none;
 }
 
-.mode-btn {
+.layer-row:hover {
+  background-color: var(--surface-hover);
+}
+
+.layer-row.active {
+  background-color: var(--brand-dim);
+}
+
+.lr-code {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--brand);
+  width: 48px;
+  flex-shrink: 0;
+}
+
+.lr-name {
+  flex: 1;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lr-tag {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.lr-tag-ready {
+  background-color: var(--good-bg);
+  border: 1px solid var(--good-border);
+  color: var(--good-ink);
+}
+
+.lr-tag-muted {
+  background-color: var(--surface-inner);
+  border: 1px solid var(--border-inner);
+  color: var(--muted);
+}
+
+/* ============================================================================
+   5. STAGE 2: INTERIOR OVERLAY, WALK BAR, HOVER PILL & COLLAPSIBLE RIGHT DRAWER
+   ============================================================================ */
+.interior-overlay {
+  position: fixed;
+  top: 57px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 15;
+}
+
+/* Walk Mode Compact Bottom Bar */
+.walk-bar {
+  position: absolute;
+  left: 18px;
+  bottom: 18px;
+  padding: 7px 10px;
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 13px;
-  border-radius: 11px;
-  border: 1px solid transparent;
-  background: rgba(255, 255, 255, 0.04);
-  color: #cbd5e1;
-  font-family: var(--font-sans);
-  cursor: pointer;
-  text-align: left;
-  transition: all 0.18s ease;
-}
-
-.mode-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-}
-
-.mode-btn.active {
-  background: linear-gradient(135deg, rgba(245, 196, 67, 0.22), rgba(245, 196, 67, 0.08));
-  border-color: var(--costa-gold);
-  color: #fff;
-  box-shadow: 0 4px 16px rgba(245, 196, 67, 0.2);
-}
-
-.mode-ic {
-  font-size: 18px;
-}
-
-.mode-txt {
-  display: flex;
-  flex-direction: column;
-}
-
-.mode-txt strong {
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.mode-txt small {
-  font-size: 10px;
-  color: var(--text-muted);
-}
-
-.mode-btn.active .mode-txt small {
-  color: var(--costa-gold-bright);
-}
-
-.dock-divider {
-  width: 1px;
-  height: 34px;
-  background: rgba(255, 255, 255, 0.14);
-}
-
-/* Native Switch Control (per modern-web-guidance switch guide) */
-.switch-group {
-  display: flex;
-  align-items: center;
-}
-
-.switch-label {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  padding: 6px 10px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.switch-text-wrap {
-  display: flex;
-  flex-direction: column;
-}
-
-.switch-title {
-  font-size: 11.5px;
-  font-weight: 700;
-  color: #fff;
-}
-
-.switch-sub {
-  font-size: 10px;
-  color: var(--costa-gold);
-  font-weight: 600;
-}
-
-input[type="checkbox"][switch] {
-  accent-color: var(--accent-color, #1769e0);
-  margin: 0;
-  width: 20px;
-  height: 20px;
-  cursor: pointer;
-}
-
-input[type="checkbox"][switch]:focus-visible {
-  outline: 3px solid var(--focus-color, #ff8c00);
-  outline-offset: 4px;
-}
-
-.sub-actions {
-  display: flex;
-  gap: 6px;
-}
-
-.btn-chip {
-  padding: 7px 11px;
-  border-radius: 9px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.06);
-  color: #e2e8f0;
-  font-family: var(--font-sans);
-  font-size: 11.5px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.btn-chip:hover, .btn-chip.active {
-  background: rgba(56, 189, 248, 0.18);
-  border-color: var(--cyan-hover);
-  color: #fff;
-}
-
-/* Walk Mode HUD */
-.walk-hud {
-  position: absolute;
-  bottom: 20px;
-  left: 16px;
-  padding: 14px 16px;
-  border-radius: 16px;
   pointer-events: auto;
-  max-width: 540px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.walk-hud-header {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.walk-hud-header strong {
-  font-size: 12.5px;
-  color: var(--costa-gold);
-}
-
-.walk-hud-header span {
-  font-size: 11px;
-  color: #cbd5e1;
-}
-
-.walk-hud-header kbd {
-  background: rgba(255, 255, 255, 0.14);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 4px;
-  padding: 1px 5px;
-  font-size: 10px;
-  margin: 0 1px;
-}
-
-.walk-controls-row {
-  display: flex;
-  align-items: center;
-  gap: 14px;
   flex-wrap: wrap;
 }
 
-.dpad-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 66px);
-  grid-template-rows: repeat(2, 32px);
+.walk-bar[hidden] {
+  display: none !important;
+}
+
+.dpad-inline,
+.teleport-inline {
+  display: inline-flex;
+  align-items: center;
   gap: 4px;
 }
 
-.dpad-up { grid-column: 2; grid-row: 1; }
-.dpad-left { grid-column: 1; grid-row: 2; }
-.dpad-down { grid-column: 2; grid-row: 2; }
-.dpad-right { grid-column: 3; grid-row: 2; }
-
-.dpad-btn {
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
+.btn-chip {
+  height: 26px;
+  padding: 0 9px;
+  border-radius: 5px;
+  border: 1px solid var(--border-inner);
+  background-color: var(--surface);
+  color: var(--muted);
+  font-family: var(--font-sans);
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
 }
 
-.dpad-btn:active, .dpad-btn:hover {
-  background: rgba(245, 196, 67, 0.28);
-  border-color: var(--costa-gold);
+.btn-chip:hover {
+  color: var(--ink);
+  background-color: var(--surface-hover);
 }
 
-.teleport-list {
+.btn-chip.active {
+  background-color: var(--brand-dim);
+  border-color: var(--brand-border);
+  color: var(--brand);
+  font-weight: 700;
+}
+
+/* Compact Single-Line Hover Pill (Bottom-Left) */
+.hover-status-pill {
+  position: absolute;
+  left: 18px;
+  bottom: 18px;
+  padding: 8px 12px;
   display: flex;
-  flex-direction: column;
-  gap: 5px;
-  flex: 1;
-}
-
-.teleport-label {
-  font-size: 10.5px;
-  color: var(--text-muted);
-  font-weight: 600;
-}
-
-.teleport-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-}
-
-/* Floating Glassmorphic Hover Pre-Selection Card */
-.hover-glass-card {
-  position: fixed;
-  left: 20px;
-  bottom: 24px;
-  width: 310px;
-  padding: 14px 16px;
-  border-radius: 18px;
-  background: linear-gradient(135deg, rgba(22, 48, 86, 0.78) 0%, rgba(10, 24, 46, 0.88) 100%);
-  backdrop-filter: blur(24px) saturate(190%);
-  -webkit-backdrop-filter: blur(24px) saturate(190%);
-  border: 1.5px solid rgba(56, 189, 248, 0.65);
-  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.55), 0 0 28px rgba(56, 189, 248, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  align-items: center;
+  gap: 10px;
   pointer-events: none;
-  z-index: 25;
-  transition: transform 0.15s ease, opacity 0.15s ease;
 }
 
-.hgc-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
+.hover-status-pill[hidden] {
+  display: none !important;
 }
 
-.hgc-badge {
-  font-size: 9.5px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
+.hsp-num {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--surface);
+  background-color: var(--ink);
   padding: 3px 8px;
-  border-radius: 999px;
-  background: rgba(56, 189, 248, 0.22);
-  color: #7dd3fc;
-  border: 1px solid rgba(56, 189, 248, 0.45);
+  border-radius: 6px;
 }
 
-.hgc-zone {
-  font-size: 10.5px;
-  font-weight: 600;
-  color: var(--costa-gold);
-}
-
-.hgc-main {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.hgc-number {
-  width: 54px;
-  height: 46px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  display: grid;
-  place-items: center;
-  font-size: 20px;
-  font-weight: 800;
-  color: #fff;
-  letter-spacing: -0.02em;
-}
-
-.hgc-details {
+.hsp-body {
   display: flex;
   flex-direction: column;
-  gap: 2px;
 }
 
-.hgc-details strong {
-  font-size: 14px;
-  color: #fff;
+.hsp-body strong {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
 }
 
-.hgc-details span {
-  font-size: 11.5px;
-  color: #cbd5e1;
+.hsp-body span {
+  font-size: 10.5px;
+  color: var(--muted);
 }
 
-.hgc-footer {
-  margin-top: 9px;
-  padding-top: 8px;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
+.hsp-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 5px;
+  margin-left: 4px;
+}
+
+/* Collapsible Right Drawer Toggle Button */
+.drawer-toggle-btn {
+  position: absolute;
+  top: 14px;
+  right: 322px;
+  height: 32px;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-sans);
   font-size: 11px;
-  color: #bae6fd;
   font-weight: 600;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: right 0.2s ease;
 }
 
-/* Right DRS Sidebar */
+.drawer-toggle-btn.is-collapsed {
+  right: 16px;
+}
+
+/* Right Allocation Sidebar (Fixed Header, Scrollable Body, Fixed Footer) */
 .drs-sidebar {
   position: absolute;
-  top: 88px;
+  top: 14px;
   right: 16px;
   bottom: 16px;
-  width: 330px;
-  border-radius: 18px;
-  padding: 16px;
+  width: 298px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   pointer-events: auto;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.drs-sidebar.is-collapsed {
+  transform: translateX(320px);
+  opacity: 0;
+  pointer-events: none;
 }
 
 .sidebar-header {
   display: flex;
-  justify-content: space-between;
   align-items: flex-start;
-}
-
-.sidebar-eyebrow {
-  font-size: 9.5px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  color: var(--costa-gold);
-}
-
-.sidebar-header h3 {
-  font-size: 16px;
-  font-weight: 800;
-}
-
-.pax-pill {
-  font-size: 10.5px;
-  font-weight: 800;
-  padding: 4px 9px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.1);
-  color: #e2e8f0;
-}
-
-.pax-meter-box {
-  background: rgba(0, 0, 0, 0.28);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 14px;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.pax-numbers {
-  display: flex;
   justify-content: space-between;
-  align-items: flex-end;
+  flex-shrink: 0;
 }
 
-.pax-lbl {
-  display: block;
-  font-size: 10.5px;
-  color: var(--text-muted);
-}
-
-.pax-val {
-  font-size: 24px;
-  font-weight: 800;
-  color: var(--costa-gold);
-}
-
-.pax-unit {
-  font-size: 13px;
-  color: #cbd5e1;
-  font-weight: 600;
-}
-
-.pax-right {
-  text-align: right;
-}
-
-.pax-val-sm {
-  font-size: 14px;
+.sidebar-title {
+  font-size: 15px;
   font-weight: 700;
-  color: #fff;
+  color: var(--ink);
+}
+
+/* Status Triples Pill */
+.status-pill {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background-color: var(--surface-inner);
+  border: 1px solid var(--border-inner);
+  color: var(--muted);
+}
+
+.status-pill.is-warn {
+  background-color: var(--warn-bg);
+  border-color: var(--warn-border);
+  color: var(--warn-ink);
+}
+
+.status-pill.is-good {
+  background-color: var(--good-bg);
+  border-color: var(--good-border);
+  color: var(--good-ink);
+}
+
+/* Compact Pax Meter */
+.pax-meter {
+  background-color: var(--surface-inner);
+  border: 1px solid var(--border-inner);
+  border-radius: 8px;
+  padding: 8px 10px;
+  flex-shrink: 0;
+}
+
+.pax-meter-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+
+.pm-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.pm-numbers {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink);
+}
+
+.pm-tables {
+  font-size: 10.5px;
+  color: var(--muted);
 }
 
 .progress-track {
-  height: 8px;
+  width: 100%;
+  height: 6px;
+  background-color: var(--border-inner);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.1);
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #38bdf8, #10b981, #f5c443);
+  background-color: var(--brand);
   border-radius: 999px;
-  transition: width 0.25s ease;
+  transition: width 0.2s ease;
 }
 
-.pax-helper {
-  font-size: 11px;
-  color: #cbd5e1;
-  line-height: 1.4;
+/* Block Filter Tabs */
+.block-filter-bar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3px;
+  background-color: var(--surface-inner);
+  border: 1px solid var(--border-inner);
+  padding: 3px;
+  border-radius: 7px;
+  flex-shrink: 0;
 }
 
-.status-legend {
-  display: flex;
-  justify-content: space-between;
+.block-filter-btn {
+  height: 26px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-sans);
   font-size: 10.5px;
-  color: #cbd5e1;
-  padding: 2px 4px;
+  font-weight: 600;
+  cursor: pointer;
 }
 
-.leg-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
+.block-filter-btn:hover {
+  color: var(--ink);
 }
 
-.dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  display: inline-block;
+.block-filter-btn.active {
+  background-color: var(--surface);
+  border-color: var(--border-card);
+  color: var(--brand);
+  font-weight: 700;
 }
-.dot-avail { background: #e2e8f0; }
-.dot-hover { background: var(--cyan-hover); box-shadow: 0 0 8px var(--cyan-hover); }
-.dot-sel { background: var(--emerald-sel); box-shadow: 0 0 8px var(--emerald-sel); }
-.dot-lock { background: #ef4444; }
 
+/* Scrollable Table List (overscroll-behavior: contain per Costa Guidelines Section 4) */
 .table-list-scroll {
   flex: 1;
   overflow-y: auto;
+  overscroll-behavior: contain;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding-right: 4px;
+  gap: 4px;
+  padding-right: 2px;
 }
 
 .table-row-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 9px 11px;
-  border-radius: 11px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 6px 8px;
+  border-radius: 7px;
+  border: 1px solid var(--border-inner);
+  background-color: var(--surface);
   cursor: pointer;
-  transition: all 0.15s ease;
+  content-visibility: auto;
+  contain-intrinsic-size: auto none auto 42px;
+}
+
+.table-row-item.is-hidden-by-filter {
+  display: none !important;
 }
 
 .table-row-item:hover {
-  background: rgba(56, 189, 248, 0.15);
-  border-color: var(--cyan-hover);
+  background-color: var(--surface-hover);
+  border-color: var(--border-card);
 }
 
 .table-row-item.is-selected {
-  background: rgba(16, 185, 129, 0.18);
-  border-color: var(--emerald-sel);
+  background-color: var(--good-bg);
+  border-color: var(--good-border);
 }
 
 .table-row-item.is-locked {
-  opacity: 0.55;
-  background: rgba(239, 68, 68, 0.1);
-  border-color: rgba(239, 68, 68, 0.3);
+  background-color: var(--bad-bg);
+  border-color: var(--bad-border);
+  opacity: 0.72;
+  cursor: not-allowed;
 }
 
 .tri-left {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  min-width: 0;
 }
 
 .tri-num {
-  width: 38px;
-  height: 30px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.1);
-  font-weight: 800;
-  font-size: 13px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  width: 34px;
+  height: 26px;
+  border-radius: 5px;
+  background-color: var(--surface-inner);
+  border: 1px solid var(--border-inner);
+  color: var(--ink);
   display: grid;
   place-items: center;
-  color: #fff;
+  flex-shrink: 0;
 }
 
 .table-row-item.is-selected .tri-num {
-  background: var(--emerald-sel);
-  color: #042f2e;
+  background-color: var(--good-ink);
+  border-color: var(--good-ink);
+  color: #FFFFFF;
+}
+
+.table-row-item.is-locked .tri-num {
+  background-color: var(--bad-bg);
+  border-color: var(--bad-border);
+  color: var(--bad-ink);
 }
 
 .tri-meta {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .tri-meta strong {
-  font-size: 12px;
-  color: #fff;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--ink);
 }
 
 .tri-meta small {
-  font-size: 10.5px;
-  color: var(--text-muted);
+  font-size: 10px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .tri-badge {
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 700;
-  padding: 3px 8px;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.08);
-  color: #cbd5e1;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background-color: var(--surface-inner);
+  color: var(--muted);
+  flex-shrink: 0;
 }
 
-.sidebar-actions {
+.table-row-item.is-selected .tri-badge {
+  background-color: #FFFFFF;
+  color: var(--good-ink);
+  border: 1px solid var(--good-border);
+}
+
+.table-row-item.is-locked .tri-badge {
+  background-color: #FFFFFF;
+  color: var(--bad-ink);
+  border: 1px solid var(--bad-border);
+}
+
+/* Fixed Sidebar Footer */
+.sidebar-footer {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border-inner);
+  flex-shrink: 0;
 }
 
-.Quick-row {
+.footer-secondary-row {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 6px;
 }
 
-.btn-secondary-sm {
-  padding: 8px 10px;
-  border-radius: 9px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: rgba(255, 255, 255, 0.07);
-  color: #e2e8f0;
-  font-family: var(--font-sans);
-  font-size: 11.5px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.btn-secondary-sm:hover {
-  background: rgba(255, 255, 255, 0.15);
-  color: #fff;
-}
-
 /* ============================================================================
-   3D CSS2D FLOATING TABLE NUMBER LABELS (View / Hide Table Number)
-   Large, universal, crystal-clear typography over the clean marble tables
+   6. 3D CSS2D MARKERS (Zero backdrop-filter blur for 60 FPS GPU performance!)
    ============================================================================ */
 .table-num-marker {
   pointer-events: auto;
   cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   transform: translate(-50%, -50%);
-  transition: opacity 0.22s ease, transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
 }
 
 .table-num-marker.is-hidden {
-  opacity: 0 !important;
-  pointer-events: none !important;
+  display: none !important;
 }
 
 .tnm-pill {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 12px;
-  border-radius: 999px;
-  background: rgba(9, 20, 38, 0.86);
-  backdrop-filter: blur(12px) saturate(160%);
-  -webkit-backdrop-filter: blur(12px) saturate(160%);
-  border: 1.5px solid rgba(255, 255, 255, 0.42);
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.28);
-  transition: all 0.18s ease;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background-color: #0A2A38;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
 }
 
 .tnm-number {
-  font-family: var(--font-sans);
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: 0.02em;
-  color: #ffffff;
-  line-height: 1;
-  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #FFFFFF;
+  line-height: 1.1;
 }
 
 .tnm-pax {
-  font-size: 10.5px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
   font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 999px;
-  background: rgba(245, 196, 67, 0.22);
-  color: var(--costa-gold-bright);
-  border: 1px solid rgba(245, 196, 67, 0.4);
+  color: var(--sel);
 }
 
-/* Hover Glassmorphism state on the 3D Table Label */
 .table-num-marker.is-hovered .tnm-pill {
-  background: linear-gradient(135deg, rgba(56, 189, 248, 0.42), rgba(14, 116, 144, 0.75));
-  border-color: #7dd3fc;
-  box-shadow: 0 12px 30px rgba(56, 189, 248, 0.5), 0 0 18px rgba(56, 189, 248, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  transform: scale(1.14) translateY(-3px);
+  background-color: var(--brand);
+  border-color: #FFFFFF;
+  transform: scale(1.1);
 }
 
-/* Selected state on the 3D Table Label */
 .table-num-marker.is-selected .tnm-pill {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.88), rgba(5, 150, 105, 0.92));
-  border-color: #a7f3d0;
-  box-shadow: 0 10px 26px rgba(16, 185, 129, 0.5), 0 0 16px rgba(16, 185, 129, 0.45);
+  background-color: var(--good-ink);
+  border-color: #FFFFFF;
 }
 
 .table-num-marker.is-selected .tnm-pax {
-  background: rgba(0, 0, 0, 0.28);
-  color: #ecfdf5;
-  border-color: rgba(255, 255, 255, 0.35);
+  color: #D1FAE5;
 }
 
-/* Locked / Reserved state on the 3D Table Label */
 .table-num-marker.is-locked .tnm-pill {
-  background: rgba(69, 16, 24, 0.82);
-  border-color: rgba(248, 113, 113, 0.55);
-  opacity: 0.78;
+  background-color: #5C1F18;
+  border-color: #FCA5A5;
+  opacity: 0.72;
 }
 
-.table-num-marker.is-locked .tnm-pax {
-  background: rgba(239, 68, 68, 0.25);
-  color: #fca5a5;
-  border-color: rgba(239, 68, 68, 0.4);
-}
-
-/* Hero Ship 3D Hotspot Badge */
+/* Compact 3D Ship Markers (Clean Costa Pills, Zero Clutter) */
 .ship-hotspot-marker {
   pointer-events: auto;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
-  border-radius: 999px;
-  background: linear-gradient(135deg, rgba(245, 196, 67, 0.95), rgba(217, 119, 6, 0.95));
-  color: #061326;
-  font-weight: 800;
-  font-size: 12px;
-  border: 2px solid #fff;
-  box-shadow: 0 10px 30px rgba(245, 196, 67, 0.6), 0 0 0 6px rgba(245, 196, 67, 0.25);
-  animation: pulseHotspot 2s infinite ease-in-out;
+  padding: 5px 11px;
+  border-radius: 6px;
+  background-color: var(--sel);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 11px;
+  border: 1.5px solid #FFFFFF;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  white-space: nowrap;
 }
 
-@keyframes pulseHotspot {
-  0%, 100% { box-shadow: 0 10px 30px rgba(245, 196, 67, 0.6), 0 0 0 4px rgba(245, 196, 67, 0.25); }
-  50% { box-shadow: 0 10px 35px rgba(245, 196, 67, 0.85), 0 0 0 10px rgba(245, 196, 67, 0.08); }
+.ship-hotspot-marker.is-hidden,
+.ship-deck-label.is-hidden {
+  display: none !important;
 }
 
-/* Loading Overlay */
+.ship-deck-label {
+  pointer-events: none;
+  padding: 4px 9px;
+  border-radius: 5px;
+  background-color: #0A2A38;
+  color: #FFFFFF;
+  font-family: var(--font-sans);
+  font-size: 10.5px;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  white-space: nowrap;
+}
+
+/* ============================================================================
+   7. LOADING OVERLAY & CONFIRMATION MODAL
+   ============================================================================ */
 .loading-overlay {
   position: fixed;
   inset: 0;
-  z-index: 50;
-  background: rgba(6, 16, 30, 0.82);
-  backdrop-filter: blur(12px);
+  z-index: 60;
+  background-color: rgba(10, 42, 56, 0.75);
   display: grid;
   place-items: center;
-  transition: opacity 0.35s ease;
+  transition: opacity 0.25s ease;
 }
 
 .loading-overlay.is-hidden {
@@ -984,47 +1094,42 @@ input[type="checkbox"][switch]:focus-visible {
 }
 
 .loader-box {
-  padding: 28px 34px;
-  border-radius: 20px;
+  padding: 24px 28px;
   text-align: center;
-  max-width: 420px;
+  max-width: 360px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .spinner {
-  width: 42px;
-  height: 42px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  border: 3.5px solid rgba(245, 196, 67, 0.25);
-  border-top-color: var(--costa-gold);
-  animation: spin 0.85s linear infinite;
+  border: 3px solid var(--border-inner);
+  border-top-color: var(--brand);
+  animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
 
-/* Native Modal Dialog & Backdrop (per modern-web-guidance light-dismiss-a-dialog) */
 dialog::backdrop {
-  background-color: rgba(0, 0, 0, 0.62);
-  backdrop-filter: blur(4px);
+  background-color: rgba(10, 42, 56, 0.55);
 }
 
 .booking-dialog {
   margin: auto;
-  width: min(520px, 92vw);
-  border-radius: 22px;
-  padding: 24px;
-  color: var(--text-main);
+  width: min(460px, 92vw);
+  padding: 20px;
 }
 
 .dialog-form {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 .dialog-top {
@@ -1034,223 +1139,63 @@ dialog::backdrop {
 }
 
 .dialog-close-x {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  color: #fff;
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid var(--border-inner);
+  background-color: var(--surface-inner);
+  color: var(--ink);
   cursor: pointer;
 }
 
+.dialog-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
 .dialog-lead {
-  font-size: 13px;
-  color: #cbd5e1;
-  line-height: 1.5;
+  font-size: 12px;
+  color: var(--muted);
 }
 
 .summary-sheet {
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 14px;
-  padding: 14px;
-  font-size: 12.5px;
-  line-height: 1.6;
-  color: #e2e8f0;
+  background-color: var(--surface-inner);
+  border: 1px solid var(--border-inner);
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 11.5px;
+  line-height: 1.65;
+  color: var(--ink);
+}
+
+.summary-mono {
+  font-family: var(--font-mono);
+  font-weight: 700;
 }
 
 .dialog-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
-  margin-top: 4px;
+  gap: 8px;
 }
 
-@media (max-width: 980px) {
+.btn-dialog-done {
+  width: auto;
+  min-width: 110px;
+}
+
+@media (max-width: 960px) {
+  .brand-sub {
+    display: none;
+  }
+  .ship-card-wrap {
+    width: 300px;
+  }
   .drs-sidebar {
-    width: 280px;
-    top: auto;
-    height: 46vh;
+    width: 270px;
   }
-  .camera-dock {
-    right: 16px;
+  .drawer-toggle-btn {
+    right: 292px;
   }
 }
-
-/* ============================================================================
-   STAGE 1: 4-LAYER CUTAWAY SELECTOR & 3D DECK PLACEHOLDER BADGES
-   ============================================================================ */
-.hero-overlay {
-  max-width: 495px;
-  bottom: 20px;
-}
-
-.hero-card {
-  padding: 18px 20px;
-  gap: 10px;
-}
-
-.cutaway-layer-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin: 2px 0;
-}
-
-.cutaway-layer-btn {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 8px 11px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.04);
-  color: #e2e8f0;
-  font-family: var(--font-sans);
-  text-align: left;
-  cursor: pointer;
-  transition: all 0.18s ease;
-}
-
-.cutaway-layer-btn:hover {
-  background: rgba(255, 255, 255, 0.11);
-  border-color: rgba(255, 255, 255, 0.32);
-  transform: translateX(2px);
-}
-
-.cutaway-layer-btn.active {
-  background: linear-gradient(135deg, rgba(245, 196, 67, 0.24), rgba(14, 116, 144, 0.28));
-  border-color: var(--costa-gold);
-  box-shadow: 0 6px 20px rgba(245, 196, 67, 0.22);
-}
-
-.cl-tag {
-  font-size: 9.5px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  padding: 4px 8px;
-  border-radius: 7px;
-  background: rgba(255, 255, 255, 0.12);
-  color: #f8fafc;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.cl-tag-d7 {
-  background: rgba(16, 185, 129, 0.22);
-  color: #6ee7b7;
-  border: 1px solid rgba(16, 185, 129, 0.45);
-}
-
-.cl-tag-d6 {
-  background: rgba(245, 196, 67, 0.28);
-  color: var(--costa-gold-bright);
-  border: 1px solid rgba(245, 196, 67, 0.6);
-}
-
-.cl-tag-d5 {
-  background: rgba(249, 115, 22, 0.24);
-  color: #fdba74;
-  border: 1px solid rgba(249, 115, 22, 0.5);
-}
-
-.cl-info {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.cl-info strong {
-  font-size: 12px;
-  font-weight: 700;
-  color: #fff;
-}
-
-.cl-info small {
-  font-size: 10.5px;
-  color: #94a3b8;
-}
-
-.cutaway-layer-btn.active .cl-info small {
-  color: #e2e8f0;
-}
-
-/* 3D Deck Cutaway Floating Labels */
-.ship-deck-label {
-  pointer-events: auto;
-  padding: 5px 11px;
-  border-radius: 999px;
-  font-family: var(--font-sans);
-  font-size: 11px;
-  font-weight: 700;
-  color: #f8fafc;
-  background: rgba(8, 19, 36, 0.86);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
-  white-space: nowrap;
-  transition: opacity 0.22s ease, transform 0.22s ease;
-}
-
-.ship-deck-label.is-hidden {
-  opacity: 0 !important;
-  pointer-events: none !important;
-}
-
-.ship-deck-label.sdl-colombina {
-  border-color: #fb923c;
-  color: #fed7aa;
-}
-
-.ship-deck-label.sdl-meneghino {
-  border-color: #f43f5e;
-  color: #fecdd3;
-}
-
-.ship-deck-label.sdl-rugantino {
-  border-color: #10b981;
-  color: #a7f3d0;
-}
-
-.ship-deck-label.sdl-placeholder {
-  border-color: rgba(255, 255, 255, 0.28);
-  color: #cbd5e1;
-  font-size: 10px;
-}
-
-/* Stage 2 Sidebar: 2-Block Filter Tabs */
-.block-filter-bar {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 5px;
-  background: rgba(0, 0, 0, 0.28);
-  padding: 4px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.block-filter-btn {
-  padding: 6px 6px;
-  border-radius: 7px;
-  border: 1px solid transparent;
-  background: transparent;
-  color: #94a3b8;
-  font-family: var(--font-sans);
-  font-size: 10.5px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.block-filter-btn:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.block-filter-btn.active {
-  background: rgba(245, 196, 67, 0.2);
-  border-color: rgba(245, 196, 67, 0.55);
-  color: var(--costa-gold-bright);
-}
-

@@ -1,13 +1,11 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Costa Smeralda — Group Dining Reservation System (DRS 3D Portal)</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./styles.css?v=20261026" />
+  <title>Costa Smeralda — Group Dining Reservation System</title>
+  <link rel="stylesheet" href="./fonts.css?v=20261026b" />
+  <link rel="stylesheet" href="./styles.css?v=20261026b" />
   <script type="importmap">
     {
       "imports": {
@@ -18,266 +16,221 @@
   </script>
 </head>
 <body>
-  <!-- 3D WebGL & CSS2D Canvas Container -->
-  <div id="canvas-stage" aria-label="Interactive 3D View of Costa Smeralda and Ristorante Arlecchino">
-    <canvas id="webgl-canvas"></canvas>
-    <div id="css2d-layer"></div>
-  </div>
+  <!-- 3px Official Costa Blue Top Accent Line -->
+  <div class="top-accent-line" aria-hidden="true"></div>
 
-  <!-- Top Navigation & Brand Header -->
-  <header class="topbar glass-panel">
-    <div class="brand-cluster">
-      <div class="costa-crest" aria-hidden="true">C</div>
-      <div class="brand-titles">
-        <div class="brand-eyebrow">COSTA SMERALDA • EXCELLENCE CLASS (337M) • B2B DRS PORTAL</div>
-        <h1 class="brand-heading" id="stage-title">Kapal Utuh Costa Smeralda — Sistem Cutaway 4 Lapis</h1>
+  <!-- FIXED TOP MASTHEAD (Official Costa Visual System) -->
+  <header class="masthead">
+    <div class="masthead-left">
+      <img src="./logo.png" alt="Costa Cruises" class="brand-logo" width="32" height="38" />
+      <div class="brand-text">
+        <div class="brand-title-row">
+          <span class="brand-title">COSTA SMERALDA</span>
+          <span class="title-dot" aria-hidden="true">.</span>
+        </div>
+        <span class="brand-sub" id="stage-subtitle">GROUP DINING RESERVATION SYSTEM</span>
       </div>
     </div>
 
-    <!-- Breadcrumb / Stage Switcher -->
-    <div class="stage-nav">
-      <button type="button" id="btn-back-ship" class="btn-pill btn-secondary" hidden>
-        <span class="icon">←</span> Kembali ke Model Kapal
+    <!-- CENTER CONTEXTUAL BAR: Ship Cutaway Pills (Stage 1) OR Camera Controls (Stage 2) -->
+    <div class="masthead-center">
+      <!-- Stage 1 Toolbar: 4-Layer Ship Cutaway Selector -->
+      <div id="ship-toolbar" class="outline-pill-group" role="group" aria-label="Deck cutaway layers">
+        <button type="button" class="outline-pill-btn active" data-cutaway-layer="full" aria-pressed="true">
+          Full Ship
+        </button>
+        <button type="button" class="outline-pill-btn" data-cutaway-layer="deck7" aria-pressed="false">
+          Deck 7 · Rugantino
+        </button>
+        <button type="button" class="outline-pill-btn pill-featured" data-cutaway-layer="deck6" aria-pressed="false">
+          Deck 6 · Arlecchino (2 Blocks)
+        </button>
+        <button type="button" class="outline-pill-btn" data-cutaway-layer="deck5" aria-pressed="false">
+          Deck 5 · Colombina
+        </button>
+      </div>
+
+      <!-- Stage 2 Toolbar: Interior Camera Modes & Table Labels -->
+      <div id="interior-toolbar" class="interior-toolbar" hidden>
+        <div class="outline-pill-group" role="group" aria-label="Camera view mode">
+          <button type="button" class="outline-pill-btn mode-btn active" data-cam-mode="bird" aria-pressed="true">
+            <svg class="v-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            <span>Bird's-Eye</span>
+          </button>
+          <button type="button" class="outline-pill-btn mode-btn" data-cam-mode="top2d" aria-pressed="false">
+            <svg class="v-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+            <span>2D Plan</span>
+          </button>
+          <button type="button" class="outline-pill-btn mode-btn" data-cam-mode="walk" aria-pressed="false">
+            <svg class="v-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><path d="m10 22 1-5-3-3 1-5 5 2 2 3"/><path d="m14 22-1-5"/></svg>
+            <span>Walk</span>
+          </button>
+        </div>
+
+        <span class="toolbar-sep" aria-hidden="true"></span>
+
+        <label class="compact-switch" for="toggle-table-numbers" title="Show or hide table numbers on marble tabletops">
+          <input id="toggle-table-numbers" type="checkbox" switch checked />
+          <span>Table IDs</span>
+        </label>
+
+        <button type="button" id="btn-flip-orientation" class="icon-btn" title="Rotate view 180 degrees" aria-label="Rotate view 180 degrees">
+          <svg class="v-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          <span>180°</span>
+        </button>
+
+        <button type="button" id="btn-reset-view" class="icon-btn" title="Reset camera position" aria-label="Reset camera position">
+          <svg class="v-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+          <span>Reset</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- RIGHT CONTROLS: Back to Ship + Monospace Access Code -->
+    <div class="masthead-right">
+      <button type="button" id="btn-back-ship" class="btn-neutral-sm" hidden>
+        <svg class="v-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        <span>Ship View</span>
       </button>
-      <div class="access-token-box">
-        <label for="access-preset" class="token-label">Kode Akses DRS:</label>
-        <select id="access-preset" class="token-select" aria-label="Pilih skenario kode akses grup">
-          <option value="A98XKJ90" selected>A98XKJ90 — Corporate Incentive (Target: 44 Pax • 2 Blok)</option>
-          <option value="DIAMOND28">DIAMOND28 — Costa Club Diamond (Target: 28 Pax)</option>
-          <option value="CHARTER112">CHARTER112 — Full 2-Block Charter (Target: 112 Pax • Semua 24 Meja)</option>
+
+      <div class="token-pill">
+        <label for="access-preset" class="token-lbl">TOKEN</label>
+        <select id="access-preset" class="token-select" aria-label="Group access code">
+          <option value="A98XKJ90" selected>A98XKJ90 · 44 Pax</option>
+          <option value="DIAMOND28">DIAMOND28 · 28 Pax</option>
+          <option value="CHARTER112">CHARTER112 · 112 Pax</option>
         </select>
       </div>
     </div>
   </header>
 
-  <!-- STAGE 1 OVERLAY: COSTA SMERALDA 4-LAYER CUTAWAY SELECTOR -->
-  <section id="hero-ship-ui" class="hero-overlay">
-    <div class="hero-card glass-panel">
-      <div class="hero-badge">COSTA SMERALDA 3D • 4-LAYER CUTAWAY ANIMATION</div>
-      <h2>Eksplorasi Deck Restoran Costa Smeralda</h2>
-      <p>
-        Pilih lapis <strong>Cutaway Deck (Deck 5, Deck 6, atau Deck 7)</strong> di bawah. Pada <strong>Cutaway Deck 6</strong>, <strong>2 Blok Ristorante Arlecchino</strong> yang telah selesai divisualisasikan secara utuh di tengah kapal (sisanya masih berupa <em>placeholder</em>).
-      </p>
+  <!-- 3D WEBGL & CSS2D VIEWPORT -->
+  <div id="canvas-stage" aria-label="Interactive 3D view of Costa Smeralda and Ristorante Arlecchino">
+    <canvas id="webgl-canvas"></canvas>
+    <div id="css2d-layer"></div>
+  </div>
 
-      <!-- 4-Layer Cutaway Interactive Selector -->
-      <div class="cutaway-layer-stack" role="group" aria-label="Pilih Lapis Cutaway Kapal">
-        <button type="button" class="cutaway-layer-btn active" data-cutaway-layer="full">
-          <span class="cl-tag">UTUH</span>
-          <span class="cl-info">
-            <strong>Kapal Utuh (Deck 1 – Muffler Atas)</strong>
-            <small>Eksterior Costa Smeralda • Piazza di Spagna • Volare • Funnel</small>
-          </span>
-        </button>
-
-        <button type="button" class="cutaway-layer-btn" data-cutaway-layer="deck7">
-          <span class="cl-tag cl-tag-d7">LAPIS 3 • DECK 7</span>
-          <span class="cl-info">
-            <strong>Cutaway Deck 7 "Positano" ( angkat Deck 8–Muffler )</strong>
-            <small>Belakang: Ristorante Il Rugantino (Placeholder) &amp; Colosseo</small>
-          </span>
-        </button>
-
-        <button type="button" class="cutaway-layer-btn cl-featured" data-cutaway-layer="deck6">
-          <span class="cl-tag cl-tag-d6">★ LAPIS 2 • DECK 6</span>
-          <span class="cl-info">
-            <strong>Cutaway Deck 6 "Roma" — Arlecchino 2 Blok &amp; Meneghino</strong>
-            <small>Tengah: <strong>2 Blok Arlecchino (100% Detail)</strong> • Belakang: Il Meneghino</small>
-          </span>
-        </button>
-
-        <button type="button" class="cutaway-layer-btn" data-cutaway-layer="deck5">
-          <span class="cl-tag cl-tag-d5">LAPIS 1 • DECK 5</span>
-          <span class="cl-info">
-            <strong>Cutaway Deck 5 "Taormina" (Base Deck 4 Kebawah Tetap)</strong>
-            <small>Belakang: Ristorante La Colombina (Placeholder 978 Kursi)</small>
-          </span>
-        </button>
-      </div>
-
-      <div class="deck-Specs-grid">
-        <div class="spec-item">
-          <span class="spec-k">Restoran Aktif</span>
-          <span class="spec-v">Arlecchino (2 Blok)</span>
-        </div>
-        <div class="spec-item">
-          <span class="spec-k">Lokasi Deck 6</span>
-          <span class="spec-v">Block 1 Port &amp; Block 2 Stbd</span>
-        </div>
-        <div class="spec-item">
-          <span class="spec-k">Total Kapasitas</span>
-          <span class="spec-v">24 Meja • 112 Kursi</span>
+  <!-- STAGE 1: COMPACT SHIP CUTAWAY CARD (Bottom-Left, Minimal & Unobtrusive) -->
+  <section id="hero-ship-ui" class="ship-card-wrap view-panel is-active">
+    <div class="costa-card ship-inspector-card">
+      <div class="card-eyebrow" id="ship-card-eyebrow">DECK 6 · ROMA (MID-SHIP)</div>
+      <div class="card-headline-row">
+        <span class="yellow-bar" aria-hidden="true"></span>
+        <div>
+          <h2 class="card-title" id="ship-card-title">Ristorante Arlecchino<span class="title-dot">.</span></h2>
+          <p class="card-sub" id="ship-card-desc">2 blocks modeled in full 3D detail (24 tables · 112 seats). Remaining zones shown as architectural placeholders.</p>
         </div>
       </div>
 
-      <div class="hero-actions">
-        <button type="button" id="btn-enter-deck6" class="btn-primary-gold">
-          <span>🔍 Klik Masuk ke 2 Blok Ristorante Arlecchino (24 Meja)</span>
+      <div class="ship-layer-mini-list" role="group" aria-label="Cutaway deck overview">
+        <button type="button" class="layer-row" data-cutaway-layer="deck7">
+          <span class="lr-code">DECK 7</span>
+          <span class="lr-name">Il Rugantino (Aft)</span>
+          <span class="lr-tag lr-tag-muted">Placeholder</span>
+        </button>
+        <button type="button" class="layer-row is-highlighted" data-cutaway-layer="deck6">
+          <span class="lr-code">DECK 6</span>
+          <span class="lr-name">Arlecchino (Mid) &amp; Meneghino</span>
+          <span class="lr-tag lr-tag-ready">2 Blocks Ready</span>
+        </button>
+        <button type="button" class="layer-row" data-cutaway-layer="deck5">
+          <span class="lr-code">DECK 5</span>
+          <span class="lr-name">La Colombina (Aft)</span>
+          <span class="lr-tag lr-tag-muted">Placeholder</span>
         </button>
       </div>
-      <div class="hero-hint">
-        💡 Tip: Klik tombol <strong>Cutaway Deck 6</strong> untuk melihat 2 blok Arlecchino di dalam kapal, lalu klik langsung area <strong>Arlecchino</strong> yang menyala emas di lambung kapal untuk masuk!
-      </div>
+
+      <!-- ONE PRIMARY ACTION PER SCREEN (Costa Yellow #F9B000 + Dark Ink #0A2A38) -->
+      <button type="button" id="btn-enter-deck6" class="btn-costa-primary">
+        <span>Open Ristorante Arlecchino (24 Tables)</span>
+        <svg class="v-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
     </div>
   </section>
 
-  <!-- STAGE 2 OVERLAY: INTERIOR RESTAURANT NAVIGATION & CONTROLS (2 BLOCKS: 24 TABLES) -->
-  <section id="interior-ui" class="interior-overlay" hidden>
-    <!-- Top-Center Camera Mode & Table Number Controls -->
-    <div class="camera-dock glass-panel" role="toolbar" aria-label="Kontrol Kamera 3D dan Tampilan Nomor Meja">
-      <div class="mode-group" role="group" aria-label="Pilih Mode Kamera">
-        <button type="button" class="mode-btn active" data-cam-mode="bird">
-          <span class="mode-ic">🦅</span>
-          <span class="mode-txt">
-            <strong>Bird's-Eye Mode</strong>
-            <small>2 Blok Tanpa Atap • Orbit 3D</small>
-          </span>
-        </button>
-        <button type="button" class="mode-btn" data-cam-mode="top2d">
-          <span class="mode-ic">🗺️</span>
-          <span class="mode-txt">
-            <strong>Top-View 2D Mode</strong>
-            <small>Lurus 90° • 2 Blok Utuh</small>
-          </span>
-        </button>
-        <button type="button" class="mode-btn" data-cam-mode="walk">
-          <span class="mode-ic">🚶</span>
-          <span class="mode-txt">
-            <strong>Walk Mode</strong>
-            <small>First-Person • Atap Utuh</small>
-          </span>
-        </button>
+  <!-- STAGE 2: INTERIOR RESTAURANT UI (Clean Collapsible Right Drawer + Minimal Bottom Status) -->
+  <section id="interior-ui" class="interior-overlay view-panel">
+    <!-- Compact Walk Mode Bar (Only visible in Walk Mode) -->
+    <div id="walk-hud" class="walk-bar costa-card" hidden>
+      <div class="dpad-inline" role="group" aria-label="Walk movement controls">
+        <button type="button" class="btn-neutral-xs" data-walk-dir="forward" title="Move Forward (W)">W ▲</button>
+        <button type="button" class="btn-neutral-xs" data-walk-dir="left" title="Strafe Left (A)">A ◀</button>
+        <button type="button" class="btn-neutral-xs" data-walk-dir="backward" title="Move Back (S)">S ▼</button>
+        <button type="button" class="btn-neutral-xs" data-walk-dir="right" title="Strafe Right (D)">D ▶</button>
       </div>
-
-      <div class="dock-divider" aria-hidden="true"></div>
-
-      <!-- Native HTML Switch for View / Hide Table Number -->
-      <div class="switch-group">
-        <label class="switch-label" for="toggle-table-numbers">
-          <span class="switch-text-wrap">
-            <span class="switch-title">Label Nomor Meja (24)</span>
-            <span class="switch-sub" id="table-num-state-text">View (Tampil Jelas)</span>
-          </span>
-          <input id="toggle-table-numbers" type="checkbox" switch checked />
-        </label>
-      </div>
-
-      <!-- Contextual Sub-Actions (Rotate 180 in 2D / Quick Angles) -->
-      <div class="sub-actions" id="camera-sub-actions">
-        <button type="button" id="btn-flip-orientation" class="btn-chip" title="Putar arah pandang 180 derajat">
-          ↻ Putar Sudut 180°
-        </button>
-        <button type="button" id="btn-reset-view" class="btn-chip" title="Reset posisi kamera">
-          🎯 Reset Kamera
-        </button>
+      <span class="toolbar-sep" aria-hidden="true"></span>
+      <div class="teleport-inline" role="group" aria-label="Quick viewpoint locations">
+        <button type="button" class="btn-chip active" data-walk-spot="corridor">Corridor</button>
+        <button type="button" class="btn-chip" data-walk-spot="entrance2">Entrance 2</button>
+        <button type="button" class="btn-chip" data-walk-spot="b1_center">Block 1 Window</button>
+        <button type="button" class="btn-chip" data-walk-spot="b1_station">Block 1 Station</button>
+        <button type="button" class="btn-chip" data-walk-spot="b2_center">Block 2 Center</button>
+        <button type="button" class="btn-chip" data-walk-spot="b2_sofa">Block 2 Sofa</button>
       </div>
     </div>
 
-    <!-- Walk Mode On-Screen Controller & Viewpoint Teleports (Only shown in Walk Mode) -->
-    <div id="walk-hud" class="walk-hud glass-panel" hidden>
-      <div class="walk-hud-header">
-        <strong>🚶 Navigasi Jalan Kaki 2 Blok (Block 1 Portside • Koridor Medali • Block 2 Starboard)</strong>
-        <span>Gunakan <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / Tombol Panah, atau tombol di bawah. Geser mouse untuk menoleh.</span>
+    <!-- Compact Single-Line Hover Pill (Bottom-Left, only appears when hovering a 3D table) -->
+    <div id="hover-glass-card" class="hover-status-pill costa-card" hidden aria-live="polite">
+      <span class="hsp-num" id="hgc-number">303</span>
+      <div class="hsp-body">
+        <strong id="hgc-title">Table 303 · 6 Seats</strong>
+        <span id="hgc-desc">Block 1 Port · Ocean Window</span>
       </div>
-      <div class="walk-controls-row">
-        <div class="dpad-grid" role="group" aria-label="Tombol Jalan Kaki">
-          <button type="button" class="dpad-btn dpad-up" data-walk-dir="forward" title="Maju (W)">▲ Maju</button>
-          <button type="button" class="dpad-btn dpad-left" data-walk-dir="left" title="Geser Kiri (A)">◀ Kiri</button>
-          <button type="button" class="dpad-btn dpad-down" data-walk-dir="backward" title="Mundur (S)">▼ Mundur</button>
-          <button type="button" class="dpad-btn dpad-right" data-walk-dir="right" title="Geser Kanan (D)">Kanan ▶</button>
-        </div>
-        <div class="teleport-list">
-          <span class="teleport-label">Pindah Cepat Titik Berdiri (2 Blok):</span>
-          <div class="teleport-chips">
-            <button type="button" class="btn-chip active" data-walk-spot="corridor">1. Koridor Medali Tengah</button>
-            <button type="button" class="btn-chip" data-walk-spot="entrance2">2. Pintu Masuk Kedua (466/464)</button>
-            <button type="button" class="btn-chip" data-walk-spot="b1_center">3. Block 1 (Portside • Jendela)</button>
-            <button type="button" class="btn-chip" data-walk-spot="b1_station">4. Block 1 Waiter Station</button>
-            <button type="button" class="btn-chip" data-walk-spot="b2_center">5. Block 2 (Starboard • Tengah)</button>
-            <button type="button" class="btn-chip" data-walk-spot="b2_sofa">6. Block 2 Dinding Sofa (384–374)</button>
-          </div>
-        </div>
-      </div>
+      <span class="hsp-badge" id="hgc-status">Available</span>
     </div>
 
-    <!-- Floating Glassmorphism Hover Pre-Selection Card -->
-    <div id="hover-glass-card" class="hover-glass-card" hidden aria-live="polite">
-      <div class="hgc-header">
-        <span class="hgc-badge" id="hgc-status">TERSEDIA</span>
-        <span class="hgc-zone" id="hgc-zone">Window Row</span>
-      </div>
-      <div class="hgc-main">
-        <div class="hgc-number" id="hgc-number">303</div>
-        <div class="hgc-details">
-          <strong id="hgc-title">Meja 303 • 6 Kursi</strong>
-          <span id="hgc-desc">Kursi Ivory Leatherette • Tepi Jendela Laut</span>
-        </div>
-      </div>
-      <div class="hgc-footer" id="hgc-footer">
-        ✨ Klik meja untuk memilih / membatalkan pilihan grup
-      </div>
-    </div>
+    <!-- Drawer Toggle Button (Allows operator to collapse right panel for 100% full-screen 3D view) -->
+    <button type="button" id="btn-toggle-drawer" class="drawer-toggle-btn costa-card" title="Toggle table allocation panel" aria-label="Toggle table allocation panel" aria-expanded="true">
+      <svg class="v-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+      <span id="drawer-toggle-label">Hide Panel</span>
+    </button>
 
-    <!-- Right Sidebar: Live Group Pax Counter & 2-Block Table Inventory (24 Tables / 112 Seats) -->
-    <aside class="drs-sidebar glass-panel" aria-label="Panel Ringkasan Reservasi Grup">
+    <!-- Right Allocation Drawer (Fixed Header, Scrollable Table List, Fixed Footer) -->
+    <aside id="drs-drawer" class="drs-sidebar costa-card" aria-label="Group table allocation">
       <div class="sidebar-header">
         <div>
-          <span class="sidebar-eyebrow">RISTORANTE ARLECCHINO • 2 BLOK (24 MEJA)</span>
-          <h3>Alokasi Kursi Grup</h3>
+          <span class="card-eyebrow">ARLECCHINO · 2 BLOCKS</span>
+          <h3 class="sidebar-title">Group Seating<span class="title-dot">.</span></h3>
         </div>
-        <span class="pax-pill" id="pax-status-pill">Pilih Meja</span>
+        <span class="status-pill" id="pax-status-pill">0 / 44 Pax</span>
       </div>
 
-      <!-- Progress Bar & Pax Metrics -->
-      <div class="pax-meter-box">
-        <div class="pax-numbers">
-          <div>
-            <span class="pax-lbl">Kursi Terpilih</span>
-            <strong class="pax-val" id="selected-pax-count">0</strong>
-            <span class="pax-unit">/ <span id="target-pax-count">44</span> Pax</span>
-          </div>
-          <div class="pax-right">
-            <span class="pax-lbl">Meja Dipilih</span>
-            <strong class="pax-val-sm" id="selected-table-count">0 Meja</strong>
-          </div>
+      <!-- Compact Pax Meter -->
+      <div class="pax-meter">
+        <div class="pax-meter-top">
+          <span class="pm-label">Allocated Seats</span>
+          <span class="pm-numbers">
+            <strong id="selected-pax-count">0</strong> / <span id="target-pax-count">44</span> Pax
+            <span class="pm-tables">(<span id="selected-table-count">0 Tables</span>)</span>
+          </span>
         </div>
         <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="44" aria-valuenow="0" id="pax-progressbar">
           <div class="progress-fill" id="pax-progress-fill" style="width: 0%"></div>
         </div>
-        <p class="pax-helper" id="pax-helper-text">
-          Mencakup <strong>Block 1 (Portside • 10 Meja)</strong> &amp; <strong>Block 2 (Starboard • 14 Meja)</strong> = 112 Kursi.
-        </p>
       </div>
 
-      <!-- Block Filter Tabs (All 24 / Block 1 / Block 2) -->
-      <div class="block-filter-bar" role="group" aria-label="Filter Blok Meja">
-        <button type="button" class="block-filter-btn active" data-block-filter="all">Semua (24)</button>
+      <!-- Block Filter Tabs -->
+      <div class="block-filter-bar" role="group" aria-label="Filter tables by block">
+        <button type="button" class="block-filter-btn active" data-block-filter="all">All (24)</button>
         <button type="button" class="block-filter-btn" data-block-filter="B1">Block 1 Port (10)</button>
         <button type="button" class="block-filter-btn" data-block-filter="B2">Block 2 Stbd (14)</button>
       </div>
 
-      <!-- Legend -->
-      <div class="status-legend">
-        <span class="leg-item"><i class="dot dot-avail"></i> Tersedia</span>
-        <span class="leg-item"><i class="dot dot-hover"></i> Hover Glass</span>
-        <span class="leg-item"><i class="dot dot-sel"></i> Terpilih</span>
-        <span class="leg-item"><i class="dot dot-lock"></i> Terkunci</span>
-      </div>
-
-      <!-- Interactive Table List (Synced 2-way with 3D tables!) -->
+      <!-- Scrollable Table List (overscroll-behavior: contain) -->
       <div class="table-list-scroll" id="sidebar-table-list" role="list"></div>
 
-      <!-- Sidebar Footer Actions -->
-      <div class="sidebar-actions">
-        <div class="Quick-row">
-          <button type="button" id="btn-auto-recommend" class="btn-secondary-sm" title="Pilih otomatis meja berdekatan sesuai target pax">
-            ✨ Auto-Pilih Berdekatan
+      <!-- Fixed Actions Footer (One Primary Yellow Button per Costa Guidelines) -->
+      <div class="sidebar-footer">
+        <div class="footer-secondary-row">
+          <button type="button" id="btn-auto-recommend" class="btn-neutral-sm" title="Automatically select adjacent tables matching group target">
+            Auto-Select Adjacent
           </button>
-          <button type="button" id="btn-clear-selection" class="btn-secondary-sm">
-            Bersihkan
+          <button type="button" id="btn-clear-selection" class="btn-neutral-sm">
+            Clear
           </button>
         </div>
-        <button type="button" id="btn-confirm-booking" class="btn-primary-gold" disabled>
-          Konfirmasi Reservasi Grup (0 Pax)
+        <button type="button" id="btn-confirm-booking" class="btn-costa-primary" disabled>
+          <span>Confirm Group Seating (0 Pax)</span>
         </button>
       </div>
     </aside>
@@ -285,32 +238,32 @@
 
   <!-- Loading Overlay -->
   <div id="loading-overlay" class="loading-overlay">
-    <div class="loader-box glass-panel">
+    <div class="loader-box costa-card">
       <div class="spinner"></div>
-      <h3 id="loader-title">Memuat 3D Costa Smeralda &amp; 2 Blok Ristorante Arlecchino...</h3>
-      <p id="loader-sub">Memuat model kapal 4-lapis cutaway (.glb) dan 24 meja Digital Twin Arlecchino</p>
+      <h3 id="loader-title">Loading Costa Smeralda 3D</h3>
+      <p id="loader-sub">Preparing 4-layer ship cutaway and Ristorante Arlecchino (24 tables)</p>
     </div>
   </div>
 
-  <!-- Native Modal Dialog with Light-Dismiss (closedby="any" per modern-web-guidance) -->
-  <dialog id="booking-dialog" closedby="any" aria-labelledby="dialog-booking-title" class="booking-dialog glass-panel">
+  <!-- Native Modal Dialog with Light-Dismiss (closedby="any") -->
+  <dialog id="booking-dialog" closedby="any" aria-labelledby="dialog-booking-title" class="booking-dialog costa-card">
     <form method="dialog" class="dialog-form">
       <div class="dialog-top">
-        <span class="hero-badge">KONFIRMASI RESMI DRS KAPAL</span>
-        <button type="submit" class="dialog-close-x" aria-label="Tutup dialog">✕</button>
+        <span class="card-eyebrow">OFFICIAL DRS CONFIRMATION</span>
+        <button type="submit" class="dialog-close-x" aria-label="Close dialog">✕</button>
       </div>
-      <h2 id="dialog-booking-title">Reservasi Grup Berhasil Dikonfirmasi</h2>
+      <h2 id="dialog-booking-title" class="dialog-title">Group Seating Confirmed<span class="title-dot">.</span></h2>
       <p class="dialog-lead">
-        Data meja pilihan Anda telah siap dikirim ke <strong>Onboard Maitre D' &amp; Shoreside DRS Costa Smeralda</strong> tanpa perlu mencoret file Excel/Outlook manual.
+        Handed over to the shipboard DRS manifest for <strong>Ristorante Arlecchino (Deck 6)</strong>.
       </p>
       <div class="summary-sheet" id="dialog-summary-content"></div>
       <div class="dialog-actions">
-        <button type="button" id="btn-copy-manifest" class="btn-secondary">📋 Salin Manifest DRS</button>
-        <button type="submit" class="btn-primary-gold">Selesai &amp; Tutup</button>
+        <button type="button" id="btn-copy-manifest" class="btn-neutral-sm">Copy Manifest</button>
+        <button type="submit" class="btn-costa-primary btn-dialog-done">Done</button>
       </div>
     </form>
   </dialog>
 
-  <script type="module" src="./app.js?v=20261026"></script>
+  <script type="module" src="./app.js?v=20261026b"></script>
 </body>
 </html>
