@@ -295,17 +295,67 @@ const renderer = new THREE.WebGLRenderer({
   antialias: true,
   powerPreference: 'high-performance',
 });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight - 57);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.12;
+renderer.toneMappingExposure = 1.08;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 // Performance optimization: Do NOT re-render shadow maps 60 times/sec on static geometry!
 renderer.shadowMap.autoUpdate = false;
 
+const maxAnisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+
 function requestShadowUpdate() {
   renderer.shadowMap.needsUpdate = true;
+}
+
+function fixFloorAndCarpetMesh(child) {
+  const n = child.name || '';
+  // 1. Eliminate coplanar Z-fighting on red carpet & tile alcoves:
+  // Floor_Dining_Carpet already covers X=[-1.55, 10.40], Y=[0, 7.58] up to the Waiter Station face.
+  // Floor_Dining_Carpet_Alcove overlapped X=[-1.55, -0.05] at the exact same Z=0.0000 with shifted UVs!
+  if (n.includes('Floor_Dining_Carpet_Alcove')) {
+    child.visible = false;
+    return;
+  }
+  if (
+    n.includes('Floor_Block2_Carpet_Alcove') ||
+    n.includes('Floor_Rotunda_Aft_Tile')
+  ) {
+    child.position.y -= 0.006;
+    if (child.material) {
+      child.material = child.material.clone();
+      child.material.polygonOffset = true;
+      child.material.polygonOffsetFactor = 4;
+      child.material.polygonOffsetUnits = 4;
+    }
+  }
+
+  // 2. Ensure uniform rich Venetian crimson color & sharp anisotropic filtering on carpets/tiles
+  const mats = Array.isArray(child.material) ? child.material : [child.material];
+  for (const mat of mats) {
+    if (!mat) continue;
+    if (mat.map && mat.map.anisotropy < maxAnisotropy) {
+      mat.map.anisotropy = maxAnisotropy;
+      mat.map.needsUpdate = true;
+    }
+    if (mat.bumpMap && mat.bumpMap.anisotropy < maxAnisotropy) {
+      mat.bumpMap.anisotropy = maxAnisotropy;
+      mat.bumpMap.needsUpdate = true;
+    }
+    if (
+      (mat.name && mat.name.includes('Mat_Arlecchino_Carpet')) ||
+      n.includes('Carpet')
+    ) {
+      // Remove white grazing-angle sheen that washed out carpet color into pale pink
+      if ('sheen' in mat) mat.sheen = 0;
+      if ('sheenRoughness' in mat) mat.sheenRoughness = 1.0;
+      mat.roughness = 0.92;
+      mat.metalness = 0.0;
+      mat.needsUpdate = true;
+    }
+  }
 }
 
 const labelRenderer = new CSS2DRenderer({ element: css2dContainer });
@@ -356,23 +406,25 @@ const sunLight = new THREE.DirectionalLight(0xfffbeb, 2.3);
 sunLight.position.set(28, 42, 34);
 sunLight.castShadow = true;
 sunLight.shadow.mapSize.set(1024, 1024);
+sunLight.shadow.bias = -0.0005;
 sunLight.shadow.camera.near = 2;
 sunLight.shadow.camera.far = 140;
-sunLight.shadow.camera.left = -40;
-sunLight.shadow.camera.right = 40;
-sunLight.shadow.camera.top = 30;
-sunLight.shadow.camera.bottom = -30;
+sunLight.shadow.camera.left = -45;
+sunLight.shadow.camera.right = 45;
+sunLight.shadow.camera.top = 35;
+sunLight.shadow.camera.bottom = -35;
+sunLight.shadow.camera.updateProjectionMatrix();
 scene.add(sunLight);
 
-// Optimized Interior Lighting: Only 3 wide-range PointLights (1 per Block + Corridor) instead of 14!
+// Symmetrical Interior Fill Lighting across Block 1, Corridor, and Block 2 (No harsh hotspots)
 const interiorLightGroup = new THREE.Group();
 scene.add(interiorLightGroup);
 [
-  [5.2, 2.6, -3.8, 0xffe4b5, 6.2, 16.0],  // Block 1 Portside
-  [4.5, 2.6, -8.73, 0xfff0d4, 5.0, 14.0], // Central Medallion Corridor
-  [4.8, 2.6, -13.8, 0xffe4b5, 6.2, 16.0], // Block 2 Starboardside
+  [4.5, 3.2, -3.8, 0xffe8c2, 1.6, 22.0],  // Block 1 Portside even fill
+  [4.5, 3.2, -8.73, 0xfff0d4, 1.4, 18.0], // Central Medallion Corridor
+  [4.5, 3.2, -13.68, 0xffe8c2, 1.6, 22.0], // Block 2 Starboardside identical fill
 ].forEach(([lx, ly, lz, col, intensity, dist]) => {
-  const pt = new THREE.PointLight(col, intensity, dist, 1.2);
+  const pt = new THREE.PointLight(col, intensity, dist, 0.9);
   pt.castShadow = false;
   pt.position.set(lx, ly, lz);
   interiorLightGroup.add(pt);
@@ -461,6 +513,7 @@ gltfLoader.load(
       if (child.name === 'Ship_Layer4_Top_Deck8ToMuffler') shipLayerNodes.L4 = child;
 
       if (child.isMesh) {
+        fixFloorAndCarpetMesh(child);
         // Only cast shadows on exterior ship hull/superstructure, not tiny embedded tableware
         const isEmbeddedDetail =
           child.parent &&
@@ -491,15 +544,6 @@ gltfLoader.load(
         new THREE.Vector3(-25.8, 3.7, 0.0),
         shipLayerNodes.L2
       );
-
-      deckCutawayLabels.arlecchinoMain = makeDeckLabel(
-        'Deck 6 · Arlecchino (2 Blocks) →',
-        'ship-hotspot-marker',
-        new THREE.Vector3(-1.5, 3.85, 1.85),
-        shipLayerNodes.L2,
-        () => enterInterior2Blocks()
-      );
-      deckCutawayLabels.arlecchinoMain.el.classList.remove('is-hidden');
     }
 
     if (shipLayerNodes.L3) {
@@ -639,6 +683,7 @@ gltfLoader.load(
 
     model.traverse((child) => {
       if (!child.isMesh) return;
+      fixFloorAndCarpetMesh(child);
       const n = child.name || '';
 
       // Only cast shadows on main structural objects, not small plates/glasses/frames
@@ -826,10 +871,21 @@ function animateCameraTo(targetPos, targetLookAt, durationMs = 800, onDone = nul
 function setHeroShipCamera(instant = false) {
   currentStage = 'ship';
   activeCamera = perspCamera;
+  perspCamera.fov = 42;
+  perspCamera.up.set(0, 1, 0);
+  perspCamera.updateProjectionMatrix();
+
   controls.object = perspCamera;
   controls.enabled = true;
   controls.enableRotate = true;
   controls.maxPolarAngle = Math.PI * 0.48;
+
+  // Restore exterior ship lighting & shadow map
+  sunLight.position.set(28, 42, 34);
+  sunLight.intensity = 2.3;
+  sunLight.castShadow = true;
+  ambientLight.intensity = 1.55;
+  hemiLight.intensity = 1.25;
 
   shipStageGroup.visible = true;
   restaurantGroup.visible = false;
@@ -841,15 +897,13 @@ function setHeroShipCamera(instant = false) {
   document.getElementById('interior-ui').classList.remove('is-active');
   document.getElementById('ship-toolbar').hidden = false;
   document.getElementById('interior-toolbar').hidden = true;
-  document.getElementById('btn-back-ship').hidden = true;
 
+  // Always return to Full Ship view on Dashboard when clicking Costa Smeralda title
+  setShipCutawayLayer('full', !instant);
   if (instant) {
-    setShipCutawayLayer('full', false);
     perspCamera.position.set(34, 17, 46);
     controls.target.set(0, 5.2, 0);
     controls.update();
-  } else {
-    setShipCutawayLayer('deck6', true);
   }
 }
 
@@ -874,17 +928,22 @@ function enterInterior2Blocks() {
       restaurantGroup.visible = true;
       interiorLightGroup.visible = true;
 
+      // Uniform symmetrical interior lighting (prevents exterior wall shadows or color differences between Block 1 & Block 2)
+      sunLight.position.set(4.5, 48, -8.73);
+      sunLight.intensity = 1.15;
+      sunLight.castShadow = false;
+      ambientLight.intensity = 1.75;
+      hemiLight.intensity = 1.3;
+
       document.getElementById('hero-ship-ui').classList.remove('is-active');
       document.getElementById('interior-ui').classList.add('is-active');
       document.getElementById('ship-toolbar').hidden = true;
       document.getElementById('interior-toolbar').hidden = false;
-      document.getElementById('btn-back-ship').hidden = false;
       document.getElementById('stage-subtitle').textContent =
         'DECK 6 ROMA · RISTORANTE ARLECCHINO (2 BLOCKS · 24 TABLES)';
 
       setInteriorCameraMode('bird');
       updateTableMarkersVisibility();
-      requestShadowUpdate();
     }
   );
 }
@@ -1268,11 +1327,17 @@ window.addEventListener('pointerup', (event) => {
 // 9. UI EVENT LISTENERS
 // ============================================================================
 document.getElementById('btn-enter-deck6').addEventListener('click', enterInterior2Blocks);
-document.getElementById('btn-back-ship').addEventListener('click', () => setHeroShipCamera(false));
+document.getElementById('btn-brand-home').addEventListener('click', () => setHeroShipCamera(false));
 
 document.querySelectorAll('[data-cutaway-layer]').forEach((btn) => {
   btn.addEventListener('click', () => {
-    setShipCutawayLayer(btn.dataset.cutawayLayer, true);
+    const layer = btn.dataset.cutawayLayer;
+    // If user clicks Deck 6 Arlecchino when already viewing Deck 6 cutaway, open the 2-block interior
+    if (layer === 'deck6' && currentStage === 'ship' && currentCutawayMode === 'deck6') {
+      enterInterior2Blocks();
+      return;
+    }
+    setShipCutawayLayer(layer, true);
   });
 });
 
@@ -1299,10 +1364,6 @@ drawerToggleBtn.addEventListener('click', () => {
   drawerToggleBtn.classList.toggle('is-collapsed', isDrawerCollapsed);
   drawerToggleBtn.setAttribute('aria-expanded', String(!isDrawerCollapsed));
   drawerToggleLabel.textContent = isDrawerCollapsed ? 'Show Panel' : 'Hide Panel';
-});
-
-document.getElementById('access-preset').addEventListener('change', (e) => {
-  applyAccessPreset(e.target.value);
 });
 
 document.querySelectorAll('.mode-btn').forEach((btn) => {
