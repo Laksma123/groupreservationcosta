@@ -297,33 +297,88 @@ input[type="checkbox"][switch] {
   border-color: var(--border-card);
 }
 
-/* Access Token Selector (Monospace per Costa Guidelines: "If a value can be mistyped, it is monospaced") */
-.token-pill {
+/* Stage 0 Masthead Locked Status & Active Session Token Bar */
+.gate-masthead-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 7px;
+  background-color: var(--surface-inner);
+  border: 1px solid var(--border-inner);
+}
+
+.gms-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--sel);
+  box-shadow: 0 0 0 3px var(--sel-dim);
+}
+
+.gms-text {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.45px;
+  color: var(--muted);
+}
+
+.active-session-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 8px;
+}
+
+.session-token-pill {
   height: 32px;
   padding: 0 10px;
   border-radius: 7px;
-  border: 1px solid var(--border-card);
-  background-color: var(--surface-inner);
+  border: 1px solid var(--brand-border);
+  background-color: var(--brand-dim);
   display: inline-flex;
   align-items: center;
   gap: 7px;
 }
 
-.token-lbl {
-  font-size: 9.5px;
+.stp-welcome {
+  font-size: 11px;
   font-weight: 700;
-  color: var(--muted);
-  letter-spacing: 0.5px;
+  color: var(--ink);
+  max-width: 190px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.token-select {
-  border: none;
-  background: transparent;
-  color: var(--ink);
-  font-family: var(--font-mono);
-  font-size: 11.5px;
+.stp-sep {
+  color: var(--muted);
   font-weight: 700;
-  cursor: pointer;
+}
+
+.stp-code {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--brand);
+}
+
+.stp-ttl {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background-color: var(--good-bg);
+  border: 1px solid var(--good-border);
+  color: var(--good-ink);
+}
+
+.stp-ttl.is-warn {
+  background-color: var(--warn-bg);
+  border-color: var(--warn-border);
+  color: var(--warn-ink);
 }
 
 /* ============================================================================
@@ -826,7 +881,7 @@ input[type="checkbox"][switch] {
 /* Block Filter Tabs */
 .block-filter-bar {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 3px;
   background-color: var(--surface-inner);
   border: 1px solid var(--border-inner);
@@ -1200,9 +1255,409 @@ dialog::backdrop {
   min-width: 110px;
 }
 
+/* ============================================================================
+   8. STAGE 0: INITIAL ACCESS GATE PANEL (Left Side + 3D Ship on Right)
+   ============================================================================ */
+.gate-panel-wrap {
+  position: fixed;
+  left: 24px;
+  top: 57px;
+  bottom: 0;
+  z-index: 20;
+  width: min(392px, calc(100vw - 36px));
+  display: none;
+  align-items: center;
+  pointer-events: none;
+}
+
+.gate-panel-wrap.is-active {
+  display: flex;
+}
+
+@supports (content-visibility: hidden) {
+  .gate-panel-wrap {
+    display: flex;
+    content-visibility: hidden;
+  }
+  .gate-panel-wrap.is-active {
+    content-visibility: visible;
+  }
+}
+
+.gate-access-card {
+  width: 100%;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  pointer-events: auto;
+  box-shadow: 0 14px 36px rgba(5, 22, 36, 0.35);
+}
+
+.gate-badge-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.gate-lock-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 5px;
+  background-color: var(--warn-bg);
+  border: 1px solid var(--warn-border);
+  color: var(--warn-ink);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.gate-lock-tag .v-icon {
+  width: 12px;
+  height: 12px;
+}
+
+.gate-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.18;
+  outline: none;
+}
+
+.gate-form {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.gate-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.gate-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 3px;
+}
+
+.gate-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--ink);
+}
+
+.btn-inline-action {
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border-card);
+  background-color: var(--surface-inner);
+  color: var(--brand);
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-inline-action:hover {
+  background-color: var(--brand-dim);
+  border-color: var(--brand-border);
+}
+
+.gate-hint {
+  font-size: 10.5px;
+  color: var(--muted);
+  margin-bottom: 5px;
+}
+
+.gate-hint code {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.gate-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border-card);
+  background-color: var(--surface-inner);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  transition: border-color 0.14s ease, background-color 0.14s ease;
+}
+
+.gate-input::placeholder {
+  color: var(--faint);
+  font-weight: 600;
+  letter-spacing: 0.4px;
+}
+
+/* Modern Web Guidance: validate-input-after-interaction (:user-invalid / :user-valid) */
+.gate-input:user-invalid,
+.gate-input.user-invalid-fallback,
+.gate-input.is-code-error {
+  border-color: var(--bad-ink);
+  background-color: var(--bad-bg);
+}
+
+.gate-input:user-valid,
+.gate-input.is-code-valid {
+  border-color: var(--good-ink);
+  background-color: #FFFFFF;
+}
+
+.gate-error-msg {
+  margin-top: 5px;
+  padding: 6px 9px;
+  border-radius: 6px;
+  background-color: var(--bad-bg);
+  border: 1px solid var(--bad-border);
+  color: var(--bad-ink);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* Live Decoded Token Preview Box */
+.gate-token-preview {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background-color: var(--good-bg);
+  border: 1px solid var(--good-border);
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.gate-token-preview.is-expired {
+  background-color: var(--bad-bg);
+  border-color: var(--bad-border);
+}
+
+.gtp-greeting {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.gtp-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.gtp-status {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background-color: #FFFFFF;
+  border: 1px solid var(--good-border);
+  color: var(--good-ink);
+}
+
+.gate-token-preview.is-expired .gtp-status {
+  border-color: var(--bad-border);
+  color: var(--bad-ink);
+}
+
+.gtp-expiry {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--good-ink);
+}
+
+.gate-token-preview.is-expired .gtp-expiry {
+  color: var(--bad-ink);
+}
+
+.gtp-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.gtp-metric-box {
+  background-color: #FFFFFF;
+  border: 1px solid rgba(10, 42, 56, 0.08);
+  border-radius: 6px;
+  padding: 5px 7px;
+  display: flex;
+  flex-direction: column;
+}
+
+.gtp-m-val {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.gtp-m-lbl {
+  font-size: 9.5px;
+  color: var(--muted);
+}
+
+/* Quick Sample Codes Box */
+.gate-demo-box {
+  padding-top: 9px;
+  border-top: 1px solid var(--border-inner);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gate-demo-header {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+}
+
+.gate-demo-chips {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+}
+
+.demo-code-chip {
+  padding: 6px 6px;
+  border-radius: 6px;
+  border: 1px solid var(--border-inner);
+  background-color: var(--surface-inner);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  text-align: left;
+  transition: background-color 0.12s ease, border-color 0.12s ease;
+}
+
+.demo-code-chip:hover {
+  background-color: var(--brand-dim);
+  border-color: var(--brand-border);
+}
+
+.demo-code-chip code {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--brand);
+}
+
+.demo-code-chip span {
+  font-size: 9.5px;
+  color: var(--muted);
+}
+
+.gate-orbit-note {
+  padding: 7px 10px;
+  border-radius: 7px;
+  background-color: var(--surface-inner);
+  border: 1px solid var(--border-inner);
+  color: var(--muted);
+  font-size: 10.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Stage 1 & Stage 2 Welcome Banners */
+.ship-token-summary {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background-color: var(--brand-dim);
+  border: 1px solid var(--brand-border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sts-welcome {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
+  padding-bottom: 3px;
+  border-bottom: 1px solid rgba(0, 113, 163, 0.18);
+}
+
+.sts-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+}
+
+.sts-label {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.sts-val {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.sts-mono {
+  font-family: var(--font-mono);
+  color: var(--brand);
+}
+
+.sidebar-welcome-box {
+  padding: 7px 10px;
+  border-radius: 7px;
+  background-color: var(--brand-dim);
+  border: 1px solid var(--brand-border);
+  font-size: 11.5px;
+  color: var(--ink);
+  flex-shrink: 0;
+}
+
+.swb-greeting strong {
+  color: var(--brand);
+  font-weight: 700;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
 @media (max-width: 960px) {
-  .brand-sub {
+  .brand-sub,
+  .gms-text,
+  .stp-welcome,
+  .stp-sep {
     display: none;
+  }
+  .gate-panel-wrap {
+    top: auto;
+    bottom: 14px;
+    left: 14px;
+    width: calc(100vw - 28px);
+    max-width: 380px;
   }
   .ship-card-wrap {
     width: 300px;

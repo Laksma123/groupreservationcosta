@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Costa Smeralda — Group Dining Reservation System</title>
-  <link rel="stylesheet" href="./fonts.css?v=20261026c" />
-  <link rel="stylesheet" href="./styles.css?v=20261026c" />
+  <link rel="stylesheet" href="./fonts.css?v=20261026j" />
+  <link rel="stylesheet" href="./styles.css?v=20261026j" />
   <script type="importmap">
     {
       "imports": {
@@ -21,21 +21,27 @@
 
   <!-- FIXED TOP MASTHEAD (Official Costa Visual System) -->
   <header class="masthead">
-    <button type="button" id="btn-brand-home" class="masthead-left" title="Return to Full Ship View on Dashboard" aria-label="Return to Full Ship View on Dashboard">
+    <button type="button" id="btn-brand-home" class="masthead-left" title="Return to Ship View" aria-label="Return to Ship View">
       <img src="./logo.png" alt="Costa Cruises" class="brand-logo" width="32" height="38" />
       <div class="brand-text">
         <div class="brand-title-row">
           <span class="brand-title">COSTA SMERALDA</span>
           <span class="title-dot" aria-hidden="true">.</span>
         </div>
-        <span class="brand-sub" id="stage-subtitle">GROUP DINING RESERVATION SYSTEM</span>
+        <span class="brand-sub" id="stage-subtitle">B2B GROUP DINING RESERVATION PORTAL</span>
       </div>
     </button>
 
-    <!-- CENTER CONTEXTUAL BAR: Ship Cutaway Pills (Stage 1) OR Camera Controls (Stage 2) -->
+    <!-- CENTER/RIGHT CONTEXTUAL BAR -->
     <div class="masthead-center">
+      <!-- Stage 0 Toolbar: Locked Portal Indicator -->
+      <div id="gate-toolbar" class="gate-masthead-status">
+        <span class="gms-dot" aria-hidden="true"></span>
+        <span class="gms-text">EXTERIOR 3D PREVIEW · ENTER ACCESS CODE TO UNLOCK DECKS</span>
+      </div>
+
       <!-- Stage 1 Toolbar: 4-Layer Ship Cutaway Selector -->
-      <div id="ship-toolbar" class="outline-pill-group" role="group" aria-label="Deck cutaway layers">
+      <div id="ship-toolbar" class="outline-pill-group" role="group" aria-label="Deck cutaway layers" hidden>
         <button type="button" class="outline-pill-btn active" data-cutaway-layer="full" aria-pressed="true">
           Full Ship
         </button>
@@ -84,6 +90,21 @@
           <span>Reset</span>
         </button>
       </div>
+
+      <!-- Active Session Token Pill (Visible in Stage 1 & Stage 2) -->
+      <div id="active-session-bar" class="active-session-bar" hidden>
+        <span class="toolbar-sep" aria-hidden="true"></span>
+        <div class="session-token-pill" title="Active Group Access Code & Validity">
+          <span class="stp-welcome" id="active-welcome-badge">Welcome, Group</span>
+          <span class="stp-sep" aria-hidden="true">·</span>
+          <span class="stp-code" id="active-code-badge">A98XKJ90</span>
+          <span class="stp-ttl" id="active-expiry-badge">ACTIVE</span>
+        </div>
+        <button type="button" id="btn-change-code" class="icon-btn" title="Lock portal or enter a different access code" aria-label="Enter a different access code">
+          <svg class="v-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <span>Change Code</span>
+        </button>
+      </div>
     </div>
   </header>
 
@@ -93,15 +114,139 @@
     <div id="css2d-layer"></div>
   </div>
 
+  <!-- STAGE 0: INITIAL ACCESS CODE GATE (Left Panel + 3D Ship Orbit on Right) -->
+  <section id="gate-access-ui" class="gate-panel-wrap view-panel is-active" aria-labelledby="gate-heading">
+    <div class="costa-card gate-access-card">
+      <div class="gate-badge-row">
+        <span class="card-eyebrow">COSTA SMERALDA · EXCELLENCE CLASS</span>
+        <span class="gate-lock-tag">
+          <svg class="v-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <span>DRS Token Required</span>
+        </span>
+      </div>
+
+      <div class="card-headline-row">
+        <span class="yellow-bar" aria-hidden="true"></span>
+        <div>
+          <h1 class="gate-title" id="gate-heading" tabindex="-1">Group Dining Access<span class="title-dot">.</span></h1>
+          <p class="card-sub">
+            Enter your group reservation code to unlock the 3D deck cutaway and live table allocation for <strong>Ristorante Arlecchino (Deck 6)</strong>.
+          </p>
+        </div>
+      </div>
+
+      <form id="gate-access-form" class="gate-form" action="#" method="POST" novalidate>
+        <div class="gate-field">
+          <div class="gate-label-row">
+            <label for="gate-code-input" class="gate-label">SECRET ACCESS CODE</label>
+            <button type="button" id="btn-paste-code" class="btn-inline-action" title="Paste access code from clipboard">
+              Paste Code
+            </button>
+          </div>
+          <span id="gate-code-hint" class="gate-hint">
+            DRS token (e.g. <code>XXXXX-XXXXX-...</code>) or corporate preset
+          </span>
+          <input
+            type="text"
+            id="gate-code-input"
+            name="access_code"
+            class="gate-input"
+            required
+            minlength="6"
+            maxlength="48"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="characters"
+            spellcheck="false"
+            enterkeyhint="go"
+            placeholder="Paste or type DRS access code"
+            aria-describedby="gate-code-hint"
+            aria-errormessage="gate-code-error"
+          />
+          <div id="gate-code-error" class="gate-error-msg" role="alert" aria-live="polite" hidden></div>
+        </div>
+
+        <!-- Live Decoded Token Preview (Appears automatically when code is valid) -->
+        <div id="gate-token-preview" class="gate-token-preview" hidden>
+          <div class="gtp-greeting" id="gtp-greeting-text">Welcome, Milano Corporate!</div>
+          <div class="gtp-top">
+            <span class="gtp-status" id="gtp-status-badge">Verified Token</span>
+            <span class="gtp-expiry" id="gtp-expiry-text">Valid · 24h remaining</span>
+          </div>
+          <div class="gtp-metrics">
+            <div class="gtp-metric-box">
+              <span class="gtp-m-val" id="gtp-target-pax">44 Pax</span>
+              <span class="gtp-m-lbl">Group Size</span>
+            </div>
+            <div class="gtp-metric-box">
+              <span class="gtp-m-val" id="gtp-avail-tables">39 / 45</span>
+              <span class="gtp-m-lbl">Available Tables</span>
+            </div>
+            <div class="gtp-metric-box">
+              <span class="gtp-m-val" id="gtp-locked-tables">6 Locked</span>
+              <span class="gtp-m-lbl">Unavailable</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ONE PRIMARY ACTION PER SCREEN (Costa Yellow #F9B000 + Dark Ink #0A2A38) -->
+        <button type="submit" id="btn-unlock-portal" class="btn-costa-primary">
+          <span>Unlock Ship &amp; Restaurant Access</span>
+          <svg class="v-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+      </form>
+
+      <!-- Quick Sample / Demo Presets -->
+      <div class="gate-demo-box">
+        <div class="gate-demo-header">
+          <span>SAMPLE GROUP CODES (QUICK FILL)</span>
+        </div>
+        <div class="gate-demo-chips" role="group" aria-label="Sample access codes">
+          <button type="button" class="demo-code-chip" data-demo-code="A98XKJ90">
+            <code>A98XKJ90</code>
+            <span>44P · 6 Locked</span>
+          </button>
+          <button type="button" class="demo-code-chip" data-demo-code="DIAMOND28">
+            <code>DIAMOND28</code>
+            <span>28P · 4 Locked</span>
+          </button>
+          <button type="button" class="demo-code-chip" data-demo-code="CHARTER112">
+            <code>CHARTER112</code>
+            <span>Full 45 Tables</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 3D Exterior Preview Hint -->
+      <div class="gate-orbit-note">
+        <svg class="v-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        <span>Drag the 3D ship on the right to orbit 360°. Deck cutaways unlock after code verification.</span>
+      </div>
+    </div>
+  </section>
+
   <!-- STAGE 1: COMPACT SHIP CUTAWAY CARD (Bottom-Left, Minimal & Unobtrusive) -->
-  <section id="hero-ship-ui" class="ship-card-wrap view-panel is-active">
+  <section id="hero-ship-ui" class="ship-card-wrap view-panel" aria-labelledby="ship-card-title">
     <div class="costa-card ship-inspector-card">
       <div class="card-eyebrow" id="ship-card-eyebrow">DECK 6 · ROMA (MID-SHIP)</div>
       <div class="card-headline-row">
         <span class="yellow-bar" aria-hidden="true"></span>
         <div>
-          <h2 class="card-title" id="ship-card-title">Ristorante Arlecchino<span class="title-dot">.</span></h2>
+          <h2 class="card-title" id="ship-card-title" tabindex="-1">Ristorante Arlecchino<span class="title-dot">.</span></h2>
           <p class="card-sub" id="ship-card-desc">4 blocks modeled in full 3D detail (45 tables · 220 seats). Remaining zones shown as architectural placeholders.</p>
+        </div>
+      </div>
+
+      <!-- Active Code Allocation Summary inside Stage 1 Card -->
+      <div class="ship-token-summary" id="ship-token-summary">
+        <div class="sts-welcome" id="sts-welcome-banner">Welcome, Milano Corporate Incentive</div>
+        <div class="sts-row">
+          <span class="sts-label">Group &amp; Tables</span>
+          <span class="sts-val" id="sts-avail-Info">44 Pax · 39 Open / 6 Locked</span>
+        </div>
+        <div class="sts-row">
+          <span class="sts-label">Token Validity</span>
+          <span class="sts-val sts-mono" id="sts-expiry-info">Active Session</span>
         </div>
       </div>
 
@@ -125,14 +270,14 @@
 
       <!-- ONE PRIMARY ACTION PER SCREEN (Costa Yellow #F9B000 + Dark Ink #0A2A38) -->
       <button type="button" id="btn-enter-deck6" class="btn-costa-primary">
-        <span>Open Ristorante Arlecchino (45 Tables)</span>
+        <span id="btn-enter-deck6-label">Open Ristorante Arlecchino (45 Tables)</span>
         <svg class="v-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
       </button>
     </div>
   </section>
 
   <!-- STAGE 2: INTERIOR RESTAURANT UI (Clean Collapsible Right Drawer + Minimal Bottom Status) -->
-  <section id="interior-ui" class="interior-overlay view-panel">
+  <section id="interior-ui" class="interior-overlay view-panel" aria-labelledby="interior-sidebar-heading">
     <!-- Compact Walk Mode Bar (Only visible in Walk Mode) -->
     <div id="walk-hud" class="walk-bar costa-card" hidden>
       <div class="dpad-inline" role="group" aria-label="Walk movement controls">
@@ -173,10 +318,15 @@
     <aside id="drs-drawer" class="drs-sidebar costa-card" aria-label="Group table allocation">
       <div class="sidebar-header">
         <div>
-          <span class="card-eyebrow">ARLECCHINO · 4 BLOCKS</span>
-          <h3 class="sidebar-title">Group Seating<span class="title-dot">.</span></h3>
+          <span class="card-eyebrow" id="sidebar-eyebrow">ARLECCHINO · 4 BLOCKS</span>
+          <h3 class="sidebar-title" id="interior-sidebar-heading" tabindex="-1">Group Seating<span class="title-dot">.</span></h3>
         </div>
         <span class="status-pill" id="pax-status-pill">0 / 44 Pax</span>
+      </div>
+
+      <!-- Group Welcome Banner inside Sidebar -->
+      <div class="sidebar-welcome-box" id="sidebar-welcome-banner">
+        <span class="swb-greeting">Welcome, <strong id="sidebar-group-name">Milano Corporate Incentive</strong></span>
       </div>
 
       <!-- Compact Pax Meter -->
@@ -208,7 +358,7 @@
       <!-- Fixed Actions Footer (One Primary Yellow Button per Costa Guidelines) -->
       <div class="sidebar-footer">
         <div class="footer-secondary-row">
-          <button type="button" id="btn-auto-recommend" class="btn-neutral-sm" title="Automatically select adjacent tables matching group target">
+          <button type="button" id="btn-auto-recommend" class="btn-neutral-sm" title="Automatically select adjacent available tables">
             Auto-Select Adjacent
           </button>
           <button type="button" id="btn-clear-selection" class="btn-neutral-sm">
@@ -227,7 +377,7 @@
     <div class="loader-box costa-card">
       <div class="spinner"></div>
       <h3 id="loader-title">Loading Costa Smeralda 3D</h3>
-      <p id="loader-sub">Preparing 4-layer ship cutaway and Ristorante Arlecchino (4 Blocks · 45 Tables)</p>
+      <p id="loader-sub">Preparing Mediterranean seascape, 4-layer ship cutaway, and Ristorante Arlecchino (45 Tables)</p>
     </div>
   </div>
 
@@ -250,6 +400,6 @@
     </form>
   </dialog>
 
-  <script type="module" src="./app.js?v=20261026i"></script>
+  <script type="module" src="./app.js?v=20261026j"></script>
 </body>
 </html>
