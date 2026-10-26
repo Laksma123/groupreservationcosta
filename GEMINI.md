@@ -45,7 +45,7 @@ All agents MUST use this exact terminology and coordinate convention without exc
   * Blender `-X` (`X = -1.55m .. -1.95m`): Side where **Entrance 2 (Pintu Kedua)** is located in both Block 1 (near `301` & Double Waiter Station) and Block 2 (near `466, 464` & Waiter Station 1).
 * **Aft (Arah Belakang Kapal):**
   * Blender `+X` (`X = +10.15m` and beyond): Side where **Entrance 1 (Pintu Masuk Pertama)** and the **L-shaped corner railings (`pagar siku`)** (`407` & `472`) are located.
-  * Behind (Aft of) Block 1 and Block 2 with a ~2m gap (`X ≈ 12.90m, Y = 8.73m`) is the **Aft Corridor Crossroads (`Perempatan Koridor`)** featuring the **4-Leaf Clover Table (`Meja Clover`, 4 × Ø75cm discs with Portside & Starboardside leaves higher than Forward & Aft leaves)** and the **Grand Murano Chandelier** inside a circular recessed dome ceiling. (Blocks 3 & 4 lie further Aft behind this crossroads).
+  * Behind (Aft of) Block 1 and Block 2 with a ~2m gap (`X ≈ 12.90m, Y = 8.73m`) is the **Aft Corridor Crossroads (`Perempatan Koridor`)** featuring the **4-Leaf Clover Table (`Meja Clover`, 4 × Ø100cm discs with Portside & Starboardside leaves higher than Forward & Aft leaves)** and the **Grand Murano Chandelier** inside a circular recessed dome ceiling. (Blocks 3 & 4 lie further Aft behind this crossroads).
 
 ---
 

@@ -95,7 +95,7 @@ Seluruh file referensi teknis dan visual sudah tersedia di folder lokal:
 * **Garis Koridor Tengah:** Blender `Y = 7.58m .. 9.88m` (Tengah: `Y = 8.73m`).
 * **Forward (Depan Kapal):** Sisi `-X` (`X = -1.55m .. -1.95m`), tempat **Pintu Masuk Kedua (Entrance 2)** berada di kedua blok (`301` / `466-464`).
 * **Aft (Belakang Kapal):** Sisi `+X` (`X = +10.15m`), tempat **Pintu Masuk Pertama (Entrance 1)** dengan **pagar siku (L-shaped railing)** berada di kedua blok (`407` & `472`).
-* **Perempatan Koridor Aft & Meja Clover:** Tepat di belakang (Aft) kedua blok pada garis tengah koridor (`Y = 8.73m`) dengan jarak (gap) ~2 meter dari kedua blok (`X ≈ 12.90m`), terdapat perempatan koridor dengan **Meja Clover (4 daun bundar Ø75cm; sisi Portside & Starboardside lebih tinggi daripada sisi Forward & Aft)** serta **Lampu Hias Besar (Grand Murano Chandelier)** di bawah kubah plafon bundar. (Di belakang meja clover ini nantinya adalah Block 3 & Block 4).
+* **Perempatan Koridor Aft & Meja Clover:** Tepat di belakang (Aft) kedua blok pada garis tengah koridor (`Y = 8.73m`) dengan jarak (gap) ~2 meter dari kedua blok (`X ≈ 12.90m`), terdapat perempatan koridor dengan **Meja Clover (4 daun bundar Ø100cm; sisi Portside & Starboardside lebih tinggi daripada sisi Forward & Aft)** serta **Lampu Hias Besar (Grand Murano Chandelier)** di bawah kubah plafon bundar. (Di belakang meja clover ini nantinya adalah Block 3 & Block 4).
 
 ### Fase 1: 3D Modeling Presisi di Blender (*Ristorante Arlecchino Deck 6*)
 1. **Modular Components & Interior Architecture:**
