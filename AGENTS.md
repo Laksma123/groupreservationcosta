@@ -33,19 +33,26 @@
 
 ## 1B. Mandatory Spatial Orientation & Coordinate Convention (ARLECCHINO)
 All agents MUST use this exact terminology and coordinate convention without exception:
-* **Block 1 = Portside (Left Side of Ship / Kiri Kapal):**
-  * Blender `Y = 0.00m .. 7.58m` (Three.js `Z = 0.00m .. -7.58m`).
+* **Block 1 = Portside Forward (Left Side of Ship / Kiri Kapal — Forward of Clover):**
+  * Blender `X = -1.55m .. +10.40m`, `Y = 0.00m .. 7.58m` (Three.js `Z = 0.00m .. -7.58m`).
   * 10 Tables (52 Seats): Window Row (`301, 303, 305, 307`), Center Row (`399, 397, 393`), Railing Row (`403, 405, 407`).
-* **Block 2 = Starboardside (Right Side of Ship / Kanan Kapal):**
-  * Blender `Y = 9.88m .. 17.46m` (Three.js `Z = -9.88m .. -17.46m`).
+* **Block 2 = Starboardside Forward (Right Side of Ship / Kanan Kapal — Forward of Clover):**
+  * Blender `X = -1.95m .. +10.40m`, `Y = 9.88m .. 17.46m` (Three.js `Z = -9.88m .. -17.46m`).
   * 14 Tables (60 Seats): Railing Row (`468, 470, 472`), Center Row (`462, 460, 458`), Forward Entrance 2 Booths (`466, 464`), Inboard Sofa Wall (`374, 376, 378, 380, 382, 384`).
+* **Block 3 = Portside Aft (Left Side of Ship / Kiri Kapal — Aft of Clover, exact mirror of Block 1 across `X = 12.90m` via $M(x) = 25.80 - x$):**
+  * Blender `X = 15.40m .. 27.35m`, `Y = 0.00m .. 7.58m` (Three.js `Z = 0.00m .. -7.58m`).
+  * 9 Tables (54 Seats): 4 Freestanding Window Tables without sofa (`309, 311, 313, 315`), 2 Long Maroon Velvet Center Tables (`391` for 8 chairs, `389` for 10 chairs), 3 Railing Row Tables (`409, 411, 413` centered on the 3 wide pillars).
+  * 2 Waiter Stations: Station #1 (`Rect 7`) mirrored at Aft Entrance 2 wall (`X = 27.35m`) and Station #2 (`Rect 5`) behind Pintu Masuk Pertama wall (`X = 15.40m .. 16.05m`).
+* **Block 4 = Starboardside Aft (Right Side of Ship / Kanan Kapal — Aft of Clover, aligned with Block 2):**
+  * Blender `X = 15.40m .. 27.35m`, `Y = 9.88m .. 17.46m` (Three.js `Z = -9.88m .. -17.46m`).
+  * 12 Tables (54 Seats): 3 Railing Row Tables (`474, 476, 478` centered on the 3 wide pillars), 3 Maroon Velvet Center Tables (`456, 454, 452`, no Entrance 2 sofa tables, shifted +50 cm toward Aft relative to Railing Row), 6 Inboard Sofa Wall 4-Pax Tables (`386, 388, 390, 392, 394, 396`, all 4-pax without any 2-pax tables).
+  * 2 Waiter Stations: Identical layout to Block 3 (Station #1 `Rect 8/6` at Aft Entrance 2 wall `X = 27.35m`, Station #2 `Rect 6` behind Pintu Masuk Pertama wall `X = 15.40m .. 16.05m`).
 * **Central Corridor (Garis Koridor Tengah):**
-  * Blender `Y = 7.58m .. 9.88m` (Centerline at `Y = 8.73m`).
-* **Forward (Arah Depan Kapal):**
-  * Blender `-X` (`X = -1.55m .. -1.95m`): Side where **Entrance 2 (Pintu Kedua)** is located in both Block 1 (near `301` & Double Waiter Station) and Block 2 (near `466, 464` & Waiter Station 1).
-* **Aft (Arah Belakang Kapal):**
-  * Blender `+X` (`X = +10.15m` and beyond): Side where **Entrance 1 (Pintu Masuk Pertama)** and the **L-shaped corner railings (`pagar siku`)** (`407` & `472`) are located.
-  * Behind (Aft of) Block 1 and Block 2 with a ~2m gap (`X ≈ 12.90m, Y = 8.73m`) is the **Aft Corridor Crossroads (`Perempatan Koridor`)** featuring the **4-Leaf Clover Table (`Meja Clover`, 4 × Ø100cm discs with Portside & Starboardside leaves higher than Forward & Aft leaves)** and the **Grand Murano Chandelier** inside a circular recessed dome ceiling. (Blocks 3 & 4 lie further Aft behind this crossroads).
+  * Blender `Y = 7.58m .. 9.88m` (Centerline at `Y = 8.73m`). Uses the black-bordered geometric runner tile (`Mat_Corridor_Geometric_Tile`) between Block 1 & 2 (`X = -1.95m .. 10.40m`) and between Block 3 & 4 (`X = 15.40m .. 28.15m`).
+* **Pintu Masuk Pertama (Entrance 1):**
+  * All entrances adjacent to the **L-shaped corner railings (`pagar siku`)** (`407` & `472` at `X = 10.15m`, and `409` & `474` at `X = 15.65m`).
+* **Aft Corridor Crossroads (`Perempatan Koridor`, `X = 10.40m .. 15.40m`):**
+  * Centered at `X = 12.90m, Y = 8.73m` with equal symmetry to Blocks 1–2 and Blocks 3–4, featuring the **4-Leaf Clover Table (`Meja Clover`, 4 × Ø100cm discs with Portside & Starboardside leaves higher than Forward & Aft leaves)** and the **Grand Murano Chandelier** inside a circular recessed dome ceiling.
 
 ---
 

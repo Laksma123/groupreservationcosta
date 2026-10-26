@@ -27,10 +27,10 @@ if (bookingDialog && !('closedBy' in HTMLDialogElement.prototype)) {
 }
 
 // ============================================================================
-// 1. DRS 2-BLOCK TABLE CATALOG (24 TABLES / 112 SEATS — 100% ENGLISH)
+// 1. DRS 4-BLOCK TABLE CATALOG (45 TABLES / 220 SEATS — 100% ENGLISH)
 // ============================================================================
 const TABLE_CATALOG = [
-  // --- BLOCK 1: PORTSIDE (10 TABLES · 52 SEATS) ---
+  // --- BLOCK 1: PORTSIDE FORWARD (10 TABLES · 52 SEATS) ---
   {
     num: '301',
     block: 'B1',
@@ -108,11 +108,11 @@ const TABLE_CATALOG = [
     block: 'B1',
     nodeKey: '407_Railing_AftBay',
     pax: 4,
-    zone: 'Block 1 Port · Railing Row (Entrance)',
-    chairDesc: '4 Ivory Leatherette Chairs · Main Entrance',
+    zone: 'Block 1 Port · Railing Row (Entrance 1)',
+    chairDesc: '4 Ivory Leatherette Chairs · Entrance 1',
   },
 
-  // --- BLOCK 2: STARBOARDSIDE (14 TABLES · 60 SEATS) ---
+  // --- BLOCK 2: STARBOARDSIDE FORWARD (14 TABLES · 60 SEATS) ---
   {
     num: '468',
     block: 'B2',
@@ -134,8 +134,8 @@ const TABLE_CATALOG = [
     block: 'B2',
     nodeKey: '472_B2_Railing_Aft',
     pax: 4,
-    zone: 'Block 2 Stbd · Railing Row (Entrance)',
-    chairDesc: '4 Ivory Leatherette Chairs · Main Entrance',
+    zone: 'Block 2 Stbd · Railing Row (Entrance 1)',
+    chairDesc: '4 Ivory Leatherette Chairs · Entrance 1',
   },
   {
     num: '462',
@@ -225,14 +225,186 @@ const TABLE_CATALOG = [
     zone: 'Block 2 Stbd · Inboard Sofa Wall (4P #3)',
     chairDesc: 'Red Banquette Sofa + 2 Ivory Chairs',
   },
+
+  // --- BLOCK 3: PORTSIDE AFT (9 TABLES · 54 SEATS) ---
+  {
+    num: '309',
+    block: 'B3',
+    nodeKey: '309_B3_Window_1',
+    pax: 6,
+    zone: 'Block 3 Port · Ocean Window (#1)',
+    chairDesc: '6 Ivory Leatherette Chairs · Sea View',
+  },
+  {
+    num: '311',
+    block: 'B3',
+    nodeKey: '311_B3_Window_2',
+    pax: 6,
+    zone: 'Block 3 Port · Ocean Window (#2)',
+    chairDesc: '6 Ivory Leatherette Chairs · Sea View',
+  },
+  {
+    num: '313',
+    block: 'B3',
+    nodeKey: '313_B3_Window_3',
+    pax: 6,
+    zone: 'Block 3 Port · Ocean Window (#3)',
+    chairDesc: '6 Ivory Leatherette Chairs · Sea View',
+  },
+  {
+    num: '315',
+    block: 'B3',
+    nodeKey: '315_B3_Window_4',
+    pax: 6,
+    zone: 'Block 3 Port · Ocean Window (#4)',
+    chairDesc: '6 Ivory Leatherette Chairs · Sea View',
+  },
+  {
+    num: '391',
+    block: 'B3',
+    nodeKey: '391_B3_Center_8Pax',
+    pax: 8,
+    zone: 'Block 3 Port · Center Row (8-Pax Table)',
+    chairDesc: '8 Burgundy Velvet Chairs',
+  },
+  {
+    num: '389',
+    block: 'B3',
+    nodeKey: '389_B3_Center_10Pax',
+    pax: 10,
+    zone: 'Block 3 Port · Center Row (10-Pax Table)',
+    chairDesc: '10 Burgundy Velvet Chairs',
+  },
+  {
+    num: '409',
+    block: 'B3',
+    nodeKey: '409_B3_Railing_Fwd',
+    pax: 4,
+    zone: 'Block 3 Port · Railing Row (Entrance 1)',
+    chairDesc: '4 Ivory Leatherette Chairs · Centered on Pillar',
+  },
+  {
+    num: '411',
+    block: 'B3',
+    nodeKey: '411_B3_Railing_Mid',
+    pax: 4,
+    zone: 'Block 3 Port · Railing Row (Mid Bay)',
+    chairDesc: '4 Ivory Leatherette Chairs · Centered on Pillar',
+  },
+  {
+    num: '413',
+    block: 'B3',
+    nodeKey: '413_B3_Railing_Aft',
+    pax: 4,
+    zone: 'Block 3 Port · Railing Row (Aft Bay)',
+    chairDesc: '4 Ivory Leatherette Chairs · Centered on Pillar',
+  },
+
+  // --- BLOCK 4: STARBOARDSIDE AFT (12 TABLES · 54 SEATS) ---
+  {
+    num: '474',
+    block: 'B4',
+    nodeKey: '474_B4_Railing_Fwd',
+    pax: 4,
+    zone: 'Block 4 Stbd · Railing Row (Entrance 1)',
+    chairDesc: '4 Ivory Leatherette Chairs · Centered on Pillar',
+  },
+  {
+    num: '476',
+    block: 'B4',
+    nodeKey: '476_B4_Railing_Mid',
+    pax: 4,
+    zone: 'Block 4 Stbd · Railing Row (Mid Bay)',
+    chairDesc: '4 Ivory Leatherette Chairs · Centered on Pillar',
+  },
+  {
+    num: '478',
+    block: 'B4',
+    nodeKey: '478_B4_Railing_Aft',
+    pax: 4,
+    zone: 'Block 4 Stbd · Railing Row (Aft Bay)',
+    chairDesc: '4 Ivory Leatherette Chairs · Centered on Pillar',
+  },
+  {
+    num: '456',
+    block: 'B4',
+    nodeKey: '456_B4_Center_Fwd',
+    pax: 6,
+    zone: 'Block 4 Stbd · Center Row (+50cm Aft #1)',
+    chairDesc: '6 Burgundy Velvet Chairs',
+  },
+  {
+    num: '454',
+    block: 'B4',
+    nodeKey: '454_B4_Center_Mid',
+    pax: 6,
+    zone: 'Block 4 Stbd · Center Row (+50cm Aft #2)',
+    chairDesc: '6 Burgundy Velvet Chairs',
+  },
+  {
+    num: '452',
+    block: 'B4',
+    nodeKey: '452_B4_Center_Aft',
+    pax: 6,
+    zone: 'Block 4 Stbd · Center Row (+50cm Aft #3)',
+    chairDesc: '6 Burgundy Velvet Chairs',
+  },
+  {
+    num: '386',
+    block: 'B4',
+    nodeKey: '386_B4_Sofa_4Pax_1',
+    pax: 4,
+    zone: 'Block 4 Stbd · Inboard Sofa Wall (4P #1)',
+    chairDesc: 'Red Banquette Sofa + 2 Ivory Chairs',
+  },
+  {
+    num: '388',
+    block: 'B4',
+    nodeKey: '388_B4_Sofa_4Pax_2',
+    pax: 4,
+    zone: 'Block 4 Stbd · Inboard Sofa Wall (4P #2)',
+    chairDesc: 'Red Banquette Sofa + 2 Ivory Chairs',
+  },
+  {
+    num: '390',
+    block: 'B4',
+    nodeKey: '390_B4_Sofa_4Pax_3',
+    pax: 4,
+    zone: 'Block 4 Stbd · Inboard Sofa Wall (4P #3)',
+    chairDesc: 'Red Banquette Sofa + 2 Ivory Chairs',
+  },
+  {
+    num: '392',
+    block: 'B4',
+    nodeKey: '392_B4_Sofa_4Pax_4',
+    pax: 4,
+    zone: 'Block 4 Stbd · Inboard Sofa Wall (4P #4)',
+    chairDesc: 'Red Banquette Sofa + 2 Ivory Chairs',
+  },
+  {
+    num: '394',
+    block: 'B4',
+    nodeKey: '394_B4_Sofa_4Pax_5',
+    pax: 4,
+    zone: 'Block 4 Stbd · Inboard Sofa Wall (4P #5)',
+    chairDesc: 'Red Banquette Sofa + 2 Ivory Chairs',
+  },
+  {
+    num: '396',
+    block: 'B4',
+    nodeKey: '396_B4_Sofa_4Pax_6',
+    pax: 4,
+    zone: 'Block 4 Stbd · Inboard Sofa Wall (4P #6)',
+    chairDesc: 'Red Banquette Sofa + 2 Ivory Chairs',
+  },
 ];
 
 const ACCESS_PRESETS = {
   A98XKJ90: {
     code: 'A98XKJ90',
-    groupName: 'Milano Corporate Incentive (2-Block Allocation)',
+    groupName: 'Milano Corporate Incentive (4-Block Allocation)',
     targetPax: 44,
-    lockedTables: ['301', '407', '374', '376'],
+    lockedTables: ['301', '407', '374', '376', '409', '474'],
     recommended: ['399', '397', '403', '405', '468', '470', '462', '460'],
   },
   DIAMOND28: {
@@ -244,8 +416,8 @@ const ACCESS_PRESETS = {
   },
   CHARTER112: {
     code: 'CHARTER112',
-    groupName: 'Full 2-Block Arlecchino Charter (24 Tables)',
-    targetPax: 112,
+    groupName: 'Full 4-Block Arlecchino Charter (45 Tables)',
+    targetPax: 220,
     lockedTables: [],
     recommended: TABLE_CATALOG.map((t) => t.num),
   },
@@ -257,24 +429,19 @@ const WALK_SPOTS = {
     yaw: Math.PI * 0.5,
     pitch: -0.02,
   },
-  corridor: {
+  corridor_b12: {
     pos: new THREE.Vector3(5.2, 1.62, -8.73),
     yaw: Math.PI * 0.5,
     pitch: -0.05,
   },
-  entrance2: {
-    pos: new THREE.Vector3(0.55, 1.62, -10.2),
-    yaw: 0.08,
-    pitch: -0.06,
+  corridor_b34: {
+    pos: new THREE.Vector3(20.6, 1.62, -8.73),
+    yaw: -Math.PI * 0.5,
+    pitch: -0.05,
   },
   b1_center: {
     pos: new THREE.Vector3(7.6, 1.62, -4.5),
     yaw: Math.PI * 0.35,
-    pitch: -0.05,
-  },
-  b1_station: {
-    pos: new THREE.Vector3(0.4, 1.62, -2.5),
-    yaw: -Math.PI * 0.38,
     pitch: -0.05,
   },
   b2_center: {
@@ -282,10 +449,15 @@ const WALK_SPOTS = {
     yaw: -Math.PI * 0.25,
     pitch: -0.05,
   },
-  b2_sofa: {
-    pos: new THREE.Vector3(6.8, 1.62, -15.6),
-    yaw: Math.PI * 0.72,
-    pitch: -0.06,
+  b3_center: {
+    pos: new THREE.Vector3(18.2, 1.62, -4.5),
+    yaw: -Math.PI * 0.35,
+    pitch: -0.05,
+  },
+  b4_center: {
+    pos: new THREE.Vector3(20.6, 1.62, -13.2),
+    yaw: -Math.PI * 0.65,
+    pitch: -0.05,
   },
 };
 
@@ -421,14 +593,17 @@ sunLight.shadow.camera.bottom = -35;
 sunLight.shadow.camera.updateProjectionMatrix();
 scene.add(sunLight);
 
-// Symmetrical Interior Fill Lighting across Block 1, Corridor, and Block 2 (No harsh hotspots)
+// Symmetrical Interior Fill Lighting across all 4 Blocks, Corridors & Crossroads (No harsh hotspots)
 const interiorLightGroup = new THREE.Group();
 scene.add(interiorLightGroup);
 [
-  [4.5, 3.2, -3.8, 0xffe8c2, 1.6, 22.0],   // Block 1 Portside even fill
-  [4.5, 3.2, -8.73, 0xfff0d4, 1.4, 18.0],  // Central Medallion Corridor
-  [4.5, 3.2, -13.68, 0xffe8c2, 1.6, 22.0], // Block 2 Starboardside identical fill
+  [4.5, 3.2, -3.8, 0xffe8c2, 1.6, 22.0],    // Block 1 Portside Forward fill
+  [4.5, 3.2, -8.73, 0xfff0d4, 1.4, 18.0],   // B1–B2 Medallion Corridor
+  [4.5, 3.2, -13.68, 0xffe8c2, 1.6, 22.0],  // Block 2 Starboardside Forward fill
   [12.9, 2.7, -8.73, 0xffe8c2, 1.85, 22.0], // Aft Crossroads, Clover Table & Murano Chandelier
+  [21.3, 3.2, -3.8, 0xffe8c2, 1.6, 22.0],   // Block 3 Portside Aft fill
+  [21.3, 3.2, -8.73, 0xfff0d4, 1.4, 18.0],  // B3–B4 Medallion Corridor
+  [21.3, 3.2, -13.68, 0xffe8c2, 1.6, 22.0], // Block 4 Starboardside Aft fill
 ].forEach(([lx, ly, lz, col, intensity, dist]) => {
   const pt = new THREE.PointLight(col, intensity, dist, 0.9);
   pt.castShadow = false;
@@ -506,7 +681,7 @@ function checkAllLoaded() {
 }
 
 gltfLoader.load(
-  './costa_smeralda_ship.glb?v=20261026f',
+  './costa_smeralda_ship.glb?v=20261026g',
   (gltf) => {
     const shipModel = gltf.scene;
     shipStageGroup.add(shipModel);
@@ -576,7 +751,7 @@ const CUTAWAY_META = {
   full: {
     eyebrow: 'COSTA SMERALDA · EXTERIOR OVERVIEW',
     title: 'Ristorante Arlecchino',
-    desc: 'Select a deck layer above or open Deck 6 to inspect the 2 completed blocks of Ristorante Arlecchino.',
+    desc: 'Select a deck layer above or open Deck 6 to inspect the 4 completed blocks of Ristorante Arlecchino.',
     subtitle: 'GROUP DINING RESERVATION SYSTEM',
   },
   deck7: {
@@ -588,8 +763,8 @@ const CUTAWAY_META = {
   deck6: {
     eyebrow: 'CUTAWAY LAYER 2 · DECK 6 ROMA',
     title: 'Ristorante Arlecchino',
-    desc: 'Mid-ship displays the 2 completed blocks of Arlecchino in full 3D detail. Aft shows Il Meneghino placeholder.',
-    subtitle: 'DECK 6 CUTAWAY · ARLECCHINO (2 BLOCKS) & MENEGHINO',
+    desc: 'Mid-ship displays the 4 completed blocks of Arlecchino in full 3D detail. Aft shows Il Meneghino placeholder.',
+    subtitle: 'DECK 6 CUTAWAY · ARLECCHINO (4 BLOCKS) & MENEGHINO',
   },
   deck5: {
     eyebrow: 'CUTAWAY LAYER 1 · DECK 5 TAORMINA',
@@ -683,7 +858,7 @@ const hitProxyMat = new THREE.MeshBasicMaterial({
 });
 
 gltfLoader.load(
-  './arlecchino_block1.glb?v=20261026f',
+  './arlecchino_block1.glb?v=20261026g',
   (gltf) => {
     const model = gltf.scene;
     restaurantGroup.add(model);
@@ -710,9 +885,15 @@ gltfLoader.load(
         n.startsWith('Ceiling_') ||
         n.startsWith('CeilBeam_') ||
         n.startsWith('B2_CeilBeam_') ||
+        n.startsWith('B3_CeilBeam_') ||
+        n.startsWith('B4_CeilBeam_') ||
+        n.startsWith('B3B4_Ceiling_') ||
         n.startsWith('RedSpot_') ||
         n.startsWith('B2_RedSpot_') ||
+        n.startsWith('B3_RedSpot_') ||
+        n.startsWith('B4_RedSpot_') ||
         n.startsWith('Corr_Downlight_') ||
+        n.startsWith('B3B4_Corr_Downlight_') ||
         n.startsWith('Crossroads_Header_Beam_') ||
         n.startsWith('Crossroads_ExitSign_')
       ) {
@@ -940,8 +1121,8 @@ function enterInterior2Blocks() {
       restaurantGroup.visible = true;
       interiorLightGroup.visible = true;
 
-      // Uniform symmetrical interior lighting (prevents exterior wall shadows or color differences between Block 1 & Block 2)
-      sunLight.position.set(4.5, 48, -8.73);
+      // Uniform symmetrical interior lighting (prevents exterior wall shadows or color differences between Blocks 1–4)
+      sunLight.position.set(12.9, 48, -8.73);
       sunLight.intensity = 1.15;
       sunLight.castShadow = false;
       ambientLight.intensity = 1.75;
@@ -952,7 +1133,7 @@ function enterInterior2Blocks() {
       document.getElementById('ship-toolbar').hidden = true;
       document.getElementById('interior-toolbar').hidden = false;
       document.getElementById('stage-subtitle').textContent =
-        'DECK 6 ROMA · RISTORANTE ARLECCHINO (2 BLOCKS · 24 TABLES)';
+        'DECK 6 ROMA · RISTORANTE ARLECCHINO (4 BLOCKS · 45 TABLES)';
 
       setInteriorCameraMode('bird');
       updateTableMarkersVisibility();
@@ -1013,21 +1194,21 @@ function setInteriorCameraMode(mode) {
     controls.maxPolarAngle = Math.PI * 0.47;
 
     const targetPos = top2dFlipped
-      ? new THREE.Vector3(-8.2, 14.8, -8.73)
-      : new THREE.Vector3(19.2, 14.8, -8.73);
-    const lookTarget = new THREE.Vector3(6.2, 0.55, -8.73);
+      ? new THREE.Vector3(-6.5, 22.0, -8.73)
+      : new THREE.Vector3(32.5, 22.0, -8.73);
+    const lookTarget = new THREE.Vector3(12.9, 0.55, -8.73);
     animateCameraTo(targetPos, lookTarget, 700);
   } else if (mode === 'top2d') {
     setCeilingVisible(false, false);
     camAnim = null;
     activeCamera = orthoCamera;
 
-    const centerX = 6.2;
+    const centerX = 12.9;
     const centerZ = -8.73;
-    orthoCamera.position.set(centerX, 22.0, centerZ);
+    orthoCamera.position.set(centerX, 26.0, centerZ);
     orthoCamera.up.set(0, 0, top2dFlipped ? -1 : 1);
     orthoCamera.lookAt(centerX, 0.0, centerZ);
-    orthoCamera.zoom = 1.02;
+    orthoCamera.zoom = 0.72;
     orthoCamera.updateProjectionMatrix();
 
     controls.object = orthoCamera;
@@ -1455,12 +1636,16 @@ document.getElementById('btn-confirm-booking').addEventListener('click', () => {
   const totalSeats = chosenList.reduce((acc, t) => acc + t.pax, 0);
   const b1List = chosenList.filter((t) => t.block === 'B1').map((t) => `#${t.num} (${t.pax}P)`);
   const b2List = chosenList.filter((t) => t.block === 'B2').map((t) => `#${t.num} (${t.pax}P)`);
+  const b3List = chosenList.filter((t) => t.block === 'B3').map((t) => `#${t.num} (${t.pax}P)`);
+  const b4List = chosenList.filter((t) => t.block === 'B4').map((t) => `#${t.num} (${t.pax}P)`);
 
   document.getElementById('dialog-summary-content').innerHTML = `
     <div><strong>Access Token:</strong> <span class="summary-mono">${preset.code}</span> — ${preset.groupName}</div>
-    <div><strong>Venue:</strong> Ristorante Arlecchino · Deck 6 Roma (Port &amp; Starboard Blocks)</div>
+    <div><strong>Venue:</strong> Ristorante Arlecchino · Deck 6 Roma (4 Blocks · Port &amp; Starboard)</div>
     <div><strong>Block 1 Portside (${b1List.length}):</strong> <span class="summary-mono">${b1List.join(', ') || 'None'}</span></div>
     <div><strong>Block 2 Starboard (${b2List.length}):</strong> <span class="summary-mono">${b2List.join(', ') || 'None'}</span></div>
+    <div><strong>Block 3 Portside (${b3List.length}):</strong> <span class="summary-mono">${b3List.join(', ') || 'None'}</span></div>
+    <div><strong>Block 4 Starboard (${b4List.length}):</strong> <span class="summary-mono">${b4List.join(', ') || 'None'}</span></div>
     <div><strong>Total Allocated Seats:</strong> <span class="summary-mono">${totalSeats} / ${preset.targetPax} Pax</span> (${chosenList.length} tables)</div>
     <div><strong>Status:</strong> Handed over to shipboard DRS server</div>
   `;
@@ -1553,7 +1738,7 @@ function animate(now) {
       if (walkKeys.right) perspCamera.position.addScaledVector(rightFlat, speed);
       if (walkKeys.left) perspCamera.position.addScaledVector(rightFlat, -speed);
 
-      perspCamera.position.x = Math.max(-1.85, Math.min(15.2, perspCamera.position.x));
+      perspCamera.position.x = Math.max(-1.85, Math.min(27.6, perspCamera.position.x));
       perspCamera.position.z = Math.max(-17.0, Math.min(-0.55, perspCamera.position.z));
       perspCamera.position.y = 1.56;
       syncWalkCameraLook();

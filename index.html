@@ -43,7 +43,7 @@
           Deck 7 · Rugantino
         </button>
         <button type="button" class="outline-pill-btn pill-featured" data-cutaway-layer="deck6" aria-pressed="false">
-          Deck 6 · Arlecchino (2 Blocks)
+          Deck 6 · Arlecchino (4 Blocks)
         </button>
         <button type="button" class="outline-pill-btn" data-cutaway-layer="deck5" aria-pressed="false">
           Deck 5 · Colombina
@@ -101,7 +101,7 @@
         <span class="yellow-bar" aria-hidden="true"></span>
         <div>
           <h2 class="card-title" id="ship-card-title">Ristorante Arlecchino<span class="title-dot">.</span></h2>
-          <p class="card-sub" id="ship-card-desc">2 blocks modeled in full 3D detail (24 tables · 112 seats). Remaining zones shown as architectural placeholders.</p>
+          <p class="card-sub" id="ship-card-desc">4 blocks modeled in full 3D detail (45 tables · 220 seats). Remaining zones shown as architectural placeholders.</p>
         </div>
       </div>
 
@@ -114,7 +114,7 @@
         <button type="button" class="layer-row is-highlighted" data-cutaway-layer="deck6">
           <span class="lr-code">DECK 6</span>
           <span class="lr-name">Arlecchino (Mid) &amp; Meneghino</span>
-          <span class="lr-tag lr-tag-ready">2 Blocks Ready</span>
+          <span class="lr-tag lr-tag-ready">4 Blocks Ready</span>
         </button>
         <button type="button" class="layer-row" data-cutaway-layer="deck5">
           <span class="lr-code">DECK 5</span>
@@ -125,7 +125,7 @@
 
       <!-- ONE PRIMARY ACTION PER SCREEN (Costa Yellow #F9B000 + Dark Ink #0A2A38) -->
       <button type="button" id="btn-enter-deck6" class="btn-costa-primary">
-        <span>Open Ristorante Arlecchino (24 Tables)</span>
+        <span>Open Ristorante Arlecchino (45 Tables)</span>
         <svg class="v-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
       </button>
     </div>
@@ -143,11 +143,13 @@
       </div>
       <span class="toolbar-sep" aria-hidden="true"></span>
       <div class="teleport-inline" role="group" aria-label="Quick viewpoint locations">
-        <button type="button" class="btn-chip active" data-walk-spot="crossroads">Aft Crossroads · Clover</button>
-        <button type="button" class="btn-chip" data-walk-spot="corridor">Corridor</button>
-        <button type="button" class="btn-chip" data-walk-spot="entrance2">Fwd Entrance 2</button>
-        <button type="button" class="btn-chip" data-walk-spot="b1_center">Block 1 Port</button>
-        <button type="button" class="btn-chip" data-walk-spot="b2_center">Block 2 Stbd</button>
+        <button type="button" class="btn-chip active" data-walk-spot="crossroads">Crossroads · Clover</button>
+        <button type="button" class="btn-chip" data-walk-spot="corridor_b12">B1–B2 Corridor</button>
+        <button type="button" class="btn-chip" data-walk-spot="corridor_b34">B3–B4 Corridor</button>
+        <button type="button" class="btn-chip" data-walk-spot="b1_center">Block 1</button>
+        <button type="button" class="btn-chip" data-walk-spot="b2_center">Block 2</button>
+        <button type="button" class="btn-chip" data-walk-spot="b3_center">Block 3</button>
+        <button type="button" class="btn-chip" data-walk-spot="b4_center">Block 4</button>
       </div>
     </div>
 
@@ -171,7 +173,7 @@
     <aside id="drs-drawer" class="drs-sidebar costa-card" aria-label="Group table allocation">
       <div class="sidebar-header">
         <div>
-          <span class="card-eyebrow">ARLECCHINO · 2 BLOCKS</span>
+          <span class="card-eyebrow">ARLECCHINO · 4 BLOCKS</span>
           <h3 class="sidebar-title">Group Seating<span class="title-dot">.</span></h3>
         </div>
         <span class="status-pill" id="pax-status-pill">0 / 44 Pax</span>
@@ -193,9 +195,11 @@
 
       <!-- Block Filter Tabs -->
       <div class="block-filter-bar" role="group" aria-label="Filter tables by block">
-        <button type="button" class="block-filter-btn active" data-block-filter="all">All (24)</button>
-        <button type="button" class="block-filter-btn" data-block-filter="B1">Block 1 Port (10)</button>
-        <button type="button" class="block-filter-btn" data-block-filter="B2">Block 2 Stbd (14)</button>
+        <button type="button" class="block-filter-btn active" data-block-filter="all">All (45)</button>
+        <button type="button" class="block-filter-btn" data-block-filter="B1">B1 (10)</button>
+        <button type="button" class="block-filter-btn" data-block-filter="B2">B2 (14)</button>
+        <button type="button" class="block-filter-btn" data-block-filter="B3">B3 (9)</button>
+        <button type="button" class="block-filter-btn" data-block-filter="B4">B4 (12)</button>
       </div>
 
       <!-- Scrollable Table List (overscroll-behavior: contain) -->
@@ -223,7 +227,7 @@
     <div class="loader-box costa-card">
       <div class="spinner"></div>
       <h3 id="loader-title">Loading Costa Smeralda 3D</h3>
-      <p id="loader-sub">Preparing 4-layer ship cutaway and Ristorante Arlecchino (24 tables)</p>
+      <p id="loader-sub">Preparing 4-layer ship cutaway and Ristorante Arlecchino (4 Blocks · 45 Tables)</p>
     </div>
   </div>
 
@@ -246,6 +250,6 @@
     </form>
   </dialog>
 
-  <script type="module" src="./app.js?v=20261026f"></script>
+  <script type="module" src="./app.js?v=20261026g"></script>
 </body>
 </html>

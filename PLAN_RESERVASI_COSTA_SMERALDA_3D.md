@@ -90,12 +90,13 @@ Seluruh file referensi teknis dan visual sudah tersedia di folder lokal:
 ## 4. Rencana Tahap Eksekusi & Konvensi Orientasi Spasial
 
 ### Konvensi Orientasi Kapal (Wajib Dipatuhi):
-* **Block 1 = Portside (Kiri Kapal):** Blender `Y = 0.00m .. 7.58m` (`301, 303, 305, 307`, `399, 397, 393`, `403, 405, 407`).
-* **Block 2 = Starboardside (Kanan Kapal):** Blender `Y = 9.88m .. 17.46m` (`468, 470, 472`, `462, 460, 458`, `466, 464`, `374, 376, 378, 380, 382, 384`).
+* **Block 1 = Portside Forward (Kiri Kapal — Depan Clover):** Blender `X = -1.55m .. +10.40m`, `Y = 0.00m .. 7.58m` (`301, 303, 305, 307`, `399, 397, 393`, `403, 405, 407`).
+* **Block 2 = Starboardside Forward (Kanan Kapal — Depan Clover):** Blender `X = -1.95m .. +10.40m`, `Y = 9.88m .. 17.46m` (`468, 470, 472`, `462, 460, 458`, `466, 464`, `374, 376, 378, 380, 382, 384`).
+* **Block 3 = Portside Aft (Kiri Kapal — Belakang Clover, mirror presisi dari Block 1 terhadap `X = 12.90m`):** Blender `X = 15.40m .. 27.35m`, `Y = 0.00m .. 7.58m` (9 meja / 54 kursi: 4 meja jendela tanpa sofa `309, 311, 313, 315`, 2 meja merah panjang `391` [8 kursi] & `389` [10 kursi], 3 meja pagar `409, 411, 413`, serta 2 Waiter Station: `Rect 7` mirror di dinding Entrance 2 Aft dan `Rect 5` di belakang tembok Pintu Masuk Pertama).
+* **Block 4 = Starboardside Aft (Kanan Kapal — Belakang Clover, sejajar Block 2):** Blender `X = 15.40m .. 27.35m`, `Y = 9.88m .. 17.46m` (12 meja / 54 kursi: 3 meja pagar `474, 476, 478` center pilar, 3 meja merah `456, 454, 452` tanpa meja sofa Entrance 2 dan bergeser +50 cm ke Aft dari center meja pagar, 6 meja sofa dinding `386, 388, 390, 392, 394, 396` semuanya 4-pax tanpa meja 2-pax, serta 2 Waiter Station yang sama persis layoutnya dengan Block 3).
 * **Garis Koridor Tengah:** Blender `Y = 7.58m .. 9.88m` (Tengah: `Y = 8.73m`).
-* **Forward (Depan Kapal):** Sisi `-X` (`X = -1.55m .. -1.95m`), tempat **Pintu Masuk Kedua (Entrance 2)** berada di kedua blok (`301` / `466-464`).
-* **Aft (Belakang Kapal):** Sisi `+X` (`X = +10.15m`), tempat **Pintu Masuk Pertama (Entrance 1)** dengan **pagar siku (L-shaped railing)** berada di kedua blok (`407` & `472`).
-* **Perempatan Koridor Aft & Meja Clover:** Tepat di belakang (Aft) kedua blok pada garis tengah koridor (`Y = 8.73m`) dengan jarak (gap) ~2 meter dari kedua blok (`X ≈ 12.90m`), terdapat perempatan koridor dengan **Meja Clover (4 daun bundar Ø100cm; sisi Portside & Starboardside lebih tinggi daripada sisi Forward & Aft)** serta **Lampu Hias Besar (Grand Murano Chandelier)** di bawah kubah plafon bundar. (Di belakang meja clover ini nantinya adalah Block 3 & Block 4).
+* **Pintu Masuk Pertama (Entrance 1):** Semua pintu masuk di dekat **pagar siku (L-shaped railing)** (`407` & `472` di `X = 10.15m`, serta `409` & `474` di `X = 15.65m`).
+* **Perempatan Koridor & Meja Clover (`X = 10.40m .. 15.40m`):** Tepat di tengah antara Block 1–2 dan Block 3–4 (`X = 12.90m, Y = 8.73m`), terdapat perempatan koridor dengan **Meja Clover (4 daun bundar Ø100cm; sisi Portside & Starboardside lebih tinggi daripada sisi Forward & Aft)** serta **Lampu Hias Besar (Grand Murano Chandelier)** di bawah kubah plafon bundar.
 
 ### Fase 1: 3D Modeling Presisi di Blender (*Ristorante Arlecchino Deck 6*)
 1. **Modular Components & Interior Architecture:**
