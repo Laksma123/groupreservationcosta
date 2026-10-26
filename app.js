@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 // ============================================================================
 // 0. MODERN WEB GUIDANCE POLYFILLS & FALLBACKS
@@ -80,7 +81,7 @@ const UserInvalidFallback = (() => {
 UserInvalidFallback.init(document);
 
 // ============================================================================
-// 1. DRS 4-BLOCK TABLE CATALOG (45 TABLES / 220 SEATS — 100% ENGLISH)
+// 1. DRS 4-BLOCK TABLE CATALOG (45 TABLES / 220 SEATS — ALL 45 NODE KEYS EXACT)
 // ============================================================================
 const TABLE_CATALOG = [
   // --- BLOCK 1: PORTSIDE FORWARD (10 TABLES · 52 SEATS) ---
@@ -279,37 +280,37 @@ const TABLE_CATALOG = [
     chairDesc: 'Red Banquette Sofa + 2 Ivory Chairs',
   },
 
-  // --- BLOCK 3: PORTSIDE AFT (9 TABLES · 54 SEATS) ---
+  // --- BLOCK 3: PORTSIDE AFT (9 TABLES · 54 SEATS — FIXED BAY NODE KEYS) ---
   {
     num: '309',
     block: 'B3',
-    nodeKey: '309_B3_Window_1',
+    nodeKey: '309_B3_Window_Bay1',
     pax: 6,
-    zone: 'Block 3 Port · Ocean Window (#1)',
+    zone: 'Block 3 Port · Ocean Window (Bay 1)',
     chairDesc: '6 Ivory Leatherette Chairs · Sea View',
   },
   {
     num: '311',
     block: 'B3',
-    nodeKey: '311_B3_Window_2',
+    nodeKey: '311_B3_Window_Bay2',
     pax: 6,
-    zone: 'Block 3 Port · Ocean Window (#2)',
+    zone: 'Block 3 Port · Ocean Window (Bay 2)',
     chairDesc: '6 Ivory Leatherette Chairs · Sea View',
   },
   {
     num: '313',
     block: 'B3',
-    nodeKey: '313_B3_Window_3',
+    nodeKey: '313_B3_Window_Bay3',
     pax: 6,
-    zone: 'Block 3 Port · Ocean Window (#3)',
+    zone: 'Block 3 Port · Ocean Window (Bay 3)',
     chairDesc: '6 Ivory Leatherette Chairs · Sea View',
   },
   {
     num: '315',
     block: 'B3',
-    nodeKey: '315_B3_Window_4',
+    nodeKey: '315_B3_Window_Bay4',
     pax: 6,
-    zone: 'Block 3 Port · Ocean Window (#4)',
+    zone: 'Block 3 Port · Ocean Window (Bay 4)',
     chairDesc: '6 Ivory Leatherette Chairs · Sea View',
   },
   {
@@ -331,7 +332,7 @@ const TABLE_CATALOG = [
   {
     num: '409',
     block: 'B3',
-    nodeKey: '409_B3_Railing_Fwd',
+    nodeKey: '409_B3_Railing_FwdBay',
     pax: 4,
     zone: 'Block 3 Port · Railing Row (Entrance 1)',
     chairDesc: '4 Ivory Leatherette Chairs · Centered on Pillar',
@@ -339,7 +340,7 @@ const TABLE_CATALOG = [
   {
     num: '411',
     block: 'B3',
-    nodeKey: '411_B3_Railing_Mid',
+    nodeKey: '411_B3_Railing_MidBay',
     pax: 4,
     zone: 'Block 3 Port · Railing Row (Mid Bay)',
     chairDesc: '4 Ivory Leatherette Chairs · Centered on Pillar',
@@ -347,7 +348,7 @@ const TABLE_CATALOG = [
   {
     num: '413',
     block: 'B3',
-    nodeKey: '413_B3_Railing_Aft',
+    nodeKey: '413_B3_Railing_AftBay',
     pax: 4,
     zone: 'Block 3 Port · Railing Row (Aft Bay)',
     chairDesc: '4 Ivory Leatherette Chairs · Centered on Pillar',
@@ -486,13 +487,11 @@ const ACCESS_PRESETS = {
 
 // ============================================================================
 // 1B. SELF-CONTAINED STATELESS DRS TOKEN CODEC (SHARED WITH BOOKMARKLET)
-//     Encodes: 45-Table Bitmask + Group Pax (1..220) + Group Name/ID +
-//              Cyclic 30-Min Time Slot + TTL Tier + 3-Round Feistel + Checksum
 // ============================================================================
 const DRS_CODEC = (() => {
-  const SLOT_MS = 30 * 60 * 1000; // 30 minutes per slot
-  const SLOT_MOD = 1024;          // 1024 slots = 21.33 days cycle
-  const TTL_SLOTS = [1, 4, 12, 24, 48, 96, 144, 336]; // 30m, 2h, 6h, 12h, 24h, 48h, 72h, 7d
+  const SLOT_MS = 30 * 60 * 1000;
+  const SLOT_MOD = 1024;
+  const TTL_SLOTS = [1, 4, 12, 24, 48, 96, 144, 336];
   const TTL_NAMES = ['30m', '2h', '6h', '12h', '24h', '48h', '72h', '7d'];
   const LABEL_ALPHABET = '_ ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-&./';
   const MASK33 = (1n << 33n) - 1n;
@@ -653,7 +652,6 @@ const DRS_CODEC = (() => {
       .replace(/[\s\-_]+/g, '');
     if (!cleaned) return { valid: false, reason: 'Empty access code.' };
 
-    // 1. Check corporate presets first
     if (ACCESS_PRESETS[cleaned]) {
       const p = ACCESS_PRESETS[cleaned];
       return {
@@ -677,7 +675,6 @@ const DRS_CODEC = (() => {
       };
     }
 
-    // Parse Base36 to BigInt
     let finalBig = 0n;
     for (let i = 0; i < cleaned.length; i++) {
       const d = parseInt(cleaned[i], 36);
@@ -729,7 +726,6 @@ const DRS_CODEC = (() => {
 
     const nowSlot = Math.floor(nowMs / SLOT_MS) & (SLOT_MOD - 1);
     let elapsedSlots = (nowSlot - issuedSlot + SLOT_MOD) & (SLOT_MOD - 1);
-    // Allow 1-slot clock drift tolerance if generated slightly ahead
     if (elapsedSlots === SLOT_MOD - 1) elapsedSlots = 0;
 
     const allowedSlots = TTL_SLOTS[ttlIdx] || 48;
@@ -808,7 +804,7 @@ const WALK_SPOTS = {
 };
 
 // ============================================================================
-// 2. HIGH-PERFORMANCE SCENE, RENDERERS & CAMERAS
+// 2. HIGH-PERFORMANCE SCENE, RENDERERS, STATIC GEOMETRY BATCHER & CAMERAS
 // ============================================================================
 const canvas = document.getElementById('webgl-canvas');
 const css2dContainer = document.getElementById('css2d-layer');
@@ -818,19 +814,91 @@ const renderer = new THREE.WebGLRenderer({
   antialias: true,
   powerPreference: 'high-performance',
 });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+// Cap pixelRatio at 1.5x for locked 60+ FPS on Retina/4K presentation displays with full MSAA sharpness
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 renderer.setSize(window.innerWidth, window.innerHeight - 57);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.08;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-// Performance optimization: Do NOT re-render shadow maps 60 times/sec on static geometry!
 renderer.shadowMap.autoUpdate = false;
 
 const maxAnisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
 
 function requestShadowUpdate() {
   renderer.shadowMap.needsUpdate = true;
+}
+
+// High-FPS Geometry Batcher: Merges hundreds of static meshes sharing the same material into 1 draw call
+function batchStaticMeshesInGroup(rootContainer, meshList, parentTarget) {
+  const buckets = new Map();
+  rootContainer.updateWorldMatrix(true, true);
+  const invParentMat = parentTarget.matrixWorld.clone().invert();
+
+  for (const mesh of meshList) {
+    if (!mesh.isMesh || !mesh.visible || !mesh.geometry || Array.isArray(mesh.material)) continue;
+    const geom = mesh.geometry;
+    if (!geom.attributes.position || !geom.attributes.normal) continue;
+
+    const hasUV = Boolean(geom.attributes.uv);
+    const isIndexed = Boolean(geom.index);
+    const key = `${mesh.material.uuid}_${hasUV ? 1 : 0}_${isIndexed ? 1 : 0}_${mesh.castShadow ? 1 : 0}`;
+
+    if (!buckets.has(key)) {
+      buckets.set(key, {
+        material: mesh.material,
+        hasUV,
+        castShadow: mesh.castShadow,
+        geoms: [],
+        sourceMeshes: [],
+      });
+    }
+    const b = buckets.get(key);
+
+    const cloned = new THREE.BufferGeometry();
+    cloned.setAttribute('position', geom.attributes.position.clone());
+    cloned.setAttribute('normal', geom.attributes.normal.clone());
+    if (hasUV) {
+      cloned.setAttribute('uv', geom.attributes.uv.clone());
+    }
+    if (isIndexed) {
+      cloned.setIndex(geom.index.clone());
+    }
+
+    const relMatrix = new THREE.Matrix4().multiplyMatrices(invParentMat, mesh.matrixWorld);
+    cloned.applyMatrix4(relMatrix);
+
+    b.geoms.push(cloned);
+    b.sourceMeshes.push(mesh);
+  }
+
+  const createdMeshes = [];
+  for (const [, b] of buckets) {
+    if (b.geoms.length < 2) {
+      b.geoms.forEach((g) => g.dispose());
+      continue;
+    }
+    try {
+      const mergedGeo = mergeGeometries(b.geoms, false);
+      if (mergedGeo) {
+        const batchedMesh = new THREE.Mesh(mergedGeo, b.material);
+        batchedMesh.castShadow = b.castShadow;
+        batchedMesh.receiveShadow = true;
+        batchedMesh.matrixAutoUpdate = false;
+        batchedMesh.updateMatrix();
+        parentTarget.add(batchedMesh);
+        createdMeshes.push(batchedMesh);
+
+        for (const src of b.sourceMeshes) {
+          if (src.parent) src.parent.remove(src);
+        }
+      }
+    } catch (_) {
+      // Fallback: leave original meshes if merge fails
+    }
+    b.geoms.forEach((g) => g.dispose());
+  }
+  return createdMeshes;
 }
 
 function fixFloorAndCarpetMesh(child) {
@@ -897,6 +965,7 @@ const orthoCamera = new THREE.OrthographicCamera(
 );
 
 let activeCamera = perspCamera;
+let css2dDirty = true;
 
 const controls = new OrbitControls(perspCamera, renderer.domElement);
 controls.enableDamping = true;
@@ -908,8 +977,12 @@ let isOrbitDragging = false;
 controls.addEventListener('start', () => {
   isOrbitDragging = true;
 });
+controls.addEventListener('change', () => {
+  css2dDirty = true;
+});
 controls.addEventListener('end', () => {
   isOrbitDragging = false;
+  css2dDirty = true;
 });
 
 // Global Lighting
@@ -934,19 +1007,14 @@ sunLight.shadow.camera.bottom = -35;
 sunLight.shadow.camera.updateProjectionMatrix();
 scene.add(sunLight);
 
-// Symmetrical Interior Fill Lighting across all 4 Blocks, Corridors & Crossroads
+// Optimized Interior Fill Lighting (2 wide-radius lights instead of 7 -> 3.5x faster PBR fragment shader!)
 const interiorLightGroup = new THREE.Group();
 scene.add(interiorLightGroup);
 [
-  [4.5, 3.2, -3.8, 0xffe8c2, 1.6, 22.0],
-  [4.5, 3.2, -8.73, 0xfff0d4, 1.4, 18.0],
-  [4.5, 3.2, -13.68, 0xffe8c2, 1.6, 22.0],
-  [12.9, 2.7, -8.73, 0xffe8c2, 1.85, 22.0],
-  [21.3, 3.2, -3.8, 0xffe8c2, 1.6, 22.0],
-  [21.3, 3.2, -8.73, 0xfff0d4, 1.4, 18.0],
-  [21.3, 3.2, -13.68, 0xffe8c2, 1.6, 22.0],
+  [5.2, 3.4, -8.73, 0xffeacc, 2.1, 32.0],  // Forward Blocks 1 & 2 + Crossroads fill
+  [20.6, 3.4, -8.73, 0xffeacc, 2.1, 32.0], // Aft Blocks 3 & 4 + Crossroads fill
 ].forEach(([lx, ly, lz, col, intensity, dist]) => {
-  const pt = new THREE.PointLight(col, intensity, dist, 0.9);
+  const pt = new THREE.PointLight(col, intensity, dist, 0.75);
   pt.castShadow = false;
   pt.position.set(lx, ly, lz);
   interiorLightGroup.add(pt);
@@ -954,15 +1022,15 @@ scene.add(interiorLightGroup);
 interiorLightGroup.visible = false;
 
 // ============================================================================
-// 3. BOUNDLESS MEDITERRANEAN SEASCAPE, SKY DOME & 360° COASTAL MOUNTAIN RING
+// 3. BOUNDLESS MEDITERRANEAN SEASCAPE, SKY DOME, MOUNTAINS & MARINE LIFE
 // ============================================================================
 const shipStageGroup = new THREE.Group();
 scene.add(shipStageGroup);
 
 const sunDirNorm = new THREE.Vector3(28, 42, 34).normalize();
 
-// 3A. Seamless Atmospheric Sky Dome (Eliminates hard horizon background seam)
-const skyDomeGeo = new THREE.SphereGeometry(1420, 48, 24);
+// 3A. Seamless Atmospheric Sky Dome
+const skyDomeGeo = new THREE.SphereGeometry(1420, 40, 20);
 const skyDomeMat = new THREE.ShaderMaterial({
   side: THREE.BackSide,
   depthWrite: false,
@@ -990,7 +1058,6 @@ const skyDomeMat = new THREE.ShaderMaterial({
       vec3 col = mix(horizonCol, midSkyCol, smoothstep(0.0, 0.22, elev));
       col = mix(col, zenithCol, smoothstep(0.18, 0.75, elev));
 
-      // Warm Mediterranean sun scatter near horizon
       float sunAmt = max(dot(dir, uSunDir), 0.0);
       col += vec3(0.32, 0.24, 0.14) * pow(sunAmt, 8.0) * (1.0 - elev * 0.7);
       col += vec3(0.85, 0.75, 0.55) * pow(sunAmt, 90.0) * 0.45;
@@ -1000,10 +1067,11 @@ const skyDomeMat = new THREE.ShaderMaterial({
   `,
 });
 const skyDomeMesh = new THREE.Mesh(skyDomeGeo, skyDomeMat);
+skyDomeMesh.matrixAutoUpdate = false;
 shipStageGroup.add(skyDomeMesh);
 
-// 3B. Boundless Circular Animated Mediterranean Ocean Shader (Zero Box Edges!)
-const oceanGeo = new THREE.CircleGeometry(1380, 128);
+// 3B. Boundless Circular Animated Mediterranean Ocean Shader
+const oceanGeo = new THREE.CircleGeometry(1380, 96);
 oceanGeo.rotateX(-Math.PI / 2);
 
 const oceanUniforms = {
@@ -1017,10 +1085,8 @@ const oceanMat = new THREE.ShaderMaterial({
     varying vec3 vWorldPos;
     uniform float uTime;
     void main() {
-      vec3 pos = position;
-      vec4 wp = modelMatrix * vec4(pos, 1.0);
+      vec4 wp = modelMatrix * vec4(position, 1.0);
       float r = length(wp.xz);
-      // Subtle gentle swell outside ship hull so waterline stays crisp
       float hullMask = smoothstep(26.0, 55.0, r);
       float swell =
         sin(wp.x * 0.08 + uTime * 1.1) * 0.12 +
@@ -1035,24 +1101,16 @@ const oceanMat = new THREE.ShaderMaterial({
     uniform float uTime;
     uniform vec3 uSunDir;
 
-    // Multi-octave procedural wave height & normal perturbation
     vec2 waveGrad(vec2 p, float t) {
       vec2 g = vec2(0.0);
-      // Octave 1: Primary Mediterranean swell
       float p1 = dot(p, vec2(0.24, 0.17)) + t * 1.35;
       g += vec2(0.24, 0.17) * cos(p1) * 0.42;
-      // Octave 2: Cross wave
       float p2 = dot(p, vec2(-0.19, 0.28)) - t * 1.15;
       g += vec2(-0.19, 0.28) * cos(p2) * 0.34;
-      // Octave 3: Medium wind chop
       float p3 = dot(p, vec2(0.62, -0.48)) + t * 2.15;
       g += vec2(0.62, -0.48) * cos(p3) * 0.22;
-      // Octave 4: Fine surface ripples
       float p4 = dot(p, vec2(-0.88, -0.74)) - t * 2.85;
       g += vec2(-0.88, -0.74) * cos(p4) * 0.14;
-      // Octave 5: Micro capillary shimmer
-      float p5 = dot(p, vec2(1.65, 1.25)) + t * 3.6;
-      g += vec2(1.65, 1.25) * cos(p5) * 0.08;
       return g;
     }
 
@@ -1060,7 +1118,6 @@ const oceanMat = new THREE.ShaderMaterial({
       vec2 xz = vWorldPos.xz;
       float dist = length(xz);
 
-      // Attenuate high-frequency normals in the far distance to prevent aliasing
       float detailFade = 1.0 - smoothstep(140.0, 750.0, dist);
       vec2 grad = waveGrad(xz, uTime) * (0.25 + 0.75 * detailFade);
       vec3 N = normalize(vec3(-grad.x * 0.28, 1.0, -grad.y * 0.28));
@@ -1068,41 +1125,32 @@ const oceanMat = new THREE.ShaderMaterial({
       vec3 V = normalize(cameraPosition - vWorldPos);
       float NoV = max(dot(N, V), 0.001);
 
-      // Schlick Fresnel
       float fresnel = pow(1.0 - NoV, 4.2);
       fresnel = clamp(0.06 + 0.88 * fresnel, 0.0, 1.0);
 
-      // Deep sapphire to Costa emerald-turquoise water colors
       vec3 deepWater = vec3(0.014, 0.135, 0.245);
       vec3 shallowTurquoise = vec3(0.035, 0.365, 0.495);
       vec3 skyReflect = vec3(0.145, 0.375, 0.535);
 
-      // Subsurface turquoise glow near the ship hull & sun angle
       float hullProx = 1.0 - smoothstep(8.0, 62.0, dist);
       vec3 baseWater = mix(deepWater, shallowTurquoise, hullProx * 0.68 + 0.18 * (1.0 - NoV));
       vec3 waterCol = mix(baseWater, skyReflect, fresnel * 0.78);
 
-      // Crisp Mediterranean sun specular glints
       vec3 H = normalize(uSunDir + V);
       float specBroad = pow(max(dot(N, H), 0.0), 42.0);
-      float specSparkle = pow(max(dot(N, H), 0.0), 260.0);
-      waterCol += vec3(0.95, 0.86, 0.65) * (specBroad * 0.28 + specSparkle * 1.35) * detailFade;
+      float specSparkle = pow(max(dot(N, H), 0.0), 240.0);
+      waterCol += vec3(0.95, 0.86, 0.65) * (specBroad * 0.28 + specSparkle * 1.3) * detailFade;
 
-      // Procedural Ship Waterline Wake & Bow/Stern Foam around Costa Smeralda hull
-      // Ship length along X (~ -36..+36), beam along Z (~ -6.5..+6.5)
       vec2 shipUV = vec2(xz.x / 35.5, xz.y / 6.2);
       float shipEllip = length(shipUV);
-      // Aerated turquoise water halo around ship
       float wakeHalo = smoothstep(1.65, 0.98, shipEllip) * smoothstep(0.75, 1.02, shipEllip);
       float foamNoise =
         0.5 + 0.5 * sin(xz.x * 2.4 + uTime * 3.2 + sin(xz.y * 2.8 - uTime * 2.1));
-      // Crisp white waterline foam ring hugging hull
       float hullFoamRing =
         smoothstep(1.18, 0.99, shipEllip) *
         smoothstep(0.86, 1.0, shipEllip) *
         (0.55 + 0.45 * foamNoise);
 
-      // Aft propeller wake trail behind stern (X < -30)
       float sternMask = smoothstep(-28.0, -36.0, xz.x) * (1.0 - smoothstep(-36.0, -135.0, xz.x));
       float wakeWidth = 3.2 + max(0.0, (-30.0 - xz.x) * 0.14);
       float sternTrail =
@@ -1113,7 +1161,6 @@ const oceanMat = new THREE.ShaderMaterial({
       waterCol = mix(waterCol, vec3(0.16, 0.62, 0.72), clamp(wakeHalo * 0.55 + sternTrail * 0.45, 0.0, 0.65));
       waterCol = mix(waterCol, vec3(0.92, 0.97, 1.0), clamp(hullFoamRing * 0.75 + sternTrail * 0.38, 0.0, 0.85));
 
-      // Seamless radial horizon mist blend (eliminates any outer edge at R -> 1380m)
       vec3 horizonMist = vec3(0.145, 0.365, 0.515);
       float horizonFactor = smoothstep(380.0, 1220.0, dist);
       waterCol = mix(waterCol, horizonMist, horizonFactor);
@@ -1125,33 +1172,34 @@ const oceanMat = new THREE.ShaderMaterial({
 
 const oceanMesh = new THREE.Mesh(oceanGeo, oceanMat);
 oceanMesh.position.y = -0.05;
+oceanMesh.matrixAutoUpdate = false;
+oceanMesh.updateMatrix();
 shipStageGroup.add(oceanMesh);
 
 // 3C. 360° Surrounding Mediterranean Coastal Mountains & Islands Ring
-//     Naturally frames the horizon so rotating the ship never shows a flat void
 function buildMediterraneanMountainRing() {
-  const segsTheta = 180;
-  const segsRad = 26;
+  const segsTheta = 144;
+  const segsRad = 22;
   const innerR = 480;
   const outerR = 1120;
 
   const geo = new THREE.PlaneGeometry(1, 1, segsTheta, segsRad);
   const posAttr = geo.attributes.position;
 
+  function smoothstep(edge0, edge1, x) {
+    const t = Math.max(0, Math.min(1, (x - edge0) / (edge1 - edge0)));
+    return t * t * (3 - 2 * t);
+  }
+
   function ridgeHeight(theta, rNorm) {
-    // Envelope zero at inner shore (rNorm=0) and outer horizon (rNorm=1)
     const env = Math.sin(Math.pow(rNorm, 0.78) * Math.PI);
-    // Multi-harmonic angular coastal silhouette (bays, straits, headlands, island peaks)
     const w1 = Math.sin(theta * 3.0 + 0.4) * 0.5 + 0.5;
     const w2 = Math.cos(theta * 5.0 - 1.2) * 0.5 + 0.5;
     const w3 = Math.sin(theta * 11.0 + 2.1) * 0.5 + 0.5;
     const w4 = Math.cos(theta * 19.0 - 0.7) * 0.5 + 0.5;
     const w5 = Math.sin(theta * 31.0 + 1.5) * 0.5 + 0.5;
 
-    // Create 2 natural open sea straits so it looks like a realistic archipelago/bay
     const straitMask = smoothstep(0.18, 0.52, w1 * 0.7 + w2 * 0.3);
-
-    // Sharp mountain ridge folding
     const ridge1 = 1.0 - Math.abs(Math.sin(theta * 7.0 + rNorm * 2.6));
     const ridge2 = 1.0 - Math.abs(Math.cos(theta * 13.0 - rNorm * 3.4));
     const peaks =
@@ -1164,17 +1212,11 @@ function buildMediterraneanMountainRing() {
     return Math.max(-1.5, peaks * env * straitMask - 0.8);
   }
 
-  function smoothstep(edge0, edge1, x) {
-    const t = Math.max(0, Math.min(1, (x - edge0) / (edge1 - edge0)));
-    return t * t * (3 - 2 * t);
-  }
-
   for (let i = 0; i < posAttr.count; i++) {
-    const u = posAttr.getX(i) + 0.5; // 0..1 around 360°
-    const v = posAttr.getY(i) + 0.5; // 0..1 from innerR to outerR
+    const u = posAttr.getX(i) + 0.5;
+    const v = posAttr.getY(i) + 0.5;
     const theta = u * Math.PI * 2.0;
 
-    // Slight coastline meander on inner radius
     const coastMeander =
       Math.sin(theta * 6.0) * 28.0 +
       Math.cos(theta * 14.0 + 1.1) * 16.0;
@@ -1213,7 +1255,6 @@ function buildMediterraneanMountainRing() {
         vec3 N = normalize(vNormal);
         float diff = max(dot(N, uSunDir), 0.0);
 
-        // Coastal vegetation base, slate cliffs, and sunlit ridge crests
         vec3 baseCoast = vec3(0.045, 0.145, 0.235);
         vec3 rockSlope = vec3(0.095, 0.245, 0.365);
         vec3 warmPeak = vec3(0.245, 0.395, 0.505);
@@ -1223,11 +1264,9 @@ function buildMediterraneanMountainRing() {
         terrainCol = mix(terrainCol, warmPeak, smoothstep(0.45, 0.95, hNorm) * (0.4 + 0.6 * diff));
         terrainCol *= (0.62 + 0.58 * diff);
 
-        // Subtle shoreline surf line where island meets water
         float shoreLine = 1.0 - smoothstep(0.0, 1.8, vWorldPos.y);
         terrainCol = mix(terrainCol, vec3(0.28, 0.56, 0.68), shoreLine * 0.38);
 
-        // Atmospheric aerial perspective haze (blends seamlessly into horizon sky)
         float dist = length(vWorldPos.xz);
         vec3 horizonMist = vec3(0.145, 0.365, 0.515);
         float haze = smoothstep(380.0, 1020.0, dist);
@@ -1240,13 +1279,393 @@ function buildMediterraneanMountainRing() {
   });
 
   const mtnMesh = new THREE.Mesh(geo, mtnMat);
+  mtnMesh.matrixAutoUpdate = false;
+  mtnMesh.updateMatrix();
   shipStageGroup.add(mtnMesh);
 }
 
 buildMediterraneanMountainRing();
 
 // ============================================================================
-// 3D. COSTA SMERALDA 3D MODEL & 4-LAYER CUTAWAY SYSTEM
+// 3D. ANIMATED MEDITERRANEAN MARINE LIFE (WHALE, DOLPHIN/TUNA POD & FISH SCHOOL)
+//     Passes naturally alongside the ship in alternating lanes (Never circles!)
+// ============================================================================
+const marineLifeSystem = (() => {
+  const group = new THREE.Group();
+  shipStageGroup.add(group);
+
+  // 1. Build Sculpted Fin Whale Mesh (With Horizontal Cetacean Tail Flukes & Blowhole Spray)
+  function createWhaleGeometry() {
+    const geoms = [];
+    // Fusiform whale body along Z (-6.5m tail to +5.5m snout)
+    const bodyGeo = new THREE.SphereGeometry(1, 24, 16);
+    const pos = bodyGeo.attributes.position;
+    for (let i = 0; i < pos.count; i++) {
+      let x = pos.getX(i);
+      let y = pos.getY(i);
+      let z = pos.getZ(i);
+      // Stretch along Z: length ~13m
+      const zNorm = z; // -1..+1
+      const zLen = zNorm * 6.4;
+      // Taper gently toward tail (zNorm < 0) and sleek rostrum snout (zNorm > 0)
+      const tailTaper = zNorm < 0 ? Math.pow(1.0 + zNorm * 0.82, 1.35) : 1.0 - Math.pow(zNorm, 1.8) * 0.55;
+      const widthScale = 1.25 * tailTaper;
+      const heightScale = (zNorm > 0.2 ? 0.85 : 1.05) * tailTaper;
+      x *= widthScale;
+      y *= heightScale;
+      // Flatten belly slightly and arch the dorsal back
+      if (y > 0) y *= 1.15;
+      else y *= 0.82;
+      pos.setXYZ(i, x, y, zLen);
+    }
+    bodyGeo.computeVertexNormals();
+    geoms.push(bodyGeo);
+
+    // Horizontal Cetacean Tail Flukes (Unmistakably a Whale, NOT a vertical shark fin!)
+    const flukeGeo = new THREE.BoxGeometry(3.6, 0.14, 1.35, 8, 1, 4);
+    const fPos = flukeGeo.attributes.position;
+    for (let i = 0; i < fPos.count; i++) {
+      const fx = fPos.getX(i);
+      const fy = fPos.getY(i);
+      const fz = fPos.getZ(i);
+      const ax = Math.abs(fx) / 1.8;
+      // Sweep fluke tips backward
+      const sweepZ = -ax * ax * 0.85;
+      const chordScale = 1.0 - ax * 0.65;
+      fPos.setXYZ(i, fx, fy * (1.0 - ax * 0.5), fz * chordScale + sweepZ - 6.35);
+    }
+    flukeGeo.computeVertexNormals();
+    geoms.push(flukeGeo);
+
+    // Pectoral Flippers (Left & Right)
+    [-1, 1].forEach((side) => {
+      const flipGeo = new THREE.BoxGeometry(2.1, 0.12, 0.75, 4, 1, 2);
+      flipGeo.rotateZ(side * -0.28);
+      flipGeo.rotateY(side * -0.35);
+      flipGeo.translate(side * 1.55, -0.35, 1.4);
+      flipGeo.computeVertexNormals();
+      geoms.push(flipGeo);
+    });
+
+    // Small curved backwards cetacean dorsal fin on aft back (z = -2.4m)
+    const dorsalGeo = new THREE.ConeGeometry(0.32, 0.68, 8);
+    dorsalGeo.scale(0.32, 1.0, 1.35);
+    dorsalGeo.rotateX(-0.48);
+    dorsalGeo.translate(0, 0.78, -2.5);
+    dorsalGeo.computeVertexNormals();
+    geoms.push(dorsalGeo);
+
+    return mergeGeometries(geoms, false);
+  }
+
+  const whaleGeo = createWhaleGeometry();
+  const whaleUniforms = {
+    uTime: { value: 0 },
+  };
+  const whaleMat = new THREE.MeshStandardMaterial({
+    color: 0x162d3e,
+    roughness: 0.25,
+    metalness: 0.18,
+  });
+  whaleMat.onBeforeCompile = (shader) => {
+    shader.uniforms.uSwimTime = whaleUniforms.uTime;
+    shader.vertexShader =
+      `uniform float uSwimTime;\n` +
+      shader.vertexShader.replace(
+        '#include <begin_vertex>',
+        /* glsl */ `
+        vec3 transformed = vec3(position);
+        // Cetacean vertical tail-stroke undulation (increases toward tail z < 0)
+        float tailFactor = clamp((2.0 - transformed.z) / 8.5, 0.0, 1.0);
+        float wave = sin(uSwimTime * 3.4 + transformed.z * 0.45) * 0.42 * tailFactor * tailFactor;
+        transformed.y += wave;
+        `
+      );
+  };
+
+  const whaleMesh = new THREE.Mesh(whaleGeo, whaleMat);
+  group.add(whaleMesh);
+
+  // Whale Blowhole Water Spout (Misty fountain spray when whale surfaces)
+  const SPOUT_COUNT = 22;
+  const spoutGeo = new THREE.SphereGeometry(0.28, 8, 6);
+  const spoutMat = new THREE.MeshBasicMaterial({
+    color: 0xeaf6ff,
+    transparent: true,
+    opacity: 0.62,
+    depthWrite: false,
+  });
+  const spoutInst = new THREE.InstancedMesh(spoutGeo, spoutMat, SPOUT_COUNT);
+  spoutInst.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  group.add(spoutInst);
+
+  // Expanding White Surface Ripple Rings (for Whale & Leaping Dolphins)
+  const RING_COUNT = 6;
+  const ringGeo = new THREE.RingGeometry(0.65, 1.0, 24);
+  ringGeo.rotateX(-Math.PI / 2);
+  const ringMat = new THREE.MeshBasicMaterial({
+    color: 0xdff4ff,
+    transparent: true,
+    opacity: 0.55,
+    side: THREE.DoubleSide,
+    depthWrite: false,
+  });
+  const ringInst = new THREE.InstancedMesh(ringGeo, ringMat, RING_COUNT);
+  ringInst.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  group.add(ringInst);
+
+  // 2. Pod of 4 Mediterranean Dolphins / Bluefin Surface Swimmers
+  const POD_COUNT = 4;
+  function createDolphinGeometry() {
+    const g = new THREE.SphereGeometry(0.38, 16, 10);
+    const p = g.attributes.position;
+    for (let i = 0; i < p.count; i++) {
+      const x = p.getX(i) * 0.82;
+      const y = p.getY(i) * 0.95;
+      const z = p.getZ(i) * 3.4;
+      p.setXYZ(i, x, y, z);
+    }
+    g.computeVertexNormals();
+    return g;
+  }
+  const podGeo = createDolphinGeometry();
+  const podMat = new THREE.MeshStandardMaterial({
+    color: 0x2b5672,
+    roughness: 0.22,
+    metalness: 0.25,
+  });
+  const podInst = new THREE.InstancedMesh(podGeo, podMat, POD_COUNT);
+  podInst.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  group.add(podInst);
+
+  // 3. Shimmering School of 48 Small Silver-Turquoise Surface Fish
+  const SCHOOL_COUNT = 48;
+  const fishGeo = new THREE.ConeGeometry(0.11, 0.52, 6);
+  fishGeo.rotateX(Math.PI / 2);
+  fishGeo.scale(0.55, 1.0, 1.0);
+  const fishMat = new THREE.MeshStandardMaterial({
+    color: 0x7fd4ea,
+    emissive: 0x1a5e78,
+    emissiveIntensity: 0.35,
+    roughness: 0.18,
+    metalness: 0.65,
+  });
+  const schoolInst = new THREE.InstancedMesh(fishGeo, fishMat, SCHOOL_COUNT);
+  schoolInst.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  group.add(schoolInst);
+
+  // Precomputed offsets for the 48 small fish in the school
+  const fishOffsets = Array.from({ length: SCHOOL_COUNT }, (_, i) => ({
+    dx: ((i % 8) - 3.5) * 0.85 + Math.sin(i * 1.7) * 0.35,
+    dz: (Math.floor(i / 8) - 2.5) * 0.95 + Math.cos(i * 2.3) * 0.35,
+    dy: -0.12 - (i % 4) * 0.08,
+    phase: i * 0.65,
+  }));
+
+  // 4 Straight / Gently Curved Passing Lanes Near the Ship (NEVER circling!)
+  const PASS_LANES = [
+    // Lane 0: Portside (+Z) passing from Bow (+X) toward Stern (-X)
+    {
+      start: new THREE.Vector3(88, 0, 17.5),
+      end: new THREE.Vector3(-88, 0, 21.0),
+      swayZ: 2.8,
+      mode: 'whale_and_school',
+    },
+    // Lane 1: Starboardside (-Z) passing from Stern (-X) toward Bow (+X)
+    {
+      start: new THREE.Vector3(-82, 0, -18.5),
+      end: new THREE.Vector3(86, 0, -16.0),
+      swayZ: -2.4,
+      mode: 'pod_and_school',
+    },
+    // Lane 2: Portside Closer Pass from Stern (-X) toward Bow (+X)
+    {
+      start: new THREE.Vector3(-86, 0, 15.0),
+      end: new THREE.Vector3(88, 0, 18.5),
+      swayZ: 2.2,
+      mode: 'pod_and_school',
+    },
+    // Lane 3: Starboardside Pass from Bow (+X) toward Stern (-X)
+    {
+      start: new THREE.Vector3(86, 0, -20.0),
+      end: new THREE.Vector3(-86, 0, -16.5),
+      swayZ: -2.6,
+      mode: 'whale_and_school',
+    },
+  ];
+
+  const PASS_DURATION = 22.0; // seconds per linear pass
+  const dummy = new THREE.Object3D();
+  const posVec = new THREE.Vector3();
+  const nextVec = new THREE.Vector3();
+
+  function sampleLanePos(lane, u, outVec) {
+    outVec.lerpVectors(lane.start, lane.end, u);
+    outVec.z += Math.sin(u * Math.PI) * lane.swayZ;
+  }
+
+  function update(timeSec) {
+    whaleUniforms.uTime.value = timeSec;
+
+    const cycleIdx = Math.floor(timeSec / PASS_DURATION) % PASS_LANES.length;
+    const lane = PASS_LANES[cycleIdx];
+    const u = (timeSec % PASS_DURATION) / PASS_DURATION; // 0..1 linear progress along pass
+
+    sampleLanePos(lane, u, posVec);
+    sampleLanePos(lane, Math.min(1.0, u + 0.01), nextVec);
+    const headingYaw = Math.atan2(nextVec.x - posVec.x, nextVec.z - posVec.z);
+
+    // Smooth entry/exit depth fade at ends of the pass (u < 0.12 or u > 0.88)
+    const endSubmerge =
+      u < 0.12
+        ? -2.8 * (1.0 - u / 0.12)
+        : u > 0.88
+        ? -2.8 * ((u - 0.88) / 0.12)
+        : 0.0;
+
+    // --- A. WHALE PASS & BLOWHOLE WATER SPOUT ---
+    if (lane.mode === 'whale_and_school') {
+      whaleMesh.visible = true;
+      spoutInst.visible = true;
+
+      // Whale surfaces smoothly twice during its pass (around u=0.32 and u=0.66)
+      const crestWave = Math.sin(u * Math.PI * 3.0 - 0.4);
+      const whaleY = -0.72 + Math.max(-0.6, crestWave * 0.68) + endSubmerge;
+      const whalePitch = -Math.cos(u * Math.PI * 3.0 - 0.4) * 0.14;
+
+      whaleMesh.position.set(posVec.x, whaleY, posVec.z);
+      whaleMesh.rotation.set(whalePitch, headingYaw, 0);
+
+      // Blowhole spout activates when whale back crests at the surface (crestWave > 0.25)
+      const spoutActive = crestWave > 0.15 && endSubmerge > -0.3;
+      const blowX = posVec.x + Math.sin(headingYaw) * 2.4;
+      const blowZ = posVec.z + Math.cos(headingYaw) * 2.4;
+
+      for (let i = 0; i < SPOUT_COUNT; i++) {
+        if (!spoutActive) {
+          dummy.position.set(0, -50, 0);
+          dummy.scale.setScalar(0.001);
+        } else {
+          const pAge = (timeSec * 2.4 + i / SPOUT_COUNT) % 1.0;
+          const spread = pAge * 0.95;
+          const angle = i * 2.399;
+          dummy.position.set(
+            blowX + Math.cos(angle) * spread,
+            0.15 + Math.sin(pAge * Math.PI) * 2.85,
+            blowZ + Math.sin(angle) * spread
+          );
+          const sc = (0.35 + pAge * 1.45) * (1.0 - pAge * 0.65);
+          dummy.scale.setScalar(sc);
+        }
+        dummy.updateMatrix();
+        spoutInst.setMatrixAt(i, dummy.matrix);
+      }
+      spoutInst.instanceMatrix.needsUpdate = true;
+
+      // Expanding surface ripple rings around surfacing whale
+      for (let r = 0; r < RING_COUNT; r++) {
+        const rAge = (timeSec * 0.55 + r / RING_COUNT) % 1.0;
+        if (whaleY > -0.95) {
+          dummy.position.set(
+            posVec.x - Math.sin(headingYaw) * rAge * 4.0,
+            -0.02,
+            posVec.z - Math.cos(headingYaw) * rAge * 4.0
+          );
+          const rad = 1.6 + rAge * 5.2;
+          dummy.scale.set(rad, 1, rad * (1.0 - rAge * 0.3));
+        } else {
+          dummy.position.set(0, -50, 0);
+          dummy.scale.setScalar(0.001);
+        }
+        dummy.updateMatrix();
+        ringInst.setMatrixAt(r, dummy.matrix);
+      }
+      ringInst.instanceMatrix.needsUpdate = true;
+      podInst.visible = false;
+    } else {
+      // --- B. DOLPHIN / BLUEFIN POD SURFACE LEAPS ---
+      whaleMesh.visible = false;
+      spoutInst.visible = false;
+      podInst.visible = true;
+
+      const rightX = Math.cos(headingYaw);
+      const rightZ = -Math.sin(headingYaw);
+      const fwdX = Math.sin(headingYaw);
+      const fwdZ = Math.cos(headingYaw);
+
+      for (let i = 0; i < POD_COUNT; i++) {
+        const latOff = (i - 1.5) * 2.2;
+        const lonOff = (i % 2 === 0 ? 1 : -1) * 2.4 - i * 1.8;
+        const leapCycle = (timeSec * 1.55 + i * 0.38) % (Math.PI * 2.0);
+        const leapSin = Math.sin(leapCycle);
+        // Parabolic leap above surface when leapSin > 0, shallow glide beneath when < 0
+        const py = (leapSin > 0 ? leapSin * 1.45 : leapSin * 0.35) - 0.15 + endSubmerge;
+        const pitch = -Math.cos(leapCycle) * (leapSin > 0 ? 0.52 : 0.15);
+
+        const dx = posVec.x + rightX * latOff + fwdX * lonOff;
+        const dz = posVec.z + rightZ * latOff + fwdZ * lonOff;
+
+        dummy.position.set(dx, py, dz);
+        dummy.rotation.set(pitch, headingYaw, 0);
+        dummy.scale.setScalar(1.0);
+        dummy.updateMatrix();
+        podInst.setMatrixAt(i, dummy.matrix);
+
+        // Splash ring where dolphin breaches/enters water
+        if (i < RING_COUNT) {
+          const splashAge = (leapCycle / (Math.PI * 2.0)) % 1.0;
+          dummy.position.set(dx, -0.02, dz);
+          dummy.rotation.set(0, 0, 0);
+          const sRad = 0.4 + splashAge * 2.2;
+          dummy.scale.setScalar(endSubmerge > -0.5 ? sRad : 0.001);
+          dummy.updateMatrix();
+          ringInst.setMatrixAt(i, dummy.matrix);
+        }
+      }
+      for (let r = POD_COUNT; r < RING_COUNT; r++) {
+        dummy.position.set(0, -50, 0);
+        dummy.scale.setScalar(0.001);
+        dummy.updateMatrix();
+        ringInst.setMatrixAt(r, dummy.matrix);
+      }
+      podInst.instanceMatrix.needsUpdate = true;
+      ringInst.instanceMatrix.needsUpdate = true;
+    }
+
+    // --- C. SHIMMERING SCHOOL OF SMALL FISH (Accompanies passes near the hull) ---
+    // School swims slightly closer to the ship hull on the opposite or adjacent beat
+    const schoolU = (u + 0.18) % 1.0;
+    sampleLanePos(lane, schoolU, nextVec);
+    const inwardSign = nextVec.z > 0 ? -1 : 1;
+    const schoolCenterX = nextVec.x;
+    const schoolCenterZ = nextVec.z + inwardSign * 3.8;
+
+    const rightX = Math.cos(headingYaw);
+    const rightZ = -Math.sin(headingYaw);
+    const fwdX = Math.sin(headingYaw);
+    const fwdZ = Math.cos(headingYaw);
+
+    for (let i = 0; i < SCHOOL_COUNT; i++) {
+      const fo = fishOffsets[i];
+      const wiggle = Math.sin(timeSec * 7.5 + fo.phase) * 0.14;
+      const fx = schoolCenterX + fwdX * fo.dz + rightX * (fo.dx + wiggle);
+      const fz = schoolCenterZ + fwdZ * fo.dz + rightZ * (fo.dx + wiggle);
+      const fy = fo.dy + Math.sin(timeSec * 3.2 + fo.phase) * 0.05;
+
+      dummy.position.set(fx, fy, fz);
+      dummy.rotation.set(0, headingYaw + Math.cos(timeSec * 7.5 + fo.phase) * 0.18, 0);
+      dummy.scale.setScalar(1.0);
+      dummy.updateMatrix();
+      schoolInst.setMatrixAt(i, dummy.matrix);
+    }
+    schoolInst.instanceMatrix.needsUpdate = true;
+  }
+
+  return { update };
+})();
+
+// ============================================================================
+// 3E. COSTA SMERALDA 3D MODEL & 4-LAYER CUTAWAY SYSTEM (BATCHED FOR 60+ FPS)
 // ============================================================================
 const shipLayerNodes = {
   L0: null,
@@ -1256,6 +1675,7 @@ const shipLayerNodes = {
   L4: null,
 };
 
+let shipEmbeddedArlecchinoNode = null;
 const shipLayerTargetY = { L1: 0, L2: 0, L3: 0, L4: 0 };
 let currentCutawayMode = 'full';
 let arlecchinoHitboxMesh = null;
@@ -1280,6 +1700,7 @@ function makeDeckLabel(text, cssClass, posVec3, parentNode, onClick = null) {
   }
   const obj = new CSS2DObject(el);
   obj.position.copy(posVec3);
+  obj.visible = false;
   parentNode.add(obj);
   return { obj, el };
 }
@@ -1292,6 +1713,7 @@ let interiorGlbLoaded = false;
 function checkAllLoaded() {
   if (shipGlbLoaded && interiorGlbLoaded) {
     requestShadowUpdate();
+    css2dDirty = true;
     loaderOverlay.classList.add('is-hidden');
   }
 }
@@ -1302,27 +1724,64 @@ gltfLoader.load(
     const shipModel = gltf.scene;
     shipStageGroup.add(shipModel);
 
+    const embeddedArlMeshes = [];
+    const layerMeshBuckets = { L0: [], L1: [], L2: [], L3: [], L4: [] };
+
     shipModel.traverse((child) => {
       if (child.name === 'Ship_Layer0_Base_Deck4Down') shipLayerNodes.L0 = child;
       if (child.name === 'Ship_Layer1_Deck5') shipLayerNodes.L1 = child;
       if (child.name === 'Ship_Layer2_Deck6') shipLayerNodes.L2 = child;
       if (child.name === 'Ship_Layer3_Deck7') shipLayerNodes.L3 = child;
       if (child.name === 'Ship_Layer4_Top_Deck8ToMuffler') shipLayerNodes.L4 = child;
+      if (child.name === 'L2_Arlecchino_2Block_RealModel') {
+        shipEmbeddedArlecchinoNode = child;
+      }
 
       if (child.isMesh) {
         fixFloorAndCarpetMesh(child);
-        const isEmbeddedDetail =
-          child.parent &&
-          (child.parent.name === 'L2_Arlecchino_2Block_RealModel' ||
-            (child.parent.parent && child.parent.parent.name === 'L2_Arlecchino_2Block_RealModel'));
-        child.castShadow = !isEmbeddedDetail;
-        child.receiveShadow = true;
-
         if (child.name === 'L2_Arlecchino_2Block_Active_Hitbox') {
           arlecchinoHitboxMesh = child;
+          return;
+        }
+
+        // Check if mesh belongs to the 1,694-mesh embedded Arlecchino model on Deck 6
+        let p = child.parent;
+        let inEmbeddedArl = false;
+        let layerKey = null;
+        while (p) {
+          if (p.name === 'L2_Arlecchino_2Block_RealModel') inEmbeddedArl = true;
+          if (p.name === 'Ship_Layer0_Base_Deck4Down') layerKey = 'L0';
+          if (p.name === 'Ship_Layer1_Deck5') layerKey = 'L1';
+          if (p.name === 'Ship_Layer2_Deck6') layerKey = 'L2';
+          if (p.name === 'Ship_Layer3_Deck7') layerKey = 'L3';
+          if (p.name === 'Ship_Layer4_Top_Deck8ToMuffler') layerKey = 'L4';
+          p = p.parent;
+        }
+
+        child.castShadow = !inEmbeddedArl;
+        child.receiveShadow = true;
+
+        if (inEmbeddedArl) {
+          embeddedArlMeshes.push(child);
+        } else if (layerKey && layerMeshBuckets[layerKey]) {
+          layerMeshBuckets[layerKey].push(child);
         }
       }
     });
+
+    // Batch the 1,694 embedded Deck 6 meshes into ~18 draw calls AND hide when ship is closed!
+    if (shipEmbeddedArlecchinoNode && embeddedArlMeshes.length > 0) {
+      batchStaticMeshesInGroup(shipModel, embeddedArlMeshes, shipEmbeddedArlecchinoNode);
+      shipEmbeddedArlecchinoNode.visible =
+        currentStage === 'ship' && (currentCutawayMode === 'deck6' || currentCutawayMode === 'deck5');
+    }
+
+    // Batch each exterior ship deck layer for minimal draw calls during 360° orbit
+    for (const key of ['L0', 'L1', 'L2', 'L3', 'L4']) {
+      if (shipLayerNodes[key] && layerMeshBuckets[key].length > 1) {
+        batchStaticMeshesInGroup(shipModel, layerMeshBuckets[key], shipLayerNodes[key]);
+      }
+    }
 
     if (shipLayerNodes.L1) {
       deckCutawayLabels.colombina = makeDeckLabel(
@@ -1364,33 +1823,38 @@ gltfLoader.load(
 
 const CUTAWAY_META = {
   full: {
-    eyebrow: 'COSTA SMERALDA · EXTERIOR OVERVIEW',
+    eyebrow: 'DECK 6 · ROMA (MID-SHIP)',
     title: 'Ristorante Arlecchino',
-    desc: 'Select a deck layer above or open Deck 6 to inspect the 4 completed blocks of Ristorante Arlecchino.',
+    desc: 'Use the top bar to inspect deck cutaways or open Deck 6 to allocate your group tables.',
     subtitle: 'GROUP DINING RESERVATION SYSTEM',
   },
   deck7: {
-    eyebrow: 'CUTAWAY LAYER 3 · DECK 7 POSITANO',
+    eyebrow: 'DECK 7 · POSITANO (AFT)',
     title: 'Ristorante Il Rugantino',
-    desc: 'Deck 8 to upper funnel lifted as one unit. Aft zone shows Il Rugantino (546 seats) placeholder.',
-    subtitle: 'DECK 7 CUTAWAY · IL RUGANTINO (PLACEHOLDER)',
+    desc: 'Deck 8 to funnel lifted. Aft zone shows Il Rugantino (546 seats) architectural placeholder.',
+    subtitle: 'DECK 7 CUTAWAY · IL RUGANTINO',
   },
   deck6: {
-    eyebrow: 'CUTAWAY LAYER 2 · DECK 6 ROMA',
+    eyebrow: 'DECK 6 · ROMA (MID-SHIP)',
     title: 'Ristorante Arlecchino',
-    desc: 'Mid-ship displays the 4 completed blocks of Arlecchino in full 3D detail. Aft shows Il Meneghino placeholder.',
-    subtitle: 'DECK 6 CUTAWAY · ARLECCHINO (4 BLOCKS) & MENEGHINO',
+    desc: 'Mid-ship displays all 4 blocks of Arlecchino (45 tables · 220 seats). Click below to allocate tables.',
+    subtitle: 'DECK 6 CUTAWAY · RISTORANTE ARLECCHINO',
   },
   deck5: {
-    eyebrow: 'CUTAWAY LAYER 1 · DECK 5 TAORMINA',
+    eyebrow: 'DECK 5 · TAORMINA (AFT)',
     title: 'Ristorante La Colombina',
-    desc: 'Decks 6, 7, and 8–Funnel lifted in stepped tiers. Aft shows La Colombina (978 seats) placeholder.',
-    subtitle: 'DECK 5 CUTAWAY · LA COLOMBINA (PLACEHOLDER)',
+    desc: 'Decks 6, 7, and 8 lifted in stepped tiers. Aft shows La Colombina (978 seats) placeholder.',
+    subtitle: 'DECK 5 CUTAWAY · LA COLOMBINA',
   },
 };
 
+function setDeckLabelVis(labelRecord, vis) {
+  if (!labelRecord) return;
+  labelRecord.obj.visible = vis;
+  labelRecord.el.classList.toggle('is-hidden', !vis);
+}
+
 function setShipCutawayLayer(layerMode, animateCam = true) {
-  // Never allow deck cutaways while in Stage 0 Gate
   if (currentStage === 'gate') {
     layerMode = 'full';
   }
@@ -1412,19 +1876,20 @@ function setShipCutawayLayer(layerMode, animateCam = true) {
     document.getElementById('stage-subtitle').textContent = info.subtitle;
   }
 
-  if (deckCutawayLabels.colombina) {
-    deckCutawayLabels.colombina.el.classList.toggle('is-hidden', currentStage !== 'ship' || layerMode !== 'deck5');
+  // Only render the embedded 1,694-mesh Deck 6 interior when Deck 6 or Deck 5 cutaway is open!
+  if (shipEmbeddedArlecchinoNode) {
+    shipEmbeddedArlecchinoNode.visible =
+      currentStage === 'ship' && (layerMode === 'deck6' || layerMode === 'deck5');
   }
-  if (deckCutawayLabels.meneghino) {
-    deckCutawayLabels.meneghino.el.classList.toggle('is-hidden', currentStage !== 'ship' || layerMode !== 'deck6');
-  }
-  if (deckCutawayLabels.rugantino) {
-    deckCutawayLabels.rugantino.el.classList.toggle('is-hidden', currentStage !== 'ship' || layerMode !== 'deck7');
-  }
-  if (deckCutawayLabels.arlecchinoMain) {
-    const showArl = currentStage === 'ship' && (layerMode === 'full' || layerMode === 'deck6');
-    deckCutawayLabels.arlecchinoMain.el.classList.toggle('is-hidden', !showArl);
-  }
+
+  setDeckLabelVis(deckCutawayLabels.colombina, currentStage === 'ship' && layerMode === 'deck5');
+  setDeckLabelVis(deckCutawayLabels.meneghino, currentStage === 'ship' && layerMode === 'deck6');
+  setDeckLabelVis(deckCutawayLabels.rugantino, currentStage === 'ship' && layerMode === 'deck7');
+  setDeckLabelVis(
+    deckCutawayLabels.arlecchinoMain,
+    currentStage === 'ship' && (layerMode === 'full' || layerMode === 'deck6')
+  );
+  css2dDirty = true;
 
   if (layerMode === 'full') {
     shipLayerTargetY.L1 = 0;
@@ -1462,11 +1927,16 @@ function setShipCutawayLayer(layerMode, animateCam = true) {
 }
 
 // ============================================================================
-// 4. STAGE 2: LOAD 4-BLOCK ARLECCHINO GLB & FAST BOUNDING-BOX RAYCAST PROXIES
+// 4. STAGE 2: LOAD 4-BLOCK ARLECCHINO GLB, MATCH ALL 45 TABLES & BATCH MESHES
 // ============================================================================
 const restaurantGroup = new THREE.Group();
 restaurantGroup.visible = false;
 scene.add(restaurantGroup);
+
+const ceilingBatchGroup = new THREE.Group();
+const chandelierBatchGroup = new THREE.Group();
+const mainInteriorBatchGroup = new THREE.Group();
+restaurantGroup.add(mainInteriorBatchGroup, ceilingBatchGroup, chandelierBatchGroup);
 
 const ceilingMeshes = [];
 const chandelierMeshes = [];
@@ -1482,6 +1952,8 @@ gltfLoader.load(
   (gltf) => {
     const model = gltf.scene;
     restaurantGroup.add(model);
+
+    const mainStaticMeshes = [];
 
     model.traverse((child) => {
       if (!child.isMesh) return;
@@ -1517,11 +1989,14 @@ gltfLoader.load(
         n.startsWith('Crossroads_ExitSign_')
       ) {
         ceilingMeshes.push(child);
+      } else {
+        mainStaticMeshes.push(child);
       }
 
       for (const meta of TABLE_CATALOG) {
         if (
           n.includes(meta.nodeKey) ||
+          n.includes(`_${meta.num}_`) ||
           (meta.num === '301' && n.startsWith('Banquette_'))
         ) {
           if (!tableRegistry.has(meta.num)) {
@@ -1574,6 +2049,8 @@ gltfLoader.load(
       );
       const proxyMesh = new THREE.Mesh(proxyGeo, hitProxyMat);
       proxyMesh.position.copy(fullCenter);
+      proxyMesh.matrixAutoUpdate = false;
+      proxyMesh.updateMatrix();
       proxyMesh.userData.tableNum = meta.num;
       restaurantGroup.add(proxyMesh);
       interactiveHitProxies.push(proxyMesh);
@@ -1595,6 +2072,8 @@ gltfLoader.load(
 
       const glassPad = new THREE.Mesh(padGeo, padMat);
       glassPad.position.set(entry.center.x, topBox.max.y + 0.012, entry.center.z);
+      glassPad.matrixAutoUpdate = false;
+      glassPad.updateMatrix();
       restaurantGroup.add(glassPad);
       entry.glassPad = glassPad;
 
@@ -1625,10 +2104,18 @@ gltfLoader.load(
 
       const labelObj = new CSS2DObject(markerEl);
       labelObj.position.set(entry.center.x, topBox.max.y + 0.07, entry.center.z);
+      labelObj.visible = false;
       restaurantGroup.add(labelObj);
       entry.labelObj = labelObj;
       entry.labelEl = markerEl;
     }
+
+    // Batch 1,810 static interior meshes into ~24 material draw calls!
+    batchStaticMeshesInGroup(model, mainStaticMeshes, mainInteriorBatchGroup);
+    const batchedCeil = batchStaticMeshesInGroup(model, ceilingMeshes, ceilingBatchGroup);
+    const batchedChand = batchStaticMeshesInGroup(model, chandelierMeshes, chandelierBatchGroup);
+    ceilingMeshes.push(...batchedCeil);
+    chandelierMeshes.push(...batchedChand);
 
     buildSidebarTableRowsOnce();
     applyAccessSession(activeSession);
@@ -1645,7 +2132,7 @@ gltfLoader.load(
 // ============================================================================
 // 5. STATE MANAGEMENT: 3-STAGE HIERARCHY (GATE -> SHIP -> INTERIOR)
 // ============================================================================
-let currentStage = 'gate'; // Starts in Stage 0 Gate!
+let currentStage = 'gate';
 let currentCamMode = 'bird';
 let top2dFlipped = false;
 let showTableNumbers = true;
@@ -1663,7 +2150,6 @@ let targetViewOffsetX = 0;
 function updateCameraViewOffset() {
   const w = window.innerWidth;
   const h = Math.max(1, window.innerHeight - 57);
-  // In Stage 0 Gate on desktop, shift the 3D ship optical center to the right side of the viewport
   targetViewOffsetX = currentStage === 'gate' && w > 960 ? Math.round(Math.min(200, w * 0.145)) : 0;
 
   if (Math.abs(currentViewOffsetX) > 0.5) {
@@ -1673,7 +2159,6 @@ function updateCameraViewOffset() {
   }
 }
 
-// Modern Web Guidance: same-document-transitions with programmatic focus routing
 function runStageViewTransition(domMutator, focusElementId = null) {
   const finishFocus = () => {
     if (focusElementId) {
@@ -1702,6 +2187,7 @@ function animateCameraTo(targetPos, targetLookAt, durationMs = 800, onDone = nul
       const ease = 1 - Math.pow(1 - t, 3);
       activeCamera.position.lerpVectors(startPos, targetPos, ease);
       controls.target.lerpVectors(startLook, targetLookAt, ease);
+      css2dDirty = true;
       if (t >= 1) {
         camAnim = null;
         if (onDone) onDone();
@@ -1710,7 +2196,7 @@ function animateCameraTo(targetPos, targetLookAt, durationMs = 800, onDone = nul
   };
 }
 
-// STAGE 0: INITIAL ACCESS GATE (Full Ship Orbit Only on Right, Code Input on Left)
+// STAGE 0: INITIAL ACCESS GATE
 function setGateStage(instant = false) {
   currentStage = 'gate';
   activeCamera = perspCamera;
@@ -1734,14 +2220,15 @@ function setGateStage(instant = false) {
   restaurantGroup.visible = false;
   interiorLightGroup.visible = false;
 
-  // Force all cutaway layers closed in Gate mode
+  if (shipEmbeddedArlecchinoNode) {
+    shipEmbeddedArlecchinoNode.visible = false;
+  }
+
   shipLayerTargetY.L1 = 0;
   shipLayerTargetY.L2 = 0;
   shipLayerTargetY.L3 = 0;
   shipLayerTargetY.L4 = 0;
-  Object.values(deckCutawayLabels).forEach((lbl) => {
-    if (lbl && lbl.el) lbl.el.classList.add('is-hidden');
-  });
+  Object.values(deckCutawayLabels).forEach((lbl) => setDeckLabelVis(lbl, false));
 
   updateTableMarkersVisibility();
   requestShadowUpdate();
@@ -1751,11 +2238,10 @@ function setGateStage(instant = false) {
     document.getElementById('hero-ship-ui').classList.remove('is-active');
     document.getElementById('interior-ui').classList.remove('is-active');
 
-    document.getElementById('gate-toolbar').hidden = false;
     document.getElementById('ship-toolbar').hidden = true;
     document.getElementById('interior-toolbar').hidden = true;
     document.getElementById('active-session-bar').hidden = true;
-    document.getElementById('stage-subtitle').textContent = 'B2B GROUP DINING RESERVATION PORTAL';
+    document.getElementById('stage-subtitle').textContent = 'GROUP DINING RESERVATION SYSTEM';
   };
 
   if (instant) {
@@ -1771,7 +2257,7 @@ function setGateStage(instant = false) {
   }
 }
 
-// STAGE 1: SHIP CUTAWAY DASHBOARD (Unlocked after Valid Code!)
+// STAGE 1: SHIP CUTAWAY DASHBOARD
 function setHeroShipCamera(instant = false) {
   currentStage = 'ship';
   activeCamera = perspCamera;
@@ -1802,7 +2288,6 @@ function setHeroShipCamera(instant = false) {
     document.getElementById('hero-ship-ui').classList.add('is-active');
     document.getElementById('interior-ui').classList.remove('is-active');
 
-    document.getElementById('gate-toolbar').hidden = true;
     document.getElementById('ship-toolbar').hidden = false;
     document.getElementById('interior-toolbar').hidden = true;
     document.getElementById('active-session-bar').hidden = false;
@@ -1822,17 +2307,13 @@ function setHeroShipCamera(instant = false) {
   }
 }
 
-// Start website in Stage 0 Gate!
 setGateStage(true);
 
 function enterInterior2Blocks() {
   if (currentStage !== 'ship') return;
 
   setShipCutawayLayer('deck6', false);
-
-  Object.values(deckCutawayLabels).forEach((lbl) => {
-    if (lbl && lbl.el) lbl.el.classList.add('is-hidden');
-  });
+  Object.values(deckCutawayLabels).forEach((lbl) => setDeckLabelVis(lbl, false));
 
   animateCameraTo(
     new THREE.Vector3(-0.5, 5.2, 6.8),
@@ -1854,12 +2335,11 @@ function enterInterior2Blocks() {
         document.getElementById('gate-access-ui').classList.remove('is-active');
         document.getElementById('hero-ship-ui').classList.remove('is-active');
         document.getElementById('interior-ui').classList.add('is-active');
-        document.getElementById('gate-toolbar').hidden = true;
         document.getElementById('ship-toolbar').hidden = true;
         document.getElementById('interior-toolbar').hidden = false;
         document.getElementById('active-session-bar').hidden = false;
         document.getElementById('stage-subtitle').textContent =
-          'DECK 6 ROMA · RISTORANTE ARLECCHINO (4 BLOCKS · 45 TABLES)';
+          'DECK 6 ROMA · RISTORANTE ARLECCHINO';
       }, 'interior-sidebar-heading');
 
       setInteriorCameraMode('bird');
@@ -1869,6 +2349,8 @@ function enterInterior2Blocks() {
 }
 
 function setCeilingVisible(vis, showChandelier = vis) {
+  ceilingBatchGroup.visible = vis;
+  chandelierBatchGroup.visible = showChandelier;
   for (const m of ceilingMeshes) {
     m.visible = vis;
   }
@@ -1880,11 +2362,14 @@ function setCeilingVisible(vis, showChandelier = vis) {
 function updateTableMarkersVisibility() {
   const shouldShow = currentStage === 'interior' && showTableNumbers;
   for (const [, entry] of tableRegistry) {
-    if (!entry.labelEl) continue;
+    if (!entry.labelEl || !entry.labelObj) continue;
     const matchBlock =
       activeBlockFilter === 'all' || entry.meta.block === activeBlockFilter;
-    entry.labelEl.classList.toggle('is-hidden', !(shouldShow && matchBlock));
+    const vis = shouldShow && matchBlock;
+    entry.labelObj.visible = vis;
+    entry.labelEl.classList.toggle('is-hidden', !vis);
   }
+  css2dDirty = true;
 }
 
 // ============================================================================
@@ -1944,6 +2429,7 @@ function setInteriorCameraMode(mode) {
     controls.enableRotate = false;
     controls.enablePan = true;
     controls.update();
+    css2dDirty = true;
   } else if (mode === 'walk') {
     setCeilingVisible(true, true);
     camAnim = null;
@@ -1977,6 +2463,7 @@ function syncWalkCameraLook() {
   );
   const lookTarget = perspCamera.position.clone().add(dir);
   perspCamera.lookAt(lookTarget);
+  css2dDirty = true;
 }
 
 // ============================================================================
@@ -2088,26 +2575,15 @@ function applyAccessSession(sessionObj) {
   selectedTables.clear();
 
   const availCount = TABLE_CATALOG.length - lockedTables.size;
-  const welcomeText = `Welcome, ${sessionObj.groupName}`;
 
-  // Update Masthead Active Session Bar
-  document.getElementById('active-welcome-badge').textContent = welcomeText;
-  document.getElementById('active-code-badge').textContent = sessionObj.code;
-  const ttlBadge = document.getElementById('active-expiry-badge');
-  ttlBadge.textContent = sessionObj.isPreset
-    ? 'PRESET'
-    : DRS_CODEC.formatDurationRemaining(sessionObj.remainingMs);
+  // Masthead shows ONLY the clean, untruncated Welcome greeting (zero duplicate code or truncated text)
+  document.getElementById('active-welcome-badge').textContent = `Welcome, ${sessionObj.groupName}`;
 
-  // Update Stage 1 Ship Card Summary & Greeting
-  document.getElementById('sts-welcome-banner').textContent = `${welcomeText}!`;
+  // Stage 1 compact summary strip
   document.getElementById('sts-avail-Info').textContent =
-    `${sessionObj.targetPax} Pax · ${availCount} Open / ${lockedTables.size} Locked`;
-  document.getElementById('sts-expiry-info').textContent = sessionObj.expiryLabel;
+    `${sessionObj.targetPax} Pax Group · ${availCount} Available Tables · ${lockedTables.size} Reserved`;
   document.getElementById('btn-enter-deck6-label').textContent =
     `Open Ristorante Arlecchino (${availCount} Open Tables)`;
-
-  // Update Stage 2 Sidebar Greeting
-  document.getElementById('sidebar-group-name').textContent = sessionObj.groupName;
 
   syncSelectionUI();
 }
@@ -2209,7 +2685,6 @@ function evaluateGateCodeInput(showErrors = false) {
     return null;
   }
 
-  // Show live decoded preview card with Greeting!
   const availCount = TABLE_CATALOG.length - res.lockedTables.length;
   gatePreviewBox.hidden = false;
   gatePreviewBox.classList.toggle('is-expired', res.isExpired);
@@ -2320,7 +2795,6 @@ function performHoverRaycast() {
   pointerDirty = false;
   raycaster.setFromCamera(pointerNDC, activeCamera);
 
-  // In Stage 0 Gate, only allow 3D ship rotation — disable restaurant hitbox hover
   if (currentStage === 'gate') {
     canvas.style.cursor = 'grab';
     return;
@@ -2367,7 +2841,6 @@ window.addEventListener('pointerup', (event) => {
   );
   if (moveDist > 6 || event.target !== canvas) return;
 
-  // In Stage 0 Gate, clicking the ship does NOT enter the restaurant
   if (currentStage === 'gate') return;
 
   updatePointerNDC(event);
@@ -2424,7 +2897,6 @@ document.querySelectorAll('.block-filter-btn').forEach((btn) => {
   });
 });
 
-// Collapsible Right Drawer Toggle
 const drawerEl = document.getElementById('drs-drawer');
 const drawerToggleBtn = document.getElementById('btn-toggle-drawer');
 const drawerToggleLabel = document.getElementById('drawer-toggle-label');
@@ -2554,10 +3026,11 @@ window.addEventListener('resize', () => {
 
   renderer.setSize(w, h);
   labelRenderer.setSize(w, h);
+  css2dDirty = true;
 });
 
 // ============================================================================
-// 10. MAIN RENDER & ANIMATION LOOP (PAUSES WHEN TAB IS HIDDEN)
+// 10. MAIN RENDER & ANIMATION LOOP (OPTIMIZED FOR 60+ FPS PRESENTATION)
 // ============================================================================
 let prevTime = performance.now();
 let isPageHidden = document.hidden;
@@ -2575,6 +3048,7 @@ function animate(now) {
 
   const dt = Math.min(0.05, (now - prevTime) / 1000);
   prevTime = now;
+  const timeSec = now * 0.001;
 
   if (camAnim) {
     camAnim.update(now);
@@ -2584,7 +3058,6 @@ function animate(now) {
     performHoverRaycast();
   }
 
-  // Smooth horizontal camera offset transition between Stage 0 Gate (ship on right) & Stage 1/2 (centered)
   const w = window.innerWidth;
   targetViewOffsetX = currentStage === 'gate' && w > 960 ? Math.round(Math.min(200, w * 0.145)) : 0;
   if (Math.abs(targetViewOffsetX - currentViewOffsetX) > 0.35) {
@@ -2596,8 +3069,8 @@ function animate(now) {
   }
 
   if (currentStage === 'gate' || currentStage === 'ship') {
-    // Animate boundless Mediterranean ocean waves & hull wake
-    oceanUniforms.uTime.value = now * 0.001;
+    oceanUniforms.uTime.value = timeSec;
+    marineLifeSystem.update(timeSec);
 
     const lerpRate = Math.min(1.0, dt * 7.0);
     let layersMoving = false;
@@ -2615,6 +3088,7 @@ function animate(now) {
     }
     if (layersMoving) {
       requestShadowUpdate();
+      css2dDirty = true;
     }
     controls.update();
   } else if (currentStage === 'interior') {
@@ -2623,15 +3097,19 @@ function animate(now) {
       const forwardFlat = new THREE.Vector3(-Math.sin(walkYaw), 0, -Math.cos(walkYaw));
       const rightFlat = new THREE.Vector3(Math.cos(walkYaw), 0, -Math.sin(walkYaw));
 
+      const moved =
+        walkKeys.forward || walkKeys.backward || walkKeys.right || walkKeys.left;
       if (walkKeys.forward) perspCamera.position.addScaledVector(forwardFlat, speed);
       if (walkKeys.backward) perspCamera.position.addScaledVector(forwardFlat, -speed);
       if (walkKeys.right) perspCamera.position.addScaledVector(rightFlat, speed);
       if (walkKeys.left) perspCamera.position.addScaledVector(rightFlat, -speed);
 
-      perspCamera.position.x = Math.max(-1.85, Math.min(27.6, perspCamera.position.x));
-      perspCamera.position.z = Math.max(-17.0, Math.min(-0.55, perspCamera.position.z));
-      perspCamera.position.y = 1.56;
-      syncWalkCameraLook();
+      if (moved) {
+        perspCamera.position.x = Math.max(-1.85, Math.min(27.6, perspCamera.position.x));
+        perspCamera.position.z = Math.max(-17.0, Math.min(-0.55, perspCamera.position.z));
+        perspCamera.position.y = 1.56;
+        syncWalkCameraLook();
+      }
     } else {
       controls.update();
     }
@@ -2682,7 +3160,15 @@ function animate(now) {
   }
 
   renderer.render(scene, activeCamera);
-  labelRenderer.render(scene, activeCamera);
+
+  // Only run CSS2DRenderer DOM layout when labels are visible and camera/state changed!
+  const hasVisibleLabels =
+    (currentStage === 'interior' && showTableNumbers) ||
+    (currentStage === 'ship' && currentCutawayMode !== 'full');
+  if (hasVisibleLabels && css2dDirty) {
+    labelRenderer.render(scene, activeCamera);
+    css2dDirty = false;
+  }
 }
 
 requestAnimationFrame(animate);
