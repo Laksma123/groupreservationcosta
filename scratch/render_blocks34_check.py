@@ -31,12 +31,30 @@ look_at(cam_obj, (21.50, 8.73, 1.35))
 scene.render.filepath = os.path.join(OUT_DIR, "b34_view1_from_crossroads.png")
 bpy.ops.render.render(write_still=True)
 
-# View 1B: Close-up inside Block 3 looking toward Waiter Station #2 (1-set), Tikungan Kecil & Table 309 (matching user screenshot)
+# View 1B: Close-up inside Block 3 looking toward Waiter Station #2 (1-set), Tikungan Kecil & Table 309
 cam_data.type = 'PERSP'
 cam_data.lens = 20.0
 cam_obj.location = Vector((18.60, 2.20, 1.55))
 look_at(cam_obj, (15.55, 2.75, 1.00))
 scene.render.filepath = os.path.join(OUT_DIR, "b3_ws2_closeup.png")
+bpy.ops.render.render(write_still=True)
+
+# View 1C: Back of Block 3 Waiter Station #2 wall from Crossroads (matching Screenshot 1)
+cam_obj.location = Vector((13.10, 4.90, 1.35))
+look_at(cam_obj, (15.42, 2.50, 1.05))
+scene.render.filepath = os.path.join(OUT_DIR, "b3_ws2_back_wall.png")
+bpy.ops.render.render(write_still=True)
+
+# View 1D: Bottom-right corner of Block 3 Waiter Station #1 near Entrance 2 (matching Screenshot 2)
+cam_obj.location = Vector((25.10, 3.30, 1.35))
+look_at(cam_obj, (27.35, 2.15, 0.72))
+scene.render.filepath = os.path.join(OUT_DIR, "b3_ws1_right_corner.png")
+bpy.ops.render.render(write_still=True)
+
+# View 1E: Starboardside Crossroads corner with Hand Sanitizer removed (matching Screenshot 3)
+cam_obj.location = Vector((12.00, 11.90, 0.90))
+look_at(cam_obj, (11.00, 13.80, 0.65))
+scene.render.filepath = os.path.join(OUT_DIR, "crossroads_no_sanitizer.png")
 bpy.ops.render.render(write_still=True)
 
 # View 2: Top-down Bird's-Eye of Block 3 & Block 4 (hide ceilings for clear floor plan inspection)
