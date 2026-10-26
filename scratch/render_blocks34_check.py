@@ -31,6 +31,14 @@ look_at(cam_obj, (21.50, 8.73, 1.35))
 scene.render.filepath = os.path.join(OUT_DIR, "b34_view1_from_crossroads.png")
 bpy.ops.render.render(write_still=True)
 
+# View 1B: Close-up inside Block 3 looking toward Waiter Station #2 (1-set), Tikungan Kecil & Table 309 (matching user screenshot)
+cam_data.type = 'PERSP'
+cam_data.lens = 20.0
+cam_obj.location = Vector((18.60, 2.20, 1.55))
+look_at(cam_obj, (15.55, 2.75, 1.00))
+scene.render.filepath = os.path.join(OUT_DIR, "b3_ws2_closeup.png")
+bpy.ops.render.render(write_still=True)
+
 # View 2: Top-down Bird's-Eye of Block 3 & Block 4 (hide ceilings for clear floor plan inspection)
 ceil_prefixes = ("Ceiling_", "CeilBeam_", "B2_CeilBeam_", "B3_CeilBeam_", "B4_CeilBeam_", "B3B4_Ceiling_", "RedSpot_", "B2_RedSpot_", "B3_RedSpot_", "B4_RedSpot_", "Corr_Downlight_", "B3B4_Corr_Downlight_", "Crossroads_Header_")
 for o in bpy.data.objects:

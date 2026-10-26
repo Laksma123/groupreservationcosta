@@ -727,34 +727,97 @@ add_box("B3_AftStep2_Wall_ChairRail", (0.04, seg2_len, 0.055),  (B3_SEG2_X - 0.0
 # Step 3: Block 3 Waiter Station #1 (Rectangle 7 in 2D Map: Y = 2.25..5.33m, front flush at X = 27.35m, facing -X into Block 3!)
 build_double_waiter_station("B3_WaiterStation_1_Rect7", (B3_SEG2_X, 2.25), (B3_SEG2_X, 5.33), (-1.0, 0.0))
 
-# 5C. Block 3 Pintu Masuk Pertama Wall (Crossroads face flush at X = 15.40m = M(10.40m), interior face at X = 16.05m):
-# - Waiter Station #2 (Rectangle 5 in 2D Map) behind Pintu Masuk Pertama wall (Y = 1.61..4.21m, front at X = 16.05m, facing +X into Block 3!)
-# - 9 Fornasetti Plates on the window corner segment (Y = 0.00..1.61m at X = 16.05m, facing +X into Block 3!)
-# - Crossroads-facing exterior cladding flush at X = 15.40m (so Crossroads floor X = 10.40..15.40m is 100% unobstructed!)
+# 5C. Block 3 Pintu Masuk Pertama Wall (Crossroads face flush at X = 15.40m = M(10.40m)):
+# - Single-Set Waiter Station #2 (Rectangle 5 in 2D Map) between Left Wall (Y = 2.61..2.75m) and Right Entrance Wall (Y = 4.15..4.33m):
+#   When viewed from inside Block 3 (facing -X):
+#   * Left is Wall (Y = 2.61..2.75m, X = 15.40..16.05m)
+#   * Long section on Left (Y = 2.75..3.74m, length = 0.99m)
+#   * ONLY 1 Partition in the middle (Y = 3.74..3.775m)
+#   * Short section on Right (Y = 3.775..4.15m, length = 0.375m)
+#   * Right is Wall (Y = 4.15..4.33m, X = 15.40..16.05m)
+# - From Y = 2.61m to Y = 0.00m (behind all 3 Forward chairs of Table 309), the wall recesses inward (-X)
+#   by the exact station depth to X = 15.44m ("tikungan kecil sedalam kedalaman station, seakan ada sofa tapi tidak ada sofa"),
+#   giving Table 309's Forward chairs generous clearance from the wall!
 B3_FWD_IN_X = 16.05
 B3_FWD_OUT_X = 15.40
+B3_RECESS_IN_X = 15.44  # Recessed wall face behind Table 309 (stepped back by station depth!)
 
-build_double_waiter_station("B3_WaiterStation_2_Rect5", (B3_FWD_IN_X, 4.21), (B3_FWD_IN_X, 1.61), (1.0, 0.0))
+def build_b3_single_waiter_station_rect5(tag):
+    # Station spans Y = 2.75m (left wall inner face) to Y = 4.15m (right wall inner face), X = 15.40..16.05m
+    y_left = 2.75
+    y_right = 4.15
+    total_len = y_right - y_left  # 1.40m (1 set: 1 long + 1 partition + 1 short)
+    y_mid = (y_left + y_right) * 0.5  # 3.45m
+    part_thick = 0.035
+    w_long = 0.990   # Left section (panjang kiri)
+    w_short = total_len - w_long - part_thick  # 0.375m Right section (pendek kanan)
 
-# Classical Pilaster Jamb framing the Pintu Masuk Pertama doorway side of Waiter Station #2 (at Y = 4.25m, X = 15.725m)
-add_box("B3_WS2_EntranceJamb_White",  (0.68, 0.18, CEIL_H), (15.725, 4.25, CEIL_H * 0.5), mats["wall_white"], arch_col, bevel=0.005)
-add_box("B3_WS2_EntranceJamb_Red",    (0.69, 0.19, 0.68),   (15.725, 4.25, 0.50),         mats["wall_red"],   arch_col)
-add_box("B3_WS2_EntranceJamb_Plinth", (0.71, 0.21, 0.16),   (15.725, 4.25, 0.08),         mats["wall_white"], arch_col)
-add_box("B3_WS2_EntranceJamb_Rail",   (0.71, 0.21, 0.065),  (15.725, 4.25, 0.88),         mats["wall_white"], arch_col)
+    # Backing wall & upper header above the alcove
+    add_box(f"{tag}_AlcoveBackWall", (0.08, total_len + 0.08, CEIL_H), (15.44, y_mid, CEIL_H * 0.5), mats["wall_white"], arch_col)
+    add_box(f"{tag}_AlcoveHeader",   (0.14, total_len + 0.04, 0.45),   (B3_FWD_IN_X - 0.05, y_mid, CEIL_H - 0.225), mats["wall_white"], arch_col)
 
-# Window-corner wall segment (Y = 0.00..1.61m) with 9 Fornasetti Plates facing +X into Block 3
-b3_fwd_c_len = 1.61
-b3_fwd_c_cy = 0.805
-add_box("B3_FwdPlates_Wall_White",  (0.65, b3_fwd_c_len, CEIL_H),       (15.725, b3_fwd_c_cy, CEIL_H * 0.5), mats["wall_white"], arch_col, bevel=0.005)
-add_box("B3_FwdPlates_Wall_Red",    (0.02, b3_fwd_c_len - 0.08, 0.68),  (B3_FWD_IN_X + 0.005, b3_fwd_c_cy, 0.50), mats["wall_red"], arch_col)
-add_box("B3_FwdPlates_Wall_Plinth", (0.04, b3_fwd_c_len, 0.16),         (B3_FWD_IN_X + 0.01,  b3_fwd_c_cy, 0.08), mats["wall_white"], arch_col)
-add_box("B3_FwdPlates_Wall_Rail",   (0.045, b3_fwd_c_len + 0.02, 0.065),(B3_FWD_IN_X + 0.012, b3_fwd_c_cy, 0.88), mats["wall_white"], arch_col, bevel=0.006)
+    # Plinth, carcass, dark marble countertop & 25cm backsplash (no side partitions at walls, only 1 center partition!)
+    add_box(f"{tag}_Plinth",     (0.62, total_len, 0.04),        (15.40 + 0.31,  y_mid, 0.02),  mats["black_metal"], arch_col)
+    add_box(f"{tag}_Carcass",    (0.62, total_len, 0.84),        (15.40 + 0.31,  y_mid, 0.46),  mats["black_metal"], arch_col)
+    add_box(f"{tag}_MarbleTop",  (0.65, total_len + 0.01, 0.04), (15.40 + 0.325, y_mid, 0.90),  mats["dark_marble"], arch_col, bevel=0.005)
+    add_box(f"{tag}_Backsplash", (0.04, total_len + 0.01, 0.25), (15.40 + 0.02,  y_mid, 1.045), mats["dark_marble"], arch_col, bevel=0.004)
+
+    # Section 1 (Left = Long) & Section 2 (Right = Short)
+    sections = [
+        (1, y_left + w_long * 0.5, w_long),
+        (2, y_left + w_long + part_thick + w_short * 0.5, w_short),
+    ]
+    for sec_i, sec_cy, sec_w in sections:
+        face_w = sec_w - 0.025
+        handle_w = min(0.16, face_w * 0.45)
+
+        add_box(f"{tag}_LowerCab_{sec_i}",        (0.025, face_w, 0.39),   (15.40 + 0.625, sec_cy, 0.25),  mats["wall_white"],  arch_col, bevel=0.004)
+        add_box(f"{tag}_LowerCab_Handle_{sec_i}", (0.018, handle_w, 0.015),(15.40 + 0.645, sec_cy, 0.40),  mats["chrome"],      arch_col)
+
+        add_box(f"{tag}_MidDrawer_{sec_i}",        (0.025, face_w, 0.195),  (15.40 + 0.625, sec_cy, 0.565), mats["wall_white"],  arch_col, bevel=0.004)
+        add_box(f"{tag}_MidDrawer_Handle_{sec_i}", (0.018, handle_w, 0.015),(15.40 + 0.645, sec_cy, 0.565), mats["chrome"],      arch_col)
+
+        add_box(f"{tag}_TopDrawer_{sec_i}",        (0.025, face_w, 0.195),  (15.40 + 0.625, sec_cy, 0.775), mats["black_metal"], arch_col, bevel=0.004)
+        add_box(f"{tag}_TopDrawer_Handle_{sec_i}", (0.018, handle_w, 0.015),(15.40 + 0.645, sec_cy, 0.775), mats["chrome"],      arch_col)
+
+    # ONLY 1 Partition in the middle between the Long Left section and Short Right section!
+    part_cy = y_left + w_long + part_thick * 0.5
+    add_box(f"{tag}_BodyPart_Center",    (0.64, part_thick, 0.86), (15.40 + 0.32,  part_cy, 0.45),  mats["black_metal"], arch_col, bevel=0.003)
+    add_box(f"{tag}_TopPart25cm_Center", (0.65, part_thick, 0.25), (15.40 + 0.325, part_cy, 1.045), mats["dark_marble"], arch_col, bevel=0.004)
+
+build_b3_single_waiter_station_rect5("B3_WaiterStation_2_Rect5")
+
+# Right Wall of Waiter Station #2 framing Pintu Masuk Pertama (Y = 4.15..4.33m, X = 15.40..16.05m)
+add_box("B3_WS2_EntranceJamb_White",  (0.65, 0.18, CEIL_H), (15.725, 4.24, CEIL_H * 0.5), mats["wall_white"], arch_col, bevel=0.005)
+add_box("B3_WS2_EntranceJamb_Red",    (0.66, 0.19, 0.68),   (15.725, 4.24, 0.50),         mats["wall_red"],   arch_col)
+add_box("B3_WS2_EntranceJamb_Plinth", (0.68, 0.21, 0.16),   (15.725, 4.24, 0.08),         mats["wall_white"], arch_col)
+add_box("B3_WS2_EntranceJamb_Rail",   (0.68, 0.21, 0.065),  (15.725, 4.24, 0.88),         mats["wall_white"], arch_col)
+add_box("B3_WS2_EntranceJamb_Crown",  (0.68, 0.21, 0.08),   (15.725, 4.24, CEIL_H - 0.04), mats["wall_white"], arch_col)
+
+# Left Wall of Waiter Station #2 & "Tikungan Kecil Sedalam Kedalaman Station" (Y = 2.61..2.75m, X = 15.40..16.05m)
+ret_ws2_dx = B3_FWD_IN_X - B3_RECESS_IN_X  # 0.61m return depth inside Block 3
+ret_ws2_cx = (B3_FWD_IN_X + B3_RECESS_IN_X) * 0.5  # 15.745m
+add_box("B3_WS2_LeftReturn_White",   (0.65, 0.14, CEIL_H),             (15.725, 2.68, CEIL_H * 0.5), mats["wall_white"], arch_col, bevel=0.005)
+add_box("B3_WS2_LeftReturn_Red",     (ret_ws2_dx - 0.04, 0.02, 0.68),  (ret_ws2_cx, 2.605, 0.50), mats["wall_red"], arch_col)
+add_box("B3_WS2_LeftReturn_FrontRed",(0.02, 0.12, 0.68),               (B3_FWD_IN_X + 0.005, 2.68, 0.50), mats["wall_red"], arch_col)
+add_box("B3_WS2_LeftReturn_Plinth",  (ret_ws2_dx + 0.03, 0.16, 0.16),  (ret_ws2_cx, 2.68, 0.08), mats["wall_white"], arch_col)
+add_box("B3_WS2_LeftReturn_Rail",    (ret_ws2_dx + 0.04, 0.17, 0.065), (ret_ws2_cx, 2.68, 0.88), mats["wall_white"], arch_col, bevel=0.006)
+add_box("B3_WS2_LeftReturn_Crown",   (ret_ws2_dx + 0.04, 0.17, 0.08),  (ret_ws2_cx, 2.68, CEIL_H - 0.04), mats["wall_white"], arch_col, bevel=0.006)
+
+# Recessed Window-Corner Wall (Y = 0.00..2.61m, interior face stepped back to X = 15.44m, NO sofa, with 9 Fornasetti Plates!)
+b3_fwd_c_len = 2.61
+b3_fwd_c_cy = 1.305
+add_box("B3_FwdPlates_Wall_White",  (0.06, b3_fwd_c_len, CEIL_H),        (15.43, b3_fwd_c_cy, CEIL_H * 0.5), mats["wall_white"], arch_col, bevel=0.005)
+add_box("B3_FwdPlates_Wall_Red",    (0.02, b3_fwd_c_len - 0.10, 0.68),   (B3_RECESS_IN_X + 0.025, b3_fwd_c_cy, 0.50), mats["wall_red"], arch_col)
+add_box("B3_FwdPlates_Wall_Plinth", (0.04, b3_fwd_c_len, 0.16),          (B3_RECESS_IN_X + 0.03,  b3_fwd_c_cy, 0.08), mats["wall_white"], arch_col)
+add_box("B3_FwdPlates_Wall_Rail",   (0.045, b3_fwd_c_len + 0.02, 0.065), (B3_RECESS_IN_X + 0.032, b3_fwd_c_cy, 0.88), mats["wall_white"], arch_col, bevel=0.006)
+add_box("B3_FwdPlates_Wall_Crown",  (0.05, b3_fwd_c_len + 0.02, 0.08),   (B3_RECESS_IN_X + 0.035, b3_fwd_c_cy, CEIL_H - 0.04), mats["wall_white"], arch_col, bevel=0.006)
 for p_i, (dy, dz, prad) in enumerate(plate_offsets):
     p_obj = add_cylinder(
         f"B3_Fwd_Plate_{p_i}",
         radius=prad,
         depth=0.025,
-        location=(B3_FWD_IN_X + 0.018, b3_fwd_c_cy + dy * 0.85, 1.76 + dz),
+        location=(B3_RECESS_IN_X + 0.04, b3_fwd_c_cy + dy, 1.78 + dz),
         mat=mats["plates_wall"],
         col=arch_col,
         rot=(0, math.pi * 0.5, 0),
@@ -762,11 +825,11 @@ for p_i, (dy, dz, prad) in enumerate(plate_offsets):
     apply_normalized_face_uv(p_obj)
 
 # Crossroads-facing cladding on the back of Block 3 Pintu Masuk Pertama wall (flush at X = 15.40m, Y = 0.00..4.34m)
-add_box("B3_CrossroadsFace_Upper",  (0.10, 4.32, 1.88),  (B3_FWD_OUT_X + 0.04,  2.16, 1.85), mats["wall_white"], arch_col)
-add_box("B3_CrossroadsFace_Crown",  (0.14, 4.35, 0.08),  (B3_FWD_OUT_X + 0.03,  2.17, 2.75), mats["wall_white"], arch_col)
-add_box("B3_CrossroadsFace_Red",    (0.08, 4.30, 0.68),  (B3_FWD_OUT_X + 0.03,  2.16, 0.50), mats["wall_red"],   arch_col)
-add_box("B3_CrossroadsFace_Plinth", (0.12, 4.34, 0.16),  (B3_FWD_OUT_X + 0.03,  2.17, 0.08), mats["wall_white"], arch_col)
-add_box("B3_CrossroadsFace_Rail",   (0.13, 4.35, 0.065), (B3_FWD_OUT_X + 0.03,  2.17, 0.88), mats["wall_white"], arch_col)
+add_box("B3_CrossroadsFace_Upper",  (0.06, 4.32, 1.88),  (B3_FWD_OUT_X + 0.03,  2.16, 1.85), mats["wall_white"], arch_col)
+add_box("B3_CrossroadsFace_Crown",  (0.06, 4.35, 0.08),  (B3_FWD_OUT_X + 0.015, 2.17, 2.75), mats["wall_white"], arch_col)
+add_box("B3_CrossroadsFace_Red",    (0.04, 4.30, 0.68),  (B3_FWD_OUT_X + 0.01,  2.16, 0.50), mats["wall_red"],   arch_col)
+add_box("B3_CrossroadsFace_Plinth", (0.05, 4.34, 0.16),  (B3_FWD_OUT_X + 0.015, 2.17, 0.08), mats["wall_white"], arch_col)
+add_box("B3_CrossroadsFace_Rail",   (0.055, 4.35, 0.065),(B3_FWD_OUT_X + 0.015, 2.17, 0.88), mats["wall_white"], arch_col)
 
 # Step 1 from Entrance 2 of Block 4 (Y = 9.88..11.38m, front face at X = 25.90m, solid locker block to X = 27.44m)
 b4_seg1_y0, b4_seg1_y1 = 9.88, 11.38
@@ -961,9 +1024,9 @@ build_table_assembly("311_B3_Window_Bay2", (20.10, 1.35), 2.10, 0.90, math.pi * 
 build_table_assembly("313_B3_Window_Bay3", (23.05, 1.35), 2.10, 0.90, math.pi * 0.5, chair_ivory_mesh, 6, furn_col_b3)
 build_table_assembly("315_B3_Window_Bay4", (25.85, 1.35), 2.10, 0.90, math.pi * 0.5, chair_ivory_mesh, 6, furn_col_b3)
 
-# 2. Center Row: 2 long maroon velvet tables: 391 (8 chairs) & 389 (10 chairs)
-build_table_assembly("391_B3_Center_8Pax",  (18.55, 4.14), 2.65, 0.90, 0.0, chair_maroon_mesh, 8,  furn_col_b3)
-build_table_assembly("389_B3_Center_10Pax", (22.95, 4.14), 3.30, 0.90, 0.0, chair_maroon_mesh, 10, furn_col_b3)
+# 2. Center Row: 2 long maroon velvet tables: 391 (8 chairs) & 389 (10 chairs), shifted +50 cm (+0.50m) Aft so they sit evenly between the 2 waiter stations!
+build_table_assembly("391_B3_Center_8Pax",  (19.05, 4.14), 2.65, 0.90, 0.0, chair_maroon_mesh, 8,  furn_col_b3)
+build_table_assembly("389_B3_Center_10Pax", (23.45, 4.14), 3.30, 0.90, 0.0, chair_maroon_mesh, 10, furn_col_b3)
 
 # 3. Railing Row: 3 tables centered on the 3 mirrored Wide Corridor Pillars (409, 411, 413)
 build_table_assembly("409_B3_Railing_FwdBay", (mx(7.975), 6.58), 1.40, 0.88, math.pi * 0.5, chair_ivory_mesh, 4, furn_col_b3)
