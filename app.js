@@ -506,7 +506,7 @@ function checkAllLoaded() {
 }
 
 gltfLoader.load(
-  './costa_smeralda_ship.glb?v=20261026d',
+  './costa_smeralda_ship.glb?v=20261026e',
   (gltf) => {
     const shipModel = gltf.scene;
     shipStageGroup.add(shipModel);
@@ -683,7 +683,7 @@ const hitProxyMat = new THREE.MeshBasicMaterial({
 });
 
 gltfLoader.load(
-  './arlecchino_block1.glb?v=20261026d',
+  './arlecchino_block1.glb?v=20261026e',
   (gltf) => {
     const model = gltf.scene;
     restaurantGroup.add(model);
