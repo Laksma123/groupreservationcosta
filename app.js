@@ -252,6 +252,11 @@ const ACCESS_PRESETS = {
 };
 
 const WALK_SPOTS = {
+  crossroads: {
+    pos: new THREE.Vector3(14.85, 1.52, -8.73),
+    yaw: Math.PI * 0.5,
+    pitch: -0.02,
+  },
   corridor: {
     pos: new THREE.Vector3(5.2, 1.62, -8.73),
     yaw: Math.PI * 0.5,
@@ -368,7 +373,7 @@ scene.fog = new THREE.FogExp2(0x07192b, 0.0042);
 const viewAspect = window.innerWidth / Math.max(1, window.innerHeight - 57);
 const perspCamera = new THREE.PerspectiveCamera(42, viewAspect, 0.1, 450);
 
-const orthoFrustumH = 20.4;
+const orthoFrustumH = 21.8;
 const orthoCamera = new THREE.OrthographicCamera(
   (-orthoFrustumH * viewAspect) / 2,
   (orthoFrustumH * viewAspect) / 2,
@@ -420,9 +425,10 @@ scene.add(sunLight);
 const interiorLightGroup = new THREE.Group();
 scene.add(interiorLightGroup);
 [
-  [4.5, 3.2, -3.8, 0xffe8c2, 1.6, 22.0],  // Block 1 Portside even fill
-  [4.5, 3.2, -8.73, 0xfff0d4, 1.4, 18.0], // Central Medallion Corridor
+  [4.5, 3.2, -3.8, 0xffe8c2, 1.6, 22.0],   // Block 1 Portside even fill
+  [4.5, 3.2, -8.73, 0xfff0d4, 1.4, 18.0],  // Central Medallion Corridor
   [4.5, 3.2, -13.68, 0xffe8c2, 1.6, 22.0], // Block 2 Starboardside identical fill
+  [12.9, 2.7, -8.73, 0xffe8c2, 1.85, 22.0], // Aft Crossroads, Clover Table & Murano Chandelier
 ].forEach(([lx, ly, lz, col, intensity, dist]) => {
   const pt = new THREE.PointLight(col, intensity, dist, 0.9);
   pt.castShadow = false;
@@ -500,7 +506,7 @@ function checkAllLoaded() {
 }
 
 gltfLoader.load(
-  './costa_smeralda_ship.glb?v=20261026b',
+  './costa_smeralda_ship.glb?v=20261026d',
   (gltf) => {
     const shipModel = gltf.scene;
     shipStageGroup.add(shipModel);
@@ -667,6 +673,7 @@ restaurantGroup.visible = false;
 scene.add(restaurantGroup);
 
 const ceilingMeshes = [];
+const chandelierMeshes = [];
 const tableRegistry = new Map();
 // Performance optimization: Raycast ONLY against 24 lightweight bounding-box proxies (288 tris total)!
 const interactiveHitProxies = [];
@@ -676,7 +683,7 @@ const hitProxyMat = new THREE.MeshBasicMaterial({
 });
 
 gltfLoader.load(
-  './arlecchino_block1.glb?v=20261026b',
+  './arlecchino_block1.glb?v=20261026d',
   (gltf) => {
     const model = gltf.scene;
     restaurantGroup.add(model);
@@ -692,17 +699,22 @@ gltfLoader.load(
         n.includes('Phone') ||
         n.includes('Spot') ||
         n.includes('Downlight') ||
-        n.includes('Art');
+        n.includes('Art') ||
+        n.includes('Chandelier');
       child.castShadow = !isSmallDetail;
       child.receiveShadow = true;
 
-      if (
+      if (n.startsWith('Ceiling_Chandelier_')) {
+        chandelierMeshes.push(child);
+      } else if (
         n.startsWith('Ceiling_') ||
         n.startsWith('CeilBeam_') ||
         n.startsWith('B2_CeilBeam_') ||
         n.startsWith('RedSpot_') ||
         n.startsWith('B2_RedSpot_') ||
-        n.startsWith('Corr_Downlight_')
+        n.startsWith('Corr_Downlight_') ||
+        n.startsWith('Crossroads_Header_Beam_') ||
+        n.startsWith('Crossroads_ExitSign_')
       ) {
         ceilingMeshes.push(child);
       }
@@ -948,9 +960,12 @@ function enterInterior2Blocks() {
   );
 }
 
-function setCeilingVisible(vis) {
+function setCeilingVisible(vis, showChandelier = vis) {
   for (const m of ceilingMeshes) {
     m.visible = vis;
+  }
+  for (const m of chandelierMeshes) {
+    m.visible = showChandelier;
   }
 }
 
@@ -967,8 +982,8 @@ function updateTableMarkersVisibility() {
 // ============================================================================
 // 6. THREE INTERIOR CAMERA MODES: BIRD'S-EYE, 2D PLAN, WALK MODE
 // ============================================================================
-let walkYaw = WALK_SPOTS.corridor.yaw;
-let walkPitch = WALK_SPOTS.corridor.pitch;
+let walkYaw = WALK_SPOTS.crossroads.yaw;
+let walkPitch = WALK_SPOTS.crossroads.pitch;
 const walkKeys = { forward: false, backward: false, left: false, right: false };
 let isDraggingLook = false;
 let prevPointer = { x: 0, y: 0 };
@@ -986,7 +1001,7 @@ function setInteriorCameraMode(mode) {
   walkHud.hidden = mode !== 'walk';
 
   if (mode === 'bird') {
-    setCeilingVisible(false);
+    setCeilingVisible(false, true);
     activeCamera = perspCamera;
     perspCamera.fov = 42;
     perspCamera.updateProjectionMatrix();
@@ -998,21 +1013,21 @@ function setInteriorCameraMode(mode) {
     controls.maxPolarAngle = Math.PI * 0.47;
 
     const targetPos = top2dFlipped
-      ? new THREE.Vector3(-7.8, 14.2, -8.73)
-      : new THREE.Vector3(16.8, 14.2, -8.73);
-    const lookTarget = new THREE.Vector3(4.35, 0.55, -8.73);
+      ? new THREE.Vector3(-8.2, 14.8, -8.73)
+      : new THREE.Vector3(19.2, 14.8, -8.73);
+    const lookTarget = new THREE.Vector3(6.2, 0.55, -8.73);
     animateCameraTo(targetPos, lookTarget, 700);
   } else if (mode === 'top2d') {
-    setCeilingVisible(false);
+    setCeilingVisible(false, false);
     camAnim = null;
     activeCamera = orthoCamera;
 
-    const centerX = 4.35;
+    const centerX = 6.2;
     const centerZ = -8.73;
     orthoCamera.position.set(centerX, 22.0, centerZ);
     orthoCamera.up.set(0, 0, top2dFlipped ? -1 : 1);
     orthoCamera.lookAt(centerX, 0.0, centerZ);
-    orthoCamera.zoom = 1.04;
+    orthoCamera.zoom = 1.02;
     orthoCamera.updateProjectionMatrix();
 
     controls.object = orthoCamera;
@@ -1022,7 +1037,7 @@ function setInteriorCameraMode(mode) {
     controls.enablePan = true;
     controls.update();
   } else if (mode === 'walk') {
-    setCeilingVisible(true);
+    setCeilingVisible(true, true);
     camAnim = null;
     activeCamera = perspCamera;
     perspCamera.fov = 62;
@@ -1030,7 +1045,7 @@ function setInteriorCameraMode(mode) {
     perspCamera.updateProjectionMatrix();
 
     controls.enabled = false;
-    teleportWalkTo('corridor');
+    teleportWalkTo('crossroads');
   }
 }
 
@@ -1538,9 +1553,9 @@ function animate(now) {
       if (walkKeys.right) perspCamera.position.addScaledVector(rightFlat, speed);
       if (walkKeys.left) perspCamera.position.addScaledVector(rightFlat, -speed);
 
-      perspCamera.position.x = Math.max(-1.85, Math.min(10.1, perspCamera.position.x));
+      perspCamera.position.x = Math.max(-1.85, Math.min(15.2, perspCamera.position.x));
       perspCamera.position.z = Math.max(-17.0, Math.min(-0.55, perspCamera.position.z));
-      perspCamera.position.y = 1.62;
+      perspCamera.position.y = 1.56;
       syncWalkCameraLook();
     } else {
       controls.update();
