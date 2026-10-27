@@ -451,9 +451,268 @@ const TABLE_CATALOG = [
     zone: 'Block 4 Stbd · Inboard Sofa Wall (4P #6)',
     chairDesc: 'Red Banquette Sofa + 2 Ivory Chairs',
   },
+
+  // --- BLOCK 5: GREEN ZONE AFT (32 TABLES · 116 SEATS) ---
+  {
+    num: '319',
+    block: 'B5',
+    nodeKey: '319_B5_SofaPort_2Pax',
+    pax: 2,
+    zone: 'Block 5 Port · Forward Sofa Row (2P)',
+    chairDesc: 'Sage Banquette Sofa + 1 Teal/Ivory Chair',
+  },
+  {
+    num: '317',
+    block: 'B5',
+    nodeKey: '317_B5_SofaPort_4Pax',
+    pax: 4,
+    zone: 'Block 5 Port · Forward Sofa Row (4P)',
+    chairDesc: 'Sage Banquette Sofa + 2 Teal/Ivory Chairs',
+  },
+  {
+    num: '385',
+    block: 'B5',
+    nodeKey: '385_B5_SofaPort_2Pax',
+    pax: 2,
+    zone: 'Block 5 Port · Forward Sofa Niche (2P)',
+    chairDesc: 'Sage Banquette Sofa + 1 Teal/Ivory Chair',
+  },
+  {
+    num: '387',
+    block: 'B5',
+    nodeKey: '387_B5_SofaPort_4Pax',
+    pax: 4,
+    zone: 'Block 5 Port · Forward Sofa Niche (4P)',
+    chairDesc: 'Sage Banquette Sofa + 2 Teal/Ivory Chairs',
+  },
+  {
+    num: '415',
+    block: 'B5',
+    nodeKey: '415_B5_SofaPort_2Pax',
+    pax: 2,
+    zone: 'Block 5 Port · Forward Sofa Corridor (2P)',
+    chairDesc: 'Sage Banquette Sofa + 1 Teal/Ivory Chair',
+  },
+  {
+    num: '480',
+    block: 'B5',
+    nodeKey: '480_B5_SofaStbd_2Pax',
+    pax: 2,
+    zone: 'Block 5 Stbd · Forward Sofa Corridor (2P)',
+    chairDesc: 'Sage Banquette Sofa + 1 Teal/Ivory Chair',
+  },
+  {
+    num: '450',
+    block: 'B5',
+    nodeKey: '450_B5_SofaStbd_4Pax',
+    pax: 4,
+    zone: 'Block 5 Stbd · Forward Sofa Niche (4P)',
+    chairDesc: 'Sage Banquette Sofa + 2 Teal/Ivory Chairs',
+  },
+  {
+    num: '448',
+    block: 'B5',
+    nodeKey: '448_B5_SofaStbd_2Pax',
+    pax: 2,
+    zone: 'Block 5 Stbd · Forward Sofa Niche (2P)',
+    chairDesc: 'Sage Banquette Sofa + 1 Teal/Ivory Chair',
+  },
+  {
+    num: '400',
+    block: 'B5',
+    nodeKey: '400_B5_SofaStbd_4Pax',
+    pax: 4,
+    zone: 'Block 5 Stbd · Forward Sofa Row (4P)',
+    chairDesc: 'Sage Banquette Sofa + 2 Teal/Ivory Chairs',
+  },
+  {
+    num: '398',
+    block: 'B5',
+    nodeKey: '398_B5_SofaStbd_2Pax',
+    pax: 2,
+    zone: 'Block 5 Stbd · Forward Sofa Row (2P)',
+    chairDesc: 'Sage Banquette Sofa + 1 Teal/Ivory Chair',
+  },
+  {
+    num: '321',
+    block: 'B5',
+    nodeKey: '321_B5_WinPort_4Pax',
+    pax: 4,
+    zone: 'Block 5 Port · Ocean Window Pair 1 (4P)',
+    chairDesc: '4 Teal & Ivory Curved Tub Chairs · Sea View',
+  },
+  {
+    num: '323',
+    block: 'B5',
+    nodeKey: '323_B5_WinPort_2Pax',
+    pax: 2,
+    zone: 'Block 5 Port · Ocean Window Pair 1 (2P)',
+    chairDesc: '2 Teal & Ivory Curved Tub Chairs · Sea View',
+  },
+  {
+    num: '327',
+    block: 'B5',
+    nodeKey: '327_B5_WinPort_4Pax',
+    pax: 4,
+    zone: 'Block 5 Port · Ocean Window Pair 2 (4P)',
+    chairDesc: '4 Teal & Ivory Curved Tub Chairs · Sea View',
+  },
+  {
+    num: '325',
+    block: 'B5',
+    nodeKey: '325_B5_WinPort_2Pax',
+    pax: 2,
+    zone: 'Block 5 Port · Ocean Window Pair 2 (2P)',
+    chairDesc: '2 Teal & Ivory Curved Tub Chairs · Sea View',
+  },
+  {
+    num: '329',
+    block: 'B5',
+    nodeKey: '329_B5_WinPort_4Pax',
+    pax: 4,
+    zone: 'Block 5 Port · Ocean Window Pair 3 (4P)',
+    chairDesc: '4 Teal & Ivory Curved Tub Chairs · Sea View',
+  },
+  {
+    num: '331',
+    block: 'B5',
+    nodeKey: '331_B5_WinPort_2Pax',
+    pax: 2,
+    zone: 'Block 5 Port · Ocean Window Pair 3 (2P)',
+    chairDesc: '2 Teal & Ivory Curved Tub Chairs · Sea View',
+  },
+  {
+    num: '404',
+    block: 'B5',
+    nodeKey: '404_B5_WallStbd_4Pax',
+    pax: 4,
+    zone: 'Block 5 Stbd · Wall Pair 1 (+1m Aft · 4P)',
+    chairDesc: '4 Teal & Ivory Curved Tub Chairs',
+  },
+  {
+    num: '402',
+    block: 'B5',
+    nodeKey: '402_B5_WallStbd_2Pax',
+    pax: 2,
+    zone: 'Block 5 Stbd · Wall Pair 1 (+1m Aft · 2P)',
+    chairDesc: '2 Teal & Ivory Curved Tub Chairs',
+  },
+  {
+    num: '406',
+    block: 'B5',
+    nodeKey: '406_B5_WallStbd_4Pax',
+    pax: 4,
+    zone: 'Block 5 Stbd · Wall Pair 2 (4P)',
+    chairDesc: '4 Teal & Ivory Curved Tub Chairs',
+  },
+  {
+    num: '408',
+    block: 'B5',
+    nodeKey: '408_B5_WallStbd_2Pax',
+    pax: 2,
+    zone: 'Block 5 Stbd · Wall Pair 2 (2P)',
+    chairDesc: '2 Teal & Ivory Curved Tub Chairs',
+  },
+  {
+    num: '412',
+    block: 'B5',
+    nodeKey: '412_B5_WallStbd_4Pax',
+    pax: 4,
+    zone: 'Block 5 Stbd · Wall Pair 3 (4P)',
+    chairDesc: '4 Teal & Ivory Curved Tub Chairs',
+  },
+  {
+    num: '410',
+    block: 'B5',
+    nodeKey: '410_B5_WallStbd_2Pax',
+    pax: 2,
+    zone: 'Block 5 Stbd · Wall Pair 3 (2P)',
+    chairDesc: '2 Teal & Ivory Curved Tub Chairs',
+  },
+  {
+    num: '383',
+    block: 'B5',
+    nodeKey: '383_B5_CenterFwd_4Pax',
+    pax: 4,
+    zone: 'Block 5 Green Carpet · Forward Row (Port)',
+    chairDesc: '4 Teal & Ivory Curved Tub Chairs',
+  },
+  {
+    num: '417',
+    block: 'B5',
+    nodeKey: '417_B5_CenterFwd_4Pax',
+    pax: 4,
+    zone: 'Block 5 Green Carpet · Forward Row (Mid-Port)',
+    chairDesc: '4 Teal & Ivory Curved Tub Chairs',
+  },
+  {
+    num: '482',
+    block: 'B5',
+    nodeKey: '482_B5_CenterFwd_4Pax',
+    pax: 4,
+    zone: 'Block 5 Green Carpet · Forward Row (Mid-Stbd)',
+    chairDesc: '4 Teal & Ivory Curved Tub Chairs',
+  },
+  {
+    num: '446',
+    block: 'B5',
+    nodeKey: '446_B5_CenterFwd_4Pax',
+    pax: 4,
+    zone: 'Block 5 Green Carpet · Forward Row (Stbd)',
+    chairDesc: '4 Teal & Ivory Curved Tub Chairs',
+  },
+  {
+    num: '381',
+    block: 'B5',
+    nodeKey: '381_B5_CenterSide_4Pax',
+    pax: 4,
+    zone: 'Block 5 Green Carpet · Port Side (Aligned w/ 419)',
+    chairDesc: '4 Teal & Ivory Curved Tub Chairs',
+  },
+  {
+    num: '379',
+    block: 'B5',
+    nodeKey: '379_B5_CenterSide_4Pax',
+    pax: 4,
+    zone: 'Block 5 Green Carpet · Port Side Aft',
+    chairDesc: '4 Teal & Ivory Curved Tub Chairs',
+  },
+  {
+    num: '444',
+    block: 'B5',
+    nodeKey: '444_B5_CenterSide_4Pax',
+    pax: 4,
+    zone: 'Block 5 Green Carpet · Stbd Side (Aligned w/ 484)',
+    chairDesc: '4 Teal & Ivory Curved Tub Chairs',
+  },
+  {
+    num: '442',
+    block: 'B5',
+    nodeKey: '442_B5_CenterSide_4Pax',
+    pax: 4,
+    zone: 'Block 5 Green Carpet · Stbd Side Aft',
+    chairDesc: '4 Teal & Ivory Curved Tub Chairs',
+  },
+  {
+    num: '419',
+    block: 'B5',
+    nodeKey: '419_B5_CenterWood_10Pax',
+    pax: 10,
+    zone: 'Block 5 Green Carpet · Grand Oak Table (Port)',
+    chairDesc: '10 Light Oak Armchairs · 3 Murano Chandeliers',
+  },
+  {
+    num: '484',
+    block: 'B5',
+    nodeKey: '484_B5_CenterWood_10Pax',
+    pax: 10,
+    zone: 'Block 5 Green Carpet · Grand Oak Table (Stbd)',
+    chairDesc: '10 Light Oak Armchairs · 3 Murano Chandeliers',
+  },
 ];
 
 const TABLE_IDS = TABLE_CATALOG.map((t) => t.num);
+const CODEC_TABLE_IDS = TABLE_IDS.slice(0, 45);
 
 const ACCESS_PRESETS = {
   A98XKJ90: {
@@ -621,8 +880,8 @@ const DRS_CODEC = (() => {
   function encodeToken({ lockedTables = [], targetPax = 44, groupName = 'VIP GROUP', ttlIdx = 4, nowMs = Date.now() }) {
     const lockedSet = new Set(lockedTables.map(String));
     let mask45 = 0n;
-    for (let i = 0; i < TABLE_IDS.length; i++) {
-      if (lockedSet.has(TABLE_IDS[i])) {
+    for (let i = 0; i < CODEC_TABLE_IDS.length; i++) {
+      if (lockedSet.has(CODEC_TABLE_IDS[i])) {
         mask45 |= 1n << BigInt(i);
       }
     }
@@ -718,9 +977,9 @@ const DRS_CODEC = (() => {
     }
 
     const lockedTables = [];
-    for (let i = 0; i < TABLE_IDS.length; i++) {
+    for (let i = 0; i < CODEC_TABLE_IDS.length; i++) {
       if ((mask45 & (1n << BigInt(i))) !== 0n) {
-        lockedTables.push(TABLE_IDS[i]);
+        lockedTables.push(CODEC_TABLE_IDS[i]);
       }
     }
 
@@ -800,6 +1059,11 @@ const WALK_SPOTS = {
     pos: new THREE.Vector3(20.6, 1.62, -13.2),
     yaw: -Math.PI * 0.65,
     pitch: -0.05,
+  },
+  b5_center: {
+    pos: new THREE.Vector3(29.8, 1.62, -8.73),
+    yaw: -Math.PI * 0.5,
+    pitch: -0.04,
   },
 };
 
@@ -1013,6 +1277,7 @@ scene.add(interiorLightGroup);
 [
   [5.2, 3.4, -8.73, 0xffeacc, 2.1, 32.0],  // Forward Blocks 1 & 2 + Crossroads fill
   [20.6, 3.4, -8.73, 0xffeacc, 2.1, 32.0], // Aft Blocks 3 & 4 + Crossroads fill
+  [34.2, 3.4, -8.73, 0xffeacc, 2.1, 32.0], // Block 5 (Green Zone) fill
 ].forEach(([lx, ly, lz, col, intensity, dist]) => {
   const pt = new THREE.PointLight(col, intensity, dist, 0.75);
   pt.castShadow = false;
@@ -1948,7 +2213,7 @@ const hitProxyMat = new THREE.MeshBasicMaterial({
 });
 
 gltfLoader.load(
-  './arlecchino_block1.glb?v=20261026i',
+  './arlecchino_block1.glb?v=20261027b',
   (gltf) => {
     const model = gltf.scene;
     restaurantGroup.add(model);
@@ -1966,11 +2231,12 @@ gltfLoader.load(
         n.includes('Spot') ||
         n.includes('Downlight') ||
         n.includes('Art') ||
-        n.includes('Chandelier');
+        n.includes('Chandelier') ||
+        n.includes('Pendant');
       child.castShadow = !isSmallDetail;
       child.receiveShadow = true;
 
-      if (n.startsWith('Ceiling_Chandelier_')) {
+      if (n.startsWith('Ceiling_Chandelier_') || n.startsWith('B5_Pendant_')) {
         chandelierMeshes.push(child);
       } else if (
         n.startsWith('Ceiling_') ||
@@ -3105,7 +3371,7 @@ function animate(now) {
       if (walkKeys.left) perspCamera.position.addScaledVector(rightFlat, -speed);
 
       if (moved) {
-        perspCamera.position.x = Math.max(-1.85, Math.min(27.6, perspCamera.position.x));
+        perspCamera.position.x = Math.max(-1.85, Math.min(40.6, perspCamera.position.x));
         perspCamera.position.z = Math.max(-17.0, Math.min(-0.55, perspCamera.position.z));
         perspCamera.position.y = 1.56;
         syncWalkCameraLook();
