@@ -1202,6 +1202,12 @@ function fixFloorAndCarpetMesh(child) {
       mat.metalness = 0.0;
       mat.needsUpdate = true;
     }
+    if (n.startsWith('B5_Pendant_')) {
+      mat.transparent = false;
+      mat.depthWrite = true;
+      mat.depthTest = true;
+      mat.needsUpdate = true;
+    }
   }
 }
 
@@ -2230,7 +2236,7 @@ const hitProxyMat = new THREE.MeshBasicMaterial({
 });
 
 gltfLoader.load(
-  './arlecchino_block1.glb?v=20261027c',
+  './arlecchino_block1.glb?v=20261028a',
   (gltf) => {
     const model = gltf.scene;
     restaurantGroup.add(model);

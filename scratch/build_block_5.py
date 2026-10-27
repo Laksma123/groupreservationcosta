@@ -112,21 +112,77 @@ def generate_block5_textures():
     # 3. Light Natural Oak Texture (for 10x Tables 419 & 484 and their 20 Wooden Chairs)
     oak_rgb = np.zeros((512, 512, 3), dtype=np.float32)
     yo, xo = np.mgrid[0:512, 0:512].astype(np.float32)
-    oak_grain = np.sin(xo * 0.06 + np.sin(yo * 0.09) * 1.5) * 6.0 + np.sin(yo * 0.8) * 3.0
-    oak_rgb[:, :, 0] = 212.0 + oak_grain
-    oak_rgb[:, :, 1] = 182.0 + oak_grain * 0.85
-    oak_rgb[:, :, 2] = 142.0 + oak_grain * 0.68
+    cathedral = np.sin(xo * 0.045 + np.sin(yo * 0.035) * 3.2) * 8.5
+    fine_pore = np.sin(xo * 0.35 + yo * 0.05) * 2.8 + np.cos(yo * 0.9) * 2.2
+    oak_grain = cathedral + fine_pore
+    oak_rgb[:, :, 0] = 216.0 + oak_grain
+    oak_rgb[:, :, 1] = 185.0 + oak_grain * 0.86
+    oak_rgb[:, :, 2] = 144.0 + oak_grain * 0.68
     oak_path = os.path.join(TEX_DIR, "block5_light_oak.png")
     Image.fromarray(np.clip(oak_rgb, 0, 255).astype(np.uint8)).save(oak_path)
 
     # 4. Dark Espresso/Wenge Wood Tabletop Texture (for Block 5 2x and 4x Tables)
     dk_rgb = np.zeros((512, 512, 3), dtype=np.float32)
-    dk_grain = np.sin(xo * 0.08 + np.sin(yo * 0.11) * 1.2) * 3.5 + np.cos(yo * 0.9) * 2.0
-    dk_rgb[:, :, 0] = 54.0 + dk_grain
-    dk_rgb[:, :, 1] = 44.0 + dk_grain * 0.85
-    dk_rgb[:, :, 2] = 38.0 + dk_grain * 0.75
+    dk_grain = (
+        np.sin(xo * 0.07 + np.sin(yo * 0.08) * 1.8) * 4.8
+        + np.sin(xo * 0.42) * 1.8
+        + np.cos(yo * 0.95) * 1.6
+    )
+    dk_rgb[:, :, 0] = 52.0 + dk_grain
+    dk_rgb[:, :, 1] = 43.0 + dk_grain * 0.86
+    dk_rgb[:, :, 2] = 38.0 + dk_grain * 0.78
     dk_path = os.path.join(TEX_DIR, "block5_dark_wood_top.png")
     Image.fromarray(np.clip(dk_rgb, 0, 255).astype(np.uint8)).save(dk_path)
+
+    # 4B. Venetian Murano Ribbed Blown-Glass Lathe Textures (Emerald-Jade & Cognac-Amber)
+    #     u (0..1 around circumference) -> 24 vertical optic glass flutes/ribs
+    #     v (0..1 from bottom finial z=0 to top tulip cup z=1.10m) -> warm radial bulb glow at v=0.33
+    mw, mh = 512, 512
+    vv, uu = np.mgrid[0:mh, 0:mw].astype(np.float32)
+    u_norm = uu / mw
+    v_norm = 1.0 - (vv / mh)  # v_norm=0 at bottom finial, v_norm=1 at top crown
+
+    # 24 vertical blown-glass flutes + secondary specular highlight
+    rib_wave = np.cos(u_norm * 24.0 * 2.0 * math.pi)
+    rib_spec = np.power(np.clip(0.5 + 0.5 * np.sin(u_norm * 24.0 * 2.0 * math.pi + 0.6), 0.0, 1.0), 4.0)
+
+    # Warm internal filament bulb glow centered in the main lantern bowl (v_norm = 0.335)
+    bulb_glow = np.exp(-((v_norm - 0.335) / 0.095) ** 2)
+    brim_highlight = np.exp(-((v_norm - 0.455) / 0.032) ** 2) * 0.35
+    cup1_rim = np.exp(-((v_norm - 0.835) / 0.028) ** 2) * 0.25
+    cup2_rim = np.exp(-((v_norm - 0.975) / 0.028) ** 2) * 0.25
+    neck_shadow = (
+        np.exp(-((v_norm - 0.205) / 0.022) ** 2)
+        + np.exp(-((v_norm - 0.615) / 0.022) ** 2)
+        + np.exp(-((v_norm - 0.755) / 0.020) ** 2)
+        + np.exp(-((v_norm - 0.875) / 0.020) ** 2)
+    ) * 0.38
+
+    def build_murano_tex(base_col, deep_col, glow_tint, out_name):
+        rgb = np.zeros((mh, mw, 3), dtype=np.float32)
+        for c_i in range(3):
+            glass_body = base_col[c_i] * (0.82 + 0.18 * rib_wave) + deep_col[c_i] * neck_shadow
+            spec_add = (245.0 - glass_body) * (0.28 * rib_spec + brim_highlight + cup1_rim + cup2_rim)
+            body_with_spec = glass_body + spec_add
+            # Blend warm incandescent core glow inside the main lantern globe
+            core_col = glow_tint[c_i] * 0.55 + 255.0 * 0.45
+            rgb[:, :, c_i] = body_with_spec * (1.0 - 0.78 * bulb_glow) + core_col * (0.78 * bulb_glow)
+        out_p = os.path.join(TEX_DIR, out_name)
+        Image.fromarray(np.clip(rgb, 0, 255).astype(np.uint8)).save(out_p)
+        return out_p
+
+    murano_green_path = build_murano_tex(
+        base_col=(46.0, 168.0, 136.0),
+        deep_col=(-28.0, -75.0, -58.0),
+        glow_tint=(185.0, 255.0, 220.0),
+        out_name="block5_murano_green.png",
+    )
+    murano_amber_path = build_murano_tex(
+        base_col=(176.0, 108.0, 82.0),
+        deep_col=(-68.0, -48.0, -36.0),
+        glow_tint=(255.0, 210.0, 155.0),
+        out_name="block5_murano_amber.png",
+    )
 
     # 5. Geometric Frosted Patterned Glass Texture (matching Photo 14.31.14 (1).jpeg)
     gw, gh = 1024, 512
@@ -184,6 +240,8 @@ def generate_block5_textures():
         "wood_plank": wood_path,
         "light_oak": oak_path,
         "dark_wood": dk_path,
+        "murano_green": murano_green_path,
+        "murano_amber": murano_amber_path,
         "patterned_glass": glass_path,
         "art_rope": art_rope_path,
         "art_shoes": art_shoes_path,
@@ -200,6 +258,8 @@ tex_paths = {
     "wood_plank": os.path.join(TEX_DIR, "block5_wood_plank.png"),
     "light_oak": os.path.join(TEX_DIR, "block5_light_oak.png"),
     "dark_wood": os.path.join(TEX_DIR, "block5_dark_wood_top.png"),
+    "murano_green": os.path.join(TEX_DIR, "block5_murano_green.png"),
+    "murano_amber": os.path.join(TEX_DIR, "block5_murano_amber.png"),
     "patterned_glass": os.path.join(TEX_DIR, "block5_patterned_glass.png"),
     "art_rope": os.path.join(TEX_DIR, "block5_art_rope.png"),
     "art_shoes": os.path.join(TEX_DIR, "block5_art_shoes.png"),
@@ -342,7 +402,7 @@ def add_cylinder(name, radius, depth, location, mat, col, vertices=32, rot=(0, 0
     link_to_collection(obj, col)
     return obj
 
-def make_textured_mat(name, img_path, roughness=0.45, metallic=0.0, alpha_tex=False):
+def make_textured_mat(name, img_path, roughness=0.45, metallic=0.0, alpha_tex=False, coat=0.0, emission_strength=0.0):
     mat = bpy.data.materials.get(name)
     if not mat:
         mat = bpy.data.materials.new(name=name)
@@ -355,14 +415,21 @@ def make_textured_mat(name, img_path, roughness=0.45, metallic=0.0, alpha_tex=Fa
     bsdf.inputs["Metallic"].default_value = metallic
     if "Sheen Weight" in bsdf.inputs:
         bsdf.inputs["Sheen Weight"].default_value = 0.0
+    if "Coat Weight" in bsdf.inputs:
+        bsdf.inputs["Coat Weight"].default_value = coat
     tex = nt.nodes.new("ShaderNodeTexImage")
     img = bpy.data.images.load(img_path, check_existing=True)
     img.pack()
     tex.image = img
     nt.links.new(bsdf.inputs["Base Color"], tex.outputs["Color"])
+    if emission_strength > 0.0 and "Emission Color" in bsdf.inputs:
+        nt.links.new(bsdf.inputs["Emission Color"], tex.outputs["Color"])
+        bsdf.inputs["Emission Strength"].default_value = emission_strength
     if alpha_tex and "Alpha" in bsdf.inputs:
         nt.links.new(bsdf.inputs["Alpha"], tex.outputs["Alpha"])
         mat.blend_method = 'BLEND'
+    else:
+        mat.blend_method = 'OPAQUE'
     nt.links.new(out.inputs["Surface"], bsdf.outputs["BSDF"])
     return mat
 
@@ -458,8 +525,8 @@ mats = {
     # Block 5 Dedicated Materials
     "b5_green_carpet": make_textured_mat("Mat_Block5_Green_Carpet", tex_paths["carpet"], roughness=0.88),
     "b5_wood_floor": make_textured_mat("Mat_Block5_Wood_Plank_Floor", tex_paths["wood_plank"], roughness=0.38),
-    "b5_light_oak": make_textured_mat("Mat_Block5_Light_Oak_Wood", tex_paths["light_oak"], roughness=0.32),
-    "b5_dark_wood_top": make_textured_mat("Mat_Block5_Dark_Wood_Tabletop", tex_paths["dark_wood"], roughness=0.28),
+    "b5_light_oak": make_textured_mat("Mat_Block5_Light_Oak_Wood", tex_paths["light_oak"], roughness=0.26, coat=0.35),
+    "b5_dark_wood_top": make_textured_mat("Mat_Block5_Dark_Wood_Tabletop", tex_paths["dark_wood"], roughness=0.24, coat=0.35),
     "b5_patterned_glass": make_textured_mat("Mat_Block5_Patterned_Glass", tex_paths["patterned_glass"], roughness=0.15, alpha_tex=True),
     "b5_art_rope": make_textured_mat("Mat_Block5_Art_Rope", tex_paths["art_rope"], roughness=0.35),
     "b5_art_shoes": make_textured_mat("Mat_Block5_Art_Shoes", tex_paths["art_shoes"], roughness=0.35),
@@ -467,21 +534,19 @@ mats = {
     "b5_sage_wall": make_solid_mat("Mat_Block5_Sage_Wall", (0.58, 0.62, 0.61, 1.0), roughness=0.52),
     "b5_turquoise_wall": make_solid_mat("Mat_Block5_Turquoise_Wall", (0.04, 0.42, 0.50, 1.0), roughness=0.36),
     "b5_teal_metal": make_solid_mat("Mat_Block5_Teal_Metal_Grille", (0.12, 0.44, 0.46, 1.0), roughness=0.32, metallic=0.55),
-    "b5_teal_leather": make_solid_mat("Mat_Block5_Teal_Leather", (0.09, 0.34, 0.44, 1.0), roughness=0.38),
-    "b5_ivory_shell": make_solid_mat("Mat_Block5_Ivory_Shell", (0.86, 0.84, 0.80, 1.0), roughness=0.40),
-    "b5_sofa_sage": make_solid_mat("Mat_Block5_Sofa_Sage_Leather", (0.50, 0.57, 0.55, 1.0), roughness=0.42),
-    "b5_Bronze_Ped": make_solid_mat("Mat_Block5_Bronze_Pedestal", (0.22, 0.16, 0.12, 1.0), roughness=0.32, metallic=0.70),
+    "b5_teal_leather": make_solid_mat("Mat_Block5_Teal_Leather", (0.08, 0.33, 0.43, 1.0), roughness=0.32, coat=0.18),
+    "b5_ivory_shell": make_solid_mat("Mat_Block5_Ivory_Shell", (0.87, 0.85, 0.81, 1.0), roughness=0.34, coat=0.15),
+    "b5_sofa_sage": make_solid_mat("Mat_Block5_Sofa_Sage_Leather", (0.50, 0.57, 0.55, 1.0), roughness=0.38, coat=0.15),
+    "b5_Bronze_Ped": make_solid_mat("Mat_Block5_Bronze_Pedestal", (0.22, 0.16, 0.12, 1.0), roughness=0.28, metallic=0.75),
     "b5_black_marble_pillar": make_solid_mat("Mat_Block5_Black_Marble_Pillar", (0.05, 0.05, 0.055, 1.0), roughness=0.12, coat=0.9),
     "b5_teal_blind": make_solid_mat("Mat_Block5_Teal_Roman_Blind", (0.10, 0.25, 0.32, 1.0), roughness=0.65),
-    "b5_pendant_green": make_solid_mat(
+    "b5_pendant_green": make_textured_mat(
         "Mat_Block5_Murano_Pendant_Green",
-        (0.14, 0.62, 0.46, 1.0), roughness=0.06, metallic=0.10,
-        emission_color=(0.18, 0.72, 0.52, 1.0), emission_strength=0.65, alpha=0.82, coat=1.0
+        tex_paths["murano_green"], roughness=0.05, metallic=0.08, alpha_tex=False, coat=1.0, emission_strength=0.42
     ),
-    "b5_pendant_amber": make_solid_mat(
+    "b5_pendant_amber": make_textured_mat(
         "Mat_Block5_Murano_Pendant_Amber",
-        (0.58, 0.34, 0.24, 1.0), roughness=0.06, metallic=0.15,
-        emission_color=(0.78, 0.46, 0.28, 1.0), emission_strength=0.65, alpha=0.82, coat=1.0
+        tex_paths["murano_amber"], roughness=0.05, metallic=0.10, alpha_tex=False, coat=1.0, emission_strength=0.42
     ),
     "b5_glass_shelf": make_solid_mat("Mat_Block5_Glass_Shelf", (0.82, 0.90, 0.88, 1.0), roughness=0.05, alpha=0.38, coat=1.0),
     "vase_ruby": make_solid_mat("Mat_Vase_Ruby_Glass", (0.62, 0.08, 0.16, 1.0), roughness=0.08, coat=1.0),
@@ -999,48 +1064,85 @@ for cove_y in (0.78, 5.62, 6.28, 11.18, 11.84, 16.68):
 
 for dl_x in (29.8, 31.8, 34.4, 36.8, 39.2):
     for dl_y in (1.8, 4.5, 8.73, 12.9, 15.6):
-        add_cylinder(f"Ceiling_Block5_Downlight_{dl_x:.1f}_{dl_y:.1f}", 0.048, 0.012, (dl_x, dl_y, CEIL_H + 0.165), mats["led_warm"], arch_col)
+        add_cylinder(f"Ceiling_Block5_DownlightBezel_{dl_x:.1f}_{dl_y:.1f}", 0.062, 0.010, (dl_x, dl_y, CEIL_H + 0.168), mats["chrome"], arch_col)
+        add_cylinder(f"Ceiling_Block5_Downlight_{dl_x:.1f}_{dl_y:.1f}", 0.046, 0.012, (dl_x, dl_y, CEIL_H + 0.163), mats["led_warm"], arch_col)
+
+# Subtle metallic ceiling panel grid strips inside the central recessed bay (matching Photo 14.31.14.jpeg)
+for gx in (34.10, 35.55, 37.00):
+    add_box(f"Ceiling_Block5_GridX_{gx:.2f}", (0.018, 4.90, 0.008), (gx, CLOVER_CY, COFFER_H - 0.032), mats["chrome"], arch_col)
+for gy in (6.80, 7.90, 8.73, 9.56, 10.66):
+    add_box(f"Ceiling_Block5_GridY_{gy:.2f}", (3.85, 0.018, 0.008), (35.55, gy, COFFER_H - 0.032), mats["chrome"], arch_col)
 
 def build_murano_pendant_lamp(lamp_name, cx, cy, z_bottom, glass_mat):
     """
-    Builds the ornate tiered Venetian Murano glass pendant chandelier hanging over
-    the 10-pax oak tables 419 and 484 (matching Photo 14.31.14.jpeg!).
+    Builds the AAA high-detail Venetian Murano blown-glass pendant chandelier over
+    the 10-pax oak tables 419 and 484 (matching Photo 14.31.14.jpeg):
+    - 64 radial segments x 45 vertical profile stations with 24 smooth optic flutes
+    - Explicit (u, v) lathe UVs mapped to the ribbed glass & warm radial inner bulb glow texture
+    - Opaque hardware depth sorting (alpha_tex=False) so all 6 lamps sort with 100% physical
+      hierarchy from ANY 360° camera angle (zero alpha overlap!)
+    - Separate Polished Brass collar rings between the glass tiers & flared trumpet ceiling canopy
     """
     me = bpy.data.meshes.new(lamp_name + "_Glass_mesh")
     bm = bmesh.new()
 
-    # Lathe profile (r, z_offset_from_bottom) from bottom finial (z=0) up to top glass trumpet (z=1.08m)
+    total_h = 1.10
+    # Smooth high-resolution Venetian Murano profile (r, z_offset_from_bottom)
     profile = [
-        (0.000, 0.00), (0.028, 0.02), (0.018, 0.05),
-        (0.052, 0.09), (0.030, 0.13), (0.078, 0.18), (0.042, 0.22),
-        # Main bulbous glowing globe (z = 0.22 .. 0.48m)
-        (0.135, 0.28), (0.165, 0.36), (0.150, 0.44),
-        # Wide flared bell brim / shade (z = 0.44 .. 0.56m)
-        (0.245, 0.47), (0.255, 0.49), (0.165, 0.54), (0.095, 0.62), (0.052, 0.68),
-        # Middle ribbed sphere (z = 0.68 .. 0.78m)
-        (0.088, 0.73), (0.046, 0.78),
-        # Lower ruffled trumpet cup (z = 0.78 .. 0.92m)
-        (0.068, 0.85), (0.105, 0.91), (0.052, 0.93),
-        # Upper ruffled trumpet cup (z = 0.93 .. 1.06m)
-        (0.072, 1.00), (0.112, 1.06), (0.045, 1.08),
+        # Pointed bottom tear-drop finial & 3 graduated lower ribbed drops (z = 0.00 .. 0.21m)
+        (0.000, 0.000), (0.016, 0.012), (0.030, 0.028), (0.018, 0.046),
+        (0.044, 0.068), (0.056, 0.088), (0.030, 0.112),
+        (0.072, 0.140), (0.092, 0.168), (0.074, 0.192), (0.040, 0.210),
+        # Main bulbous ribbed lantern bowl (z = 0.21 .. 0.45m)
+        (0.095, 0.232), (0.142, 0.268), (0.168, 0.315), (0.175, 0.365),
+        (0.168, 0.410), (0.155, 0.440),
+        # Wide flared scalloped Venetian bell brim / shade (z = 0.44 .. 0.54m)
+        (0.215, 0.456), (0.258, 0.472), (0.264, 0.484), (0.235, 0.498),
+        (0.178, 0.525), (0.132, 0.560), (0.092, 0.592), (0.046, 0.615),
+        # Lower stem ribbed sphere / boule #1 (z = 0.615 .. 0.755m)
+        (0.078, 0.645), (0.098, 0.685), (0.082, 0.725), (0.042, 0.755),
+        # Upper stem ribbed sphere / boule #2 (z = 0.755 .. 0.865m)
+        (0.068, 0.785), (0.084, 0.815), (0.068, 0.845), (0.042, 0.868),
+        # Lower fluted tulip crown cup (z = 0.868 .. 0.985m)
+        (0.062, 0.895), (0.088, 0.935), (0.114, 0.968), (0.106, 0.978), (0.046, 0.988),
+        # Upper taller fluted tulip crown cup (z = 0.988 .. 1.100m)
+        (0.065, 1.015), (0.092, 1.055), (0.122, 1.088), (0.114, 1.096), (0.038, 1.100),
     ]
-    segs = 32
+    segs = 64
     rings = []
     for r_val, dz in profile:
         ring = []
+        v_coord = dz / total_h
+        # Scalloped wavy brim modulation on the wide bell rim and tulip cup rims
+        is_rim = (0.455 <= dz <= 0.505) or (0.955 <= dz <= 0.982) or (1.075 <= dz <= 1.098)
         for s in range(segs):
             ang = 2.0 * math.pi * s / segs
-            ripple = 1.0 + (0.04 * math.sin(12.0 * ang) if r_val > 0.08 else 0.0)
-            px = cx + r_val * ripple * math.cos(ang)
-            py = cy + r_val * ripple * math.sin(ang)
-            pz = z_bottom + dz
-            ring.append(bm.verts.new((px, py, pz)))
+            flute = 1.0 + (0.032 * math.cos(24.0 * ang) if r_val > 0.048 else 0.0)
+            scallop = (0.008 * math.sin(12.0 * ang)) if is_rim else 0.0
+            px = cx + r_val * flute * math.cos(ang)
+            py = cy + r_val * flute * math.sin(ang)
+            pz = z_bottom + dz + scallop
+            vtx = bm.verts.new((px, py, pz))
+            ring.append((vtx, s / segs, v_coord))
         rings.append(ring)
 
+    uv_layer = bm.loops.layers.uv.new("UVMap")
     for i in range(len(rings) - 1):
         for s in range(segs):
             sn = (s + 1) % segs
-            bm.faces.new((rings[i][s], rings[i][sn], rings[i + 1][sn], rings[i + 1][s]))
+            v00, u00, w00 = rings[i][s]
+            v10, u10, w10 = rings[i][sn]
+            v11, u11, w11 = rings[i + 1][sn]
+            v01, u01, w01 = rings[i + 1][s]
+            if sn == 0:
+                u10 = 1.0
+                u11 = 1.0
+            f = bm.faces.new((v00, v10, v11, v01))
+            f.smooth = True
+            f.loops[0][uv_layer].uv = (u00, w00)
+            f.loops[1][uv_layer].uv = (u10, w10)
+            f.loops[2][uv_layer].uv = (u11, w11)
+            f.loops[3][uv_layer].uv = (u01, w01)
 
     bm.to_mesh(me)
     bm.free()
@@ -1050,33 +1152,144 @@ def build_murano_pendant_lamp(lamp_name, cx, cy, z_bottom, glass_mat):
     glass_obj = bpy.data.objects.new(lamp_name + "_Glass", me)
     link_to_collection(glass_obj, arch_col)
 
-    # Top Brass Ceiling Cup & Suspension Rod up to Z = 2.96m
-    z_top_glass = z_bottom + 1.08
-    rod_h = COFFER_H - z_top_glass
-    add_cylinder(lamp_name + "_Rod", 0.012, max(0.05, rod_h), (cx, cy, z_top_glass + rod_h * 0.5), mats["brass"], arch_col)
-    add_cylinder(lamp_name + "_CeilCup", 0.068, 0.09, (cx, cy, COFFER_H - 0.045), mats["brass"], arch_col)
+    # Polished Brass Collar Rings between the Venetian glass tiers (matching Photo 14.31.14.jpeg)
+    for c_idx, (c_r, c_dz) in enumerate([
+        (0.045, 0.210),
+        (0.050, 0.615),
+        (0.046, 0.755),
+        (0.046, 0.868),
+        (0.050, 0.988),
+    ]):
+        add_cylinder(f"{lamp_name}_BrassCollar_{c_idx}", c_r, 0.018, (cx, cy, z_bottom + c_dz), mats["brass"], arch_col, vertices=32)
 
-    # Bright warm inner glowing bulb inside the main glass globe
-    add_cylinder(lamp_name + "_InnerBulb", 0.075, 0.14, (cx, cy, z_bottom + 0.36), mats["led_warm"], arch_col)
+    # Flared Trumpet Polished Brass Ceiling Canopy (CeilCup) & Suspension Rod up to Z = 2.96m
+    z_top_glass = z_bottom + total_h
+    rod_h = max(0.04, COFFER_H - z_top_glass)
+    add_cylinder(lamp_name + "_Rod", 0.011, rod_h, (cx, cy, z_top_glass + rod_h * 0.5), mats["brass"], arch_col, vertices=24)
+
+    # Trumpet-shaped brass ceiling cone (narrow at bottom, wide at ceiling)
+    cone_me = bpy.data.meshes.new(lamp_name + "_CeilCup_mesh")
+    cbm = bmesh.new()
+    cup_prof = [(0.022, -0.13), (0.032, -0.09), (0.048, -0.05), (0.072, -0.015), (0.082, 0.0)]
+    c_rings = []
+    for cr, cdz in cup_prof:
+        c_ring = [cbm.verts.new((cx + cr * math.cos(2.0 * math.pi * s / 32), cy + cr * math.sin(2.0 * math.pi * s / 32), COFFER_H + cdz)) for s in range(32)]
+        c_rings.append(c_ring)
+    for i in range(len(c_rings) - 1):
+        for s in range(32):
+            sn = (s + 1) % 32
+            f = cbm.faces.new((c_rings[i][s], c_rings[i][sn], c_rings[i + 1][sn], c_rings[i + 1][s]))
+            f.smooth = True
+    cbm.to_mesh(cone_me)
+    cbm.free()
+    for p in cone_me.polygons:
+        p.use_smooth = True
+    cone_me.materials.append(mats["brass"])
+    cup_obj = bpy.data.objects.new(lamp_name + "_CeilCup", cone_me)
+    link_to_collection(cup_obj, arch_col)
 
 # 3 Murano Pendants over Table 419 (Y = 7.35m) & 3 Murano Pendants over Table 484 (Y = 10.11m)
-# Alternating Emerald Green (ends) and Warm Amber (middle, hung slightly lower), matching Photo 14.31.14.jpeg!
+# All 6 hung at the exact same architectural elevation (z_bottom = 1.66m) and spaced 1.45m apart
+# along the 3.60m oak tables, matching Photo 14.31.14.jpeg with zero overlap!
 pendant_x_specs = [
-    ("FwdGreen", 34.35, 1.72, mats["b5_pendant_green"]),
-    ("MidAmber", 35.55, 1.58, mats["b5_pendant_amber"]),
-    ("AftGreen", 36.75, 1.72, mats["b5_pendant_green"]),
+    ("FwdGreen", 34.10, 1.66, mats["b5_pendant_green"]),
+    ("MidAmber", 35.55, 1.66, mats["b5_pendant_amber"]),
+    ("AftGreen", 37.00, 1.66, mats["b5_pendant_green"]),
 ]
 for tbl_tag, py in [("419", 7.35), ("484", 10.11)]:
     for p_tag, px, pz_bot, p_mat in pendant_x_specs:
         build_murano_pendant_lamp(f"B5_Pendant_{tbl_tag}_{p_tag}", px, py, pz_bot, p_mat)
 
 # ==============================================================================
-# 9. CREATE BLOCK 5 CUSTOM CHAIR TEMPLATES & POPULATE ALL 32 TABLES
+# 9. CREATE BLOCK 5 CUSTOM CHAIR TEMPLATES (100% CONTINUOUS SEAMLESS CURVES!)
 # ==============================================================================
+def add_smooth_tapered_leg(bm, p_bot, p_top, r_bot, r_top, mat_idx, segs=20):
+    """Adds a smooth cylindrical tapered leg between p_bot and p_top with shared smooth normals."""
+    v_bot = Vector(p_bot)
+    v_top = Vector(p_top)
+    axis = v_top - v_bot
+    length = axis.length
+    if length < 1e-4:
+        return
+    z_dir = axis.normalized()
+    ref = Vector((1.0, 0.0, 0.0)) if abs(z_dir.x) < 0.8 else Vector((0.0, 1.0, 0.0))
+    x_dir = z_dir.cross(ref).normalized()
+    y_dir = z_dir.cross(x_dir).normalized()
+
+    rings = []
+    for t, rad in [(0.0, r_bot), (0.5, 0.5 * (r_bot + r_top)), (1.0, r_top)]:
+        center = v_bot.lerp(v_top, t)
+        ring = []
+        for s in range(segs):
+            ang = 2.0 * math.pi * s / segs
+            pt = center + (x_dir * math.cos(ang) + y_dir * math.sin(ang)) * rad
+            ring.append(bm.verts.new(pt))
+        rings.append(ring)
+
+    for r_i in range(len(rings) - 1):
+        for s in range(segs):
+            sn = (s + 1) % segs
+            f = bm.faces.new((rings[r_i][s], rings[r_i][sn], rings[r_i + 1][sn], rings[r_i + 1][s]))
+            f.material_index = mat_idx
+            f.smooth = True
+
+    f_cap = bm.faces.new(list(reversed(rings[0])))
+    f_cap.material_index = mat_idx
+    f_cap.smooth = False
+
+def add_smooth_squircle_cushion(bm, center_xyz, rx, ry, z_bot, z_top, mat_idx, power=3.2, n_ang=36):
+    """Creates a plush, seamlessly rounded squircle seat cushion without boxy corners."""
+    cx, cy, _ = center_xyz
+    z_mid = 0.5 * (z_bot + z_top)
+    half_h = 0.5 * (z_top - z_bot)
+    # 5 profile rings from bottom underside up over the rounded rim to the softly domed top
+    prof = [
+        (0.86, -half_h),
+        (0.97, -half_h * 0.65),
+        (1.00, 0.0),
+        (0.96, half_h * 0.72),
+        (0.82, half_h * 0.96),
+    ]
+    rings = []
+    for scale_r, dz in prof:
+        ring = []
+        for s in range(n_ang):
+            ang = 2.0 * math.pi * s / n_ang
+            ca, sa = math.cos(ang), math.sin(ang)
+            # Superellipse (squircle) formula for smooth rounded-rectangle cushion
+            ux = math.copysign(abs(ca) ** (2.0 / power), ca)
+            uy = math.copysign(abs(sa) ** (2.0 / power), sa)
+            px = cx + ux * rx * scale_r
+            py = cy + uy * ry * scale_r
+            pz = z_mid + dz
+            ring.append(bm.verts.new((px, py, pz)))
+        rings.append(ring)
+
+    for r_i in range(len(rings) - 1):
+        for s in range(n_ang):
+            sn = (s + 1) % n_ang
+            f = bm.faces.new((rings[r_i][s], rings[r_i][sn], rings[r_i + 1][sn], rings[r_i + 1][s]))
+            f.material_index = mat_idx
+            f.smooth = True
+
+    # Smooth center vertex fan on top and bottom
+    v_top_c = bm.verts.new((cx, cy, z_top + 0.004))
+    v_bot_c = bm.verts.new((cx, cy, z_bot))
+    for s in range(n_ang):
+        sn = (s + 1) % n_ang
+        ft = bm.faces.new((rings[-1][s], rings[-1][sn], v_top_c))
+        ft.material_index = mat_idx
+        ft.smooth = True
+        fb = bm.faces.new((rings[0][sn], rings[0][s], v_bot_c))
+        fb.material_index = mat_idx
+        fb.smooth = True
+
 def create_b5_teal_ivory_tub_chair_mesh():
     """
-    Creates the signature Block 5 two-tone curved tub chair (Photos 14.30.44 (2) & 14.30.53):
-    - Slot 0: Mat_Block5_Teal_Leather (inner seat, inner backrest, front legs)
+    Creates the signature Block 5 two-tone curved tub chair (Photos 14.30.44 (2) & 14.30.53)
+    using a SINGLE CONTINUOUS LOFTED SURFACE (40 angular steps x 12 profile points) with
+    shared vertices and smooth normals — ZERO blocky segments!
+    - Slot 0: Mat_Block5_Teal_Leather (inner seat cushion, inner concave backrest, front legs)
     - Slot 1: Mat_Block5_Ivory_Shell (outer curved wrap-around shell, back legs)
     """
     me = bpy.data.meshes.new("B5_Chair_TealIvory_Mesh")
@@ -1084,38 +1297,88 @@ def create_b5_teal_ivory_tub_chair_mesh():
     me.materials.append(mats["b5_ivory_shell"])
     bm = bmesh.new()
 
-    def add_part(size, loc, mat_idx, rot=(0, 0, 0)):
-        ret = bmesh.ops.create_cube(bm, size=1.0)
-        verts = ret["verts"]
-        bmesh.ops.scale(bm, vec=size, verts=verts)
-        if any(rot):
-            bmesh.ops.rotate(bm, cent=(0, 0, 0), matrix=Euler(rot, 'XYZ').to_matrix(), verts=verts)
-        bmesh.ops.translate(bm, vec=loc, verts=verts)
-        for f in bm.faces:
-            if all(v in verts for v in f.verts):
-                f.material_index = mat_idx
+    # 1. Plush Rounded-Squircle Seat Cushion (Teal leather [0], Z = 0.415 .. 0.476m)
+    add_smooth_squircle_cushion(bm, (0.0, 0.015, 0.445), rx=0.228, ry=0.222, z_bot=0.412, z_top=0.476, mat_idx=0, power=3.0, n_ang=36)
 
-    # Seat cushion (Teal leather, Z = 0.42..0.48m)
-    add_part((0.46, 0.45, 0.065), (0.0, 0.01, 0.445), mat_idx=0)
-    # Front legs (Teal leather, Y = +0.19m)
-    for sx in (-0.19, 0.19):
-        add_part((0.036, 0.036, 0.43), (sx, 0.19, 0.215), mat_idx=0, rot=(-0.05, 0, 0))
-    # Back legs (Ivory shell, Y = -0.19m)
-    for sx in (-0.19, 0.19):
-        add_part((0.038, 0.038, 0.44), (sx, -0.19, 0.22), mat_idx=1, rot=(0.08, 0, 0))
+    # 2. 4 Smooth Tapered Cylindrical Legs (Front = Teal [0], Rear = Ivory [1])
+    for sx in (-0.192, 0.192):
+        add_smooth_tapered_leg(bm, (sx * 1.03, 0.195, 0.0), (sx * 0.96, 0.175, 0.430), r_bot=0.014, r_top=0.022, mat_idx=0, segs=20)
+        add_smooth_tapered_leg(bm, (sx * 1.04, -0.215, 0.0), (sx * 0.96, -0.180, 0.445), r_bot=0.015, r_top=0.023, mat_idx=1, segs=20)
 
-    # Curved wrap-around backrest (outer shell = Ivory [1], inner pad = Teal [0])
-    n_arc = 9
+    # 3. Single Continuous Lofted Wrap-Around Tub Backrest & Armrest Shell (41 smooth angular stations)
+    #    Includes the authentic side waist cutout under the armrests (Photo 14.30.44 (2).jpeg)
+    n_arc = 41
+    # Cross-section profile around the shell thickness (t_h in 0..1 from bottom to top, offset_out in meters)
+    # Indices 0..5 = Outer Ivory Shell (mat_idx=1), Indices 5..11 = Top Rim & Inner Teal Cushion (mat_idx=0)
+    shell_prof = [
+        (0.00,  0.000),  # 0: Bottom edge center
+        (0.08,  0.018),  # 1: Outer bottom bevel
+        (0.35,  0.024),  # 2: Outer lower wall
+        (0.70,  0.024),  # 3: Outer upper wall
+        (0.93,  0.019),  # 4: Outer top shoulder
+        (1.00,  0.002),  # 5: Top crest seam (Ivory/Teal boundary)
+        (0.94, -0.016),  # 6: Inner top roll (Teal)
+        (0.72, -0.024),  # 7: Inner upper cushion
+        (0.40, -0.025),  # 8: Inner lumbar cushion
+        (0.10, -0.018),  # 9: Inner lower bevel
+    ]
+    n_prof = len(shell_prof)
+    arc_rings = []
+
     for i in range(n_arc):
-        ang = -0.95 + 1.90 * (i / (n_arc - 1))  # Wraps around back (-Y) and sides
-        rx, ry = 0.225 * math.sin(ang), -0.02 - 0.205 * math.cos(ang)
-        yaw = -ang
-        # Outer ivory shell
-        add_part((0.095, 0.028, 0.34), (rx * 1.06, ry * 1.06, 0.63), mat_idx=1, rot=(0, 0, yaw))
-        # Inner teal cushion
-        add_part((0.090, 0.026, 0.28), (rx * 0.96, ry * 0.96, 0.65), mat_idx=0, rot=(0, 0, yaw))
+        u = i / (n_arc - 1)  # 0 (left armrest tip) .. 0.5 (center back) .. 1 (right armrest tip)
+        ang = -1.72 + 3.44 * u  # ~197 deg wrap-around arc
+        sin_a = math.sin(ang)
+        cos_a = math.cos(ang)
 
-    bmesh.ops.bevel(bm, geom=bm.edges, offset=0.006, segments=2, profile=0.5, affect='EDGES')
+        # Centerline curve of the tub shell
+        cx = 0.226 * sin_a
+        cy = 0.010 - 0.212 * cos_a
+        # Outward radial unit vector in XY
+        nx = sin_a
+        ny = -cos_a
+
+        # Smooth top & bottom Z envelope along the arc:
+        # - Top rim gently dips from 0.785m at center back to 0.675m at front armrest tips
+        # - Bottom edge rises from 0.425m at the back to 0.555m under the side armrests (creating the side cutout!)
+        side_f = abs(u - 0.5) * 2.0  # 0 at center back, 1 at armrest tips
+        z_top = 0.785 - 0.105 * (side_f ** 1.6)
+        cutout_bump = 0.130 * (math.sin(min(1.0, side_f * 1.15) * math.pi * 0.5) ** 2.2)
+        z_bot = 0.425 + cutout_bump
+
+        # Taper thickness slightly at the very front tips of the armrests for a sleek rounded nose
+        tip_taper = math.sin(u * math.pi) ** 0.28
+        ring = []
+        for t_h, off_r in shell_prof:
+            pz = z_bot + t_h * (z_top - z_bot)
+            # Slight backward rake as height increases
+            rake = (pz - 0.45) * 0.08
+            r_disp = off_r * tip_taper + rake
+            px = cx + nx * r_disp
+            py = cy + ny * r_disp
+            ring.append(bm.verts.new((px, py, pz)))
+        arc_rings.append(ring)
+
+    for i in range(n_arc - 1):
+        for p_i in range(n_prof):
+            pn = (p_i + 1) % n_prof
+            f = bm.faces.new((arc_rings[i][p_i], arc_rings[i + 1][p_i], arc_rings[i + 1][pn], arc_rings[i][pn]))
+            # Outer faces (p_i in 0..4) -> Ivory Shell [1]; Inner faces (p_i in 5..9) -> Teal Leather [0]
+            f.material_index = 1 if p_i < 5 else 0
+            f.smooth = True
+
+    # Smoothly cap the left (i=0) and right (i=-1) front armrest tips
+    for end_idx, rev in [(0, True), (-1, False)]:
+        ring = arc_rings[end_idx]
+        c_co = sum((v.co for v in ring), Vector((0, 0, 0))) / len(ring)
+        v_cap = bm.verts.new(c_co)
+        for p_i in range(n_prof):
+            pn = (p_i + 1) % n_prof
+            verts_tri = (ring[pn], ring[p_i], v_cap) if rev else (ring[p_i], ring[pn], v_cap)
+            ft = bm.faces.new(verts_tri)
+            ft.material_index = 1 if p_i < 5 else 0
+            ft.smooth = True
+
     bm.to_mesh(me)
     bm.free()
     for p in me.polygons:
@@ -1125,43 +1388,86 @@ def create_b5_teal_ivory_tub_chair_mesh():
 def create_b5_light_oak_chair_mesh():
     """
     Creates the Block 5 Light Natural Oak wooden armchair (Photo 14.30.53 (1).jpeg)
-    for the two 10-pax wooden tables 419 and 484:
-    - Slot 0: Mat_Block5_Light_Oak_Wood (legs, frame, curved oak backrest)
-    - Slot 1: Mat_Block5_Ivory_Shell (cream seat cushion)
+    for the two 10-pax wooden tables 419 and 484 using a SINGLE CONTINUOUS STEAM-BENT
+    CURVED OAK BACKREST (40 smooth angular steps x 12 profile points, zero segments!):
+    - Slot 0: Mat_Block5_Light_Oak_Wood (turned tapered legs, seat apron, continuous curved oak backrest)
+    - Slot 1: Mat_Block5_Ivory_Shell (plush cream upholstered seat cushion)
     """
     me = bpy.data.meshes.new("B5_Chair_LightOak_Mesh")
     me.materials.append(mats["b5_light_oak"])
     me.materials.append(mats["b5_ivory_shell"])
     bm = bmesh.new()
 
-    def add_part(size, loc, mat_idx, rot=(0, 0, 0)):
-        ret = bmesh.ops.create_cube(bm, size=1.0)
-        verts = ret["verts"]
-        bmesh.ops.scale(bm, vec=size, verts=verts)
-        if any(rot):
-            bmesh.ops.rotate(bm, cent=(0, 0, 0), matrix=Euler(rot, 'XYZ').to_matrix(), verts=verts)
-        bmesh.ops.translate(bm, vec=loc, verts=verts)
-        for f in bm.faces:
-            if all(v in verts for v in f.verts):
-                f.material_index = mat_idx
+    # 1. Smooth Light-Oak Seat Frame Apron (mat_idx=0) & Plush Cream Cushion (mat_idx=1)
+    add_smooth_squircle_cushion(bm, (0.0, 0.005, 0.422), rx=0.226, ry=0.218, z_bot=0.405, z_top=0.440, mat_idx=0, power=2.6, n_ang=36)
+    add_smooth_squircle_cushion(bm, (0.0, 0.010, 0.456), rx=0.216, ry=0.210, z_bot=0.436, z_top=0.478, mat_idx=1, power=2.6, n_ang=36)
 
-    # Oak seat frame & cream seat pad
-    add_part((0.46, 0.44, 0.035), (0.0, 0.0, 0.425), mat_idx=0)
-    add_part((0.44, 0.42, 0.045), (0.0, 0.01, 0.455), mat_idx=1)
+    # 2. 4 Smooth Turned Light-Oak Legs rising to support the continuous curved oak backrest
+    #    (Matching Photo 14.30.53 (1).jpeg: front legs join the front armrest ends, back legs rise up the rear!)
+    for sx in (-1.0, 1.0):
+        # Front legs (rise from floor through seat corner up to front armrest at Z = 0.68m)
+        add_smooth_tapered_leg(bm, (sx * 0.215, 0.165, 0.0), (sx * 0.220, 0.145, 0.685), r_bot=0.014, r_top=0.019, mat_idx=0, segs=20)
+        # Rear legs (angled gracefully backward, rising all the way to the top oak backrest band at Z = 0.76m)
+        add_smooth_tapered_leg(bm, (sx * 0.195, -0.215, 0.0), (sx * 0.175, -0.185, 0.755), r_bot=0.015, r_top=0.020, mat_idx=0, segs=20)
 
-    # 4 Oak legs (back legs extend up to support the curved oak backrest at Z = 0.76m!)
-    for sx in (-0.20, 0.20):
-        add_part((0.036, 0.036, 0.43), (sx, 0.18, 0.215), mat_idx=0, rot=(-0.05, 0, 0))
-        add_part((0.038, 0.038, 0.76), (sx, -0.19, 0.38), mat_idx=0, rot=(0.06, 0, 0))
-
-    # Curved Oak Wrap-Around Backrest Band (Z = 0.68..0.78m)
-    n_arc = 9
+    # 3. Single Continuous Steam-Bent Horseshoe Oak Backrest Band (41 smooth angular stations x 12 profile points)
+    n_arc = 41
+    n_prof = 12
+    band_rings = []
     for i in range(n_arc):
-        ang = -1.05 + 2.10 * (i / (n_arc - 1))
-        rx, ry = 0.225 * math.sin(ang), -0.01 - 0.20 * math.cos(ang)
-        add_part((0.095, 0.030, 0.11), (rx, ry, 0.73), mat_idx=0, rot=(0, 0, -ang))
+        u = i / (n_arc - 1)
+        ang = -1.68 + 3.36 * u  # Smooth horseshoe wrap from left front post (-96 deg) to right front post (+96 deg)
+        sin_a = math.sin(ang)
+        cos_a = math.cos(ang)
 
-    bmesh.ops.bevel(bm, geom=bm.edges, offset=0.005, segments=2, profile=0.5, affect='EDGES')
+        cx = 0.224 * sin_a
+        cy = 0.015 - 0.205 * cos_a
+        nx = sin_a
+        ny = -cos_a
+
+        side_f = abs(u - 0.5) * 2.0
+        z_center = 0.728 - 0.032 * (side_f ** 1.5)
+        half_h = 0.054 - 0.012 * (side_f ** 1.4)  # 10.8cm tall at back, 8.4cm tall at front armrests
+        half_t = 0.014  # 2.8cm thick steam-bent oak rail
+
+        ring = []
+        for p_i in range(n_prof):
+            theta = 2.0 * math.pi * p_i / n_prof
+            dr = half_t * math.cos(theta)
+            dz = half_h * math.sin(theta)
+            px = cx + nx * dr
+            py = cy + ny * dr
+            pz = z_center + dz
+            ring.append(bm.verts.new((px, py, pz)))
+        band_rings.append(ring)
+
+    uv_layer = bm.loops.layers.uv.new("UVMap")
+    for i in range(n_arc - 1):
+        u0 = (i / (n_arc - 1)) * 2.0
+        u1 = ((i + 1) / (n_arc - 1)) * 2.0
+        for p_i in range(n_prof):
+            pn = (p_i + 1) % n_prof
+            v0 = p_i / n_prof
+            v1 = (p_i + 1) / n_prof
+            f = bm.faces.new((band_rings[i][p_i], band_rings[i + 1][p_i], band_rings[i + 1][pn], band_rings[i][pn]))
+            f.material_index = 0
+            f.smooth = True
+            f.loops[0][uv_layer].uv = (u0, v0)
+            f.loops[1][uv_layer].uv = (u1, v0)
+            f.loops[2][uv_layer].uv = (u1, v1)
+            f.loops[3][uv_layer].uv = (u0, v1)
+
+    for end_idx, rev in [(0, True), (-1, False)]:
+        ring = band_rings[end_idx]
+        c_co = sum((v.co for v in ring), Vector((0, 0, 0))) / len(ring)
+        v_cap = bm.verts.new(c_co)
+        for p_i in range(n_prof):
+            pn = (p_i + 1) % n_prof
+            verts_tri = (ring[pn], ring[p_i], v_cap) if rev else (ring[p_i], ring[pn], v_cap)
+            ft = bm.faces.new(verts_tri)
+            ft.material_index = 0
+            ft.smooth = True
+
     bm.to_mesh(me)
     bm.free()
     for p in me.polygons:
@@ -1170,6 +1476,42 @@ def create_b5_light_oak_chair_mesh():
 
 chair_teal_mesh = create_b5_teal_ivory_tub_chair_mesh()
 chair_oak_mesh  = create_b5_light_oak_chair_mesh()
+
+# Shared Tabletop Condiment / Menu Stand / Planter Set Mesh (matching Photos 14.30.44 (2) & 14.30.53 (1))
+def create_b5_table_condiment_mesh():
+    me = bpy.data.meshes.new("B5_TableCondiment_Mesh")
+    me.materials.append(mats["chrome"])      # 0: Chrome shakers & menu holder base
+    me.materials.append(mats["wall_white"])  # 1: Menu card & ceramic planter pot
+    me.materials.append(mats["b5_pendant_green"])  # 2: Green succulent leaves
+    bm = bmesh.new()
+
+    def add_c(r1, r2, h, loc, mat_idx, segs=16):
+        ret = bmesh.ops.create_cone(bm, cap_ends=True, cap_tris=False, segments=segs, radius1=r1, radius2=r2, depth=h)
+        verts = ret["verts"]
+        bmesh.ops.translate(bm, vec=loc, verts=verts)
+        for f in bm.faces:
+            if all(v in verts for v in f.verts):
+                f.material_index = mat_idx
+                f.smooth = True
+
+    # Two sleek chrome & glass Salt & Pepper shakers
+    add_c(0.014, 0.012, 0.068, (-0.032, -0.018, 0.034), mat_idx=0)
+    add_c(0.014, 0.012, 0.068, (-0.002, -0.022, 0.034), mat_idx=0)
+
+    # Upright Acrylic/Menu Card Stand
+    ret = bmesh.ops.create_cube(bm, size=1.0)
+    v_card = ret["verts"]
+    bmesh.ops.scale(bm, vec=(0.006, 0.105, 0.165), verts=v_card)
+    bmesh.ops.translate(bm, vec=(0.022, 0.0, 0.085), verts=v_card)
+    for f in bm.faces:
+        if all(v in v_card for v in f.verts):
+            f.material_index = 1
+
+    bm.to_mesh(me)
+    bm.free()
+    return me
+
+condiment_mesh = create_b5_table_condiment_mesh()
 
 def spawn_chair(name, chair_mesh, location, yaw_rad, col):
     obj = bpy.data.objects.new(name, chair_mesh)
@@ -1259,6 +1601,15 @@ def build_b5_table_assembly(table_id, center_xy, length_x, width_y, yaw_rad, top
                 yaw_rad + math.pi,
                 t_col,
             )
+
+    # Spawn tabletop Salt & Pepper shakers + Acrylic Menu Stand (matching Photos 14.30.44 (2) & 14.30.53 (1))
+    cond_xs = [-1.05, 0.0, 1.05] if length_x > 2.0 else [0.0]
+    for cd_i, cd_x in enumerate(cond_xs):
+        c_obj = bpy.data.objects.new(f"B5_Condiment_{table_id}_{cd_i}", condiment_mesh)
+        c_obj.location = to_world(cd_x, 0.0, 0.759)
+        c_obj.rotation_euler = (0.0, 0.0, yaw_rad)
+        link_to_collection(c_obj, t_col)
+
     return top_obj
 
 # ------------------------------------------------------------------------------
