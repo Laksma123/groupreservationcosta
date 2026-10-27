@@ -7,9 +7,6 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 // ============================================================================
 // 0. MODERN WEB GUIDANCE POLYFILLS & FALLBACKS
 // ============================================================================
-if (!('switch' in HTMLInputElement.prototype)) {
-  import('https://cdn.jsdelivr.net/npm/input-switch-polyfill@1.0.2/+esm').catch(() => {});
-}
 
 const bookingDialog = document.getElementById('booking-dialog');
 if (bookingDialog && !('closedBy' in HTMLDialogElement.prototype)) {
@@ -1971,20 +1968,35 @@ function makeDeckLabel(text, cssClass, posVec3, parentNode, onClick = null) {
 }
 
 const loaderOverlay = document.getElementById('loading-overlay');
+const loaderTitleEl = document.getElementById('loader-title');
 const gltfLoader = new GLTFLoader();
 
 let shipGlbLoaded = false;
 let interiorGlbLoaded = false;
+let pendingEnterInterior = false;
+
+// Safety fallback so #loading-overlay can NEVER get permanently stuck on slow networks
+setTimeout(() => {
+  loaderOverlay.classList.add('is-hidden');
+}, 4500);
+
 function checkAllLoaded() {
-  if (shipGlbLoaded && interiorGlbLoaded) {
+  if (shipGlbLoaded) {
     requestShadowUpdate();
     css2dDirty = true;
+    if (!pendingEnterInterior || interiorGlbLoaded) {
+      loaderOverlay.classList.add('is-hidden');
+    }
+  }
+  if (pendingEnterInterior && interiorGlbLoaded) {
+    pendingEnterInterior = false;
     loaderOverlay.classList.add('is-hidden');
+    enterInterior2Blocks();
   }
 }
 
 gltfLoader.load(
-  './costa_smeralda_ship.glb?v=20261026i',
+  './costa_smeralda_ship.glb?v=20261027c',
   (gltf) => {
     const shipModel = gltf.scene;
     shipStageGroup.add(shipModel);
@@ -2078,7 +2090,12 @@ gltfLoader.load(
     shipGlbLoaded = true;
     checkAllLoaded();
   },
-  undefined,
+  (xhr) => {
+    if (xhr && xhr.total > 0 && loaderTitleEl && !shipGlbLoaded) {
+      const pct = Math.min(99, Math.round((xhr.loaded / xhr.total) * 100));
+      loaderTitleEl.textContent = `Loading Costa Smeralda 3D (${pct}%)`;
+    }
+  },
   (err) => {
     console.error('Error loading costa_smeralda_ship.glb:', err);
     shipGlbLoaded = true;
@@ -2102,7 +2119,7 @@ const CUTAWAY_META = {
   deck6: {
     eyebrow: 'DECK 6 · ROMA (MID-SHIP)',
     title: 'Ristorante Arlecchino',
-    desc: 'Mid-ship displays all 4 blocks of Arlecchino (45 tables · 220 seats). Click below to allocate tables.',
+    desc: 'Mid-ship displays all 5 blocks of Arlecchino (77 tables · 336 seats). Click below to allocate tables.',
     subtitle: 'DECK 6 CUTAWAY · RISTORANTE ARLECCHINO',
   },
   deck5: {
@@ -2213,7 +2230,7 @@ const hitProxyMat = new THREE.MeshBasicMaterial({
 });
 
 gltfLoader.load(
-  './arlecchino_block1.glb?v=20261027b',
+  './arlecchino_block1.glb?v=20261027c',
   (gltf) => {
     const model = gltf.scene;
     restaurantGroup.add(model);
@@ -2224,15 +2241,17 @@ gltfLoader.load(
       if (!child.isMesh) return;
       fixFloorAndCarpetMesh(child);
       const n = child.name || '';
+      const pName = child.parent && child.parent.name ? child.parent.name : '';
+      const fullName = pName ? `${pName}_${n}` : n;
 
       const isSmallDetail =
-        n.includes('Plate') ||
-        n.includes('Phone') ||
-        n.includes('Spot') ||
-        n.includes('Downlight') ||
-        n.includes('Art') ||
-        n.includes('Chandelier') ||
-        n.includes('Pendant');
+        fullName.includes('Plate') ||
+        fullName.includes('Phone') ||
+        fullName.includes('Spot') ||
+        fullName.includes('Downlight') ||
+        fullName.includes('Art') ||
+        fullName.includes('Chandelier') ||
+        fullName.includes('Pendant');
       child.castShadow = !isSmallDetail;
       child.receiveShadow = true;
 
@@ -2252,7 +2271,9 @@ gltfLoader.load(
         n.startsWith('Corr_Downlight_') ||
         n.startsWith('B3B4_Corr_Downlight_') ||
         n.startsWith('Crossroads_Header_Beam_') ||
-        n.startsWith('Crossroads_ExitSign_')
+        n.startsWith('Crossroads_ExitSign_') ||
+        n.startsWith('B5_CorrExitSign_') ||
+        n.startsWith('B5_Doorway_ExitSign_')
       ) {
         ceilingMeshes.push(child);
       } else {
@@ -2261,8 +2282,8 @@ gltfLoader.load(
 
       for (const meta of TABLE_CATALOG) {
         if (
-          n.includes(meta.nodeKey) ||
-          n.includes(`_${meta.num}_`) ||
+          fullName.includes(meta.nodeKey) ||
+          fullName.includes(`_${meta.num}_`) ||
           (meta.num === '301' && n.startsWith('Banquette_'))
         ) {
           if (!tableRegistry.has(meta.num)) {
@@ -2388,10 +2409,16 @@ gltfLoader.load(
     interiorGlbLoaded = true;
     checkAllLoaded();
   },
-  undefined,
+  (xhr) => {
+    if (xhr && xhr.total > 0 && pendingEnterInterior && loaderTitleEl) {
+      const pct = Math.min(99, Math.round((xhr.loaded / xhr.total) * 100));
+      loaderTitleEl.textContent = `Loading Ristorante Arlecchino 3D (${pct}%)`;
+    }
+  },
   (err) => {
     console.error('Error loading arlecchino_block1.glb:', err);
-    document.getElementById('loader-title').textContent = 'Failed to load 3D model (.glb)';
+    interiorGlbLoaded = true;
+    checkAllLoaded();
   }
 );
 
@@ -2577,6 +2604,12 @@ setGateStage(true);
 
 function enterInterior2Blocks() {
   if (currentStage !== 'ship') return;
+  if (!interiorGlbLoaded) {
+    pendingEnterInterior = true;
+    if (loaderTitleEl) loaderTitleEl.textContent = 'Loading Ristorante Arlecchino 3D...';
+    loaderOverlay.classList.remove('is-hidden');
+    return;
+  }
 
   setShipCutawayLayer('deck6', false);
   Object.values(deckCutawayLabels).forEach((lbl) => setDeckLabelVis(lbl, false));
@@ -2963,7 +2996,7 @@ function evaluateGateCodeInput(showErrors = false) {
     : 'Verified DRS Token';
   document.getElementById('gtp-expiry-text').textContent = res.expiryLabel;
   document.getElementById('gtp-target-pax').textContent = `${res.targetPax} Pax`;
-  document.getElementById('gtp-avail-tables').textContent = `${availCount} / 45`;
+  document.getElementById('gtp-avail-tables').textContent = `${availCount} / ${TABLE_CATALOG.length}`;
   document.getElementById('gtp-locked-tables').textContent = `${res.lockedTables.length} Locked`;
 
   if (res.isExpired) {
