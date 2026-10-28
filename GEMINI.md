@@ -66,6 +66,24 @@ All agents MUST use this exact terminology and coordinate convention without exc
 
 ---
 
+## 1C. Mandatory Visual Consistency, Lighting & Contrast Rules (ALL ROOMS & RESTAURANTS)
+To prevent wasted rework across any block or restaurant room, all agents MUST strictly enforce these rules:
+1. **Bright Room Illumination + Deep Object Contrast (WAJIB SERAGAM DI SEMUA RUANGAN):**
+   * **Never make a room dark or gloomy.** Every dining block/room must have bright, inviting, even illumination in both Blender `Material Preview` and `Rendered` modes (`Arlecchino_World` strength `~0.92`, `AgX - Medium High Contrast`, `exposure = +0.22`, `use_scene_lights = True`, `use_scene_world = True`).
+   * Combine downward shadow-casting ceiling `SPOT` lights (`88W–108W`, `cutoff_distance = 8.5m`, `shadow_pool_size = '1024'`) with **shadowless warm `AREA` room-bounce fill lights** (`62W–75W`, `use_shadow = False`, `specular_factor = 0.0`) so walls, ceilings, and furniture are brightly lit without overflowing EEVEE's shadow buffer or causing white specular orbs on glass/windows.
+   * **Never crush base texture midtones/highlights to create contrast.** Keep base material/texture colors bright and true-to-life; achieve 3D depth and contrast via **baked underside/crevice self-occlusion gradients, crisp plank/seam bevels, bump normal maps, and soft feathered contact-shadow AO decals (`block5_contact_ao.png`)** under tables, chairs, and pillars.
+2. **Clean Empty Tabletops (`Meja Kosong Tanpa Menaje`):**
+   * All dining tables across all blocks (`Block 1` through `Block 5` and future blocks) must have **100% clean, empty tabletops** (no salt/pepper shakers, menus, tableware, or planters on the tables).
+3. **Continuous Seamless Curved Furniture Geometry:**
+   * All curved chairs (such as Block 5's two-tone tub chairs and steam-bent oak chairs) must use continuous lofted `BMesh` / `Subsurf` geometry with smooth normals—never faceted low-poly segments.
+4. **Block 5 Specific Architectural Rules Verified:**
+   * The 2 middle Amber/Orange Murano chandeliers (`MidAmber` at `X = 35.55m`) extend **30 cm lower** (`z_bottom = 1.42m`, `total_h = 1.40m` with 4 stem boules) than the 4 Green chandeliers (`z_bottom = 1.72m`, `total_h = 1.10m`), staying `~68 cm` clear above the `0.74m` tabletop.
+   * Both see-through vase niches (`Niche_B3_Port` and `Niche_B4_Stbd`) are **100% open hollow wall openings without any glass panes (`dinding bolong tanpa kaca`)** on both the Block 3/4 side and the Block 5 side.
+5. **Separated Blender Asset Files for Heavy Dynamic Systems (NPCs):**
+   * Keep the restaurant architecture in `arlecchino_block1.blend` / `arlecchino_block1.glb`, and build the **15 European-proportioned rigged & animated 3D human NPCs** (5 adult men, 5 adult women, 5 children ages 3–5) in a **separate Blender file & GLB (`arlecchino_npcs_european.blend` / `arlecchino_npcs_european.glb`)** so the main architectural scene stays lightweight and fast.
+
+---
+
 ## 2. Key Local References in This Repo
 1. **Master Plan:** [PLAN_RESERVASI_COSTA_SMERALDA_3D.md](file:///Users/dianjulie/Documents/Map%20Project/PLAN_RESERVASI_COSTA_SMERALDA_3D.md)
 2. **Shipyard GA Blueprints:** [SHIP MAP.pdf](file:///Users/dianjulie/Documents/Map%20Project/SHIP%20MAP.pdf) — **Sheet 4 (Page 4) covers Deck 6 & 61** (*Meyer Turku General Arrangement*).

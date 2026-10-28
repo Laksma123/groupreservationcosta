@@ -118,3 +118,11 @@ Seluruh file referensi teknis dan visual sudah tersedia di folder lokal:
    * Ketika **View**: Menampilkan label nomor meja akurat (`301`, `303`, `305`, `307`, `393`, `397`, `399`, `403`, `405`, `407`) berukuran besar, tajam, dan jelas di atas tiap meja dengan tipografi modern yang indah dan universal.
 4. **Efek Hover Pre-Selection Glassmorphism:**
    * Saat kursor diarahkan (*hover*) ke salah satu meja, muncul efek visual *glassmorphism* (lapisan *frosted glass* bercahaya lembut di atas meja + *outline highlight* + *floating glass card* berisi nomor meja dan kapasitas kursi).
+5. **Standar Wajib Keseragaman Pencahayaan & Kontras di Semua Ruangan/Restoran:**
+   * Seluruh blok dan ruangan restoran wajib selalu terang, jernih, dan hidup (`Arlecchino_World` strength `0.92`, `AgX - Medium High Contrast`, `exposure = +0.22`, `use_scene_lights = True`, `use_scene_world = True`, kombinasi lampu plafon `SPOT` + lampu `AREA` *Room-Bounce* tanpa bayangan dengan `specular_factor = 0.0`).
+   * Kedalaman warna dan kontras objek diperoleh dari gradasi *self-occlusion* di bagian bawah/lipatan kursi, *bump normal map*, dan *contact-shadow AO decal* di bawah meja/kursi, tanpa menggelapkan nilai dasar RGB tekstur.
+   * Seluruh permukaan meja di semua blok wajib kosong bersih tanpa *menaje*.
+6. **Sistem 15 Karakter NPC Animasi (Rasio Ukuran Eropa) di File Blender Terpisah (`arlecchino_npcs_european.blend` / `.glb`):**
+   * Terdiri dari **5 Laki-Laki Dewasa (`1.78m–1.86m`)**, **5 Perempuan Dewasa (`1.65m–1.74m`)**, dan **5 Anak-Anak Usia 3–5 Tahun** (balita 3 tahun `0.96m–1.02m` dan anak 4–5 tahun `1.06m–1.14m` dengan *random gender* & kostum).
+   * Saat meja diklik (di-*highlight* hijau), NPC *spawn* agak dekat di belakang kamera lalu berjalan menuju kursi meja tersebut: orang dewasa memundurkan kursi, duduk sambil memajukan kursi, lalu berbincang-bincang natural; anak 3 tahun merangkak/memanjat naik ke kursi, sedangkan anak 4–5 tahun bertumpu tangan dan melompat naik ke kursi.
+   * Saat meja di-*unclick* (*deselect*), hanya NPC di meja tersebut yang berdiri dengan animasi berdiri berbeda, merapikan kursi, lalu berjalan ke arah **Forward koridor (`-X`) menembus tembok depan Block 1 & Block 2 (`X = -1.95m`)**.
