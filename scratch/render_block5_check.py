@@ -11,44 +11,56 @@ os.makedirs(OUT_DIR, exist_ok=True)
 bpy.ops.wm.open_mainfile(filepath=BLEND_PATH)
 scene = bpy.context.scene
 
-# Ensure Block 5 has warm architectural Point Lights saved in the .blend file for AAA specular & shadow depth
-arch_col = bpy.data.collections.get("01_Architecture_Deck6_Arlecchino") or scene.collection
+# Add 6 subtle warm filament point lights inside the 6 Murano Chandelier globes (Z = 2.02m)
+light_col = bpy.data.collections.get("04_Lighting") or scene.collection
 for obj in list(bpy.data.objects):
-    if obj.name.startswith("B5_Light_"):
+    if obj.name.startswith("B5_Light_Pendant_"):
         bpy.data.objects.remove(obj, do_unlink=True)
 
-b5_light_specs = [
-    # Warm glow under each of the 6 Murano Pendants
-    ("B5_Light_Pendant_419_1", (34.10, 7.35, 1.82),  95.0, (1.0, 0.91, 0.78), 0.35),
-    ("B5_Light_Pendant_419_2", (35.55, 7.35, 1.82),  95.0, (1.0, 0.88, 0.72), 0.35),
-    ("B5_Light_Pendant_419_3", (37.00, 7.35, 1.82),  95.0, (1.0, 0.91, 0.78), 0.35),
-    ("B5_Light_Pendant_484_1", (34.10, 10.11, 1.82), 95.0, (1.0, 0.91, 0.78), 0.35),
-    ("B5_Light_Pendant_484_2", (35.55, 10.11, 1.82), 95.0, (1.0, 0.88, 0.72), 0.35),
-    ("B5_Light_Pendant_484_3", (37.00, 10.11, 1.82), 95.0, (1.0, 0.91, 0.78), 0.35),
-    # Room ceiling fill lights (Portside, Center Forward, Starboardside, Aft Walkway)
-    ("B5_Light_Ceil_PortFwd",  (30.20, 3.20, 2.65), 140.0, (1.0, 0.94, 0.86), 0.65),
-    ("B5_Light_Ceil_PortMid",  (35.00, 2.60, 2.65), 150.0, (0.96, 0.97, 1.0), 0.65),
-    ("B5_Light_Ceil_StbdFwd",  (30.20, 14.26, 2.65),140.0, (1.0, 0.94, 0.86), 0.65),
-    ("B5_Light_Ceil_StbdMid",  (35.00, 14.86, 2.65),150.0, (1.0, 0.94, 0.86), 0.65),
-    ("B5_Light_Ceil_CenterFwd",(31.20, 8.73, 2.68), 160.0, (1.0, 0.95, 0.88), 0.70),
-    ("B5_Light_Ceil_AftWalk",  (39.40, 8.73, 2.65), 130.0, (1.0, 0.95, 0.88), 0.65),
+pendant_light_specs = [
+    ("B5_Light_Pendant_419_1", (34.10, 7.35, 2.02),  10.0, (1.0, 0.84, 0.62), 0.14),
+    ("B5_Light_Pendant_419_2", (35.55, 7.35, 2.02),  10.0, (1.0, 0.80, 0.56), 0.14),
+    ("B5_Light_Pendant_419_3", (37.00, 7.35, 2.02),  10.0, (1.0, 0.84, 0.62), 0.14),
+    ("B5_Light_Pendant_484_1", (34.10, 10.11, 2.02), 10.0, (1.0, 0.84, 0.62), 0.14),
+    ("B5_Light_Pendant_484_2", (35.55, 10.11, 2.02), 10.0, (1.0, 0.80, 0.56), 0.14),
+    ("B5_Light_Pendant_484_3", (37.00, 10.11, 2.02), 10.0, (1.0, 0.84, 0.62), 0.14),
 ]
-for l_name, l_loc, l_energy, l_col, l_rad in b5_light_specs:
+for l_name, l_loc, l_energy, l_col, l_rad in pendant_light_specs:
     ldata = bpy.data.lights.new(name=l_name, type='POINT')
     ldata.energy = l_energy
     ldata.color = l_col
     ldata.shadow_soft_size = l_rad
+    ldata.use_shadow = False
+    ldata.use_custom_distance = True
+    ldata.cutoff_distance = 3.2
+    if hasattr(ldata, "specular_factor"):
+        ldata.specular_factor = 0.08
     lobj = bpy.data.objects.new(name=l_name, object_data=ldata)
     lobj.location = l_loc
-    arch_col.objects.link(lobj)
+    light_col.objects.link(lobj)
+
+if hasattr(scene.eevee, "shadow_pool_size"):
+    scene.eevee.shadow_pool_size = '1024'
 
 # Save the updated .blend with AAA Block 5 lighting!
 bpy.ops.wm.save_as_mainfile(filepath=BLEND_PATH)
 
 scene.render.engine = 'BLENDER_EEVEE'
+scene.eevee.taa_render_samples = 64
+if hasattr(scene.eevee, "use_shadows"):
+    scene.eevee.use_shadows = True
+if hasattr(scene.eevee, "use_raytracing"):
+    scene.eevee.use_raytracing = True
+
+try:
+    scene.view_settings.view_transform = 'AgX'
+    scene.view_settings.look = 'AgX - Medium High Contrast'
+    scene.view_settings.exposure = -0.12
+except Exception:
+    pass
+
 scene.render.resolution_x = 1600
 scene.render.resolution_y = 960
-scene.eevee.taa_render_samples = 32
 
 cam_data = bpy.data.cameras.new("CheckCamB5_AAA")
 cam_data.lens = 24.0
