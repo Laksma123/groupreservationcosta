@@ -3,6 +3,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 
 // ============================================================================
 // 0. MODERN WEB GUIDANCE POLYFILLS & FALLBACKS
@@ -2249,6 +2250,11 @@ gltfLoader.load(
       const n = child.name || '';
       const pName = child.parent && child.parent.name ? child.parent.name : '';
       const fullName = pName ? `${pName}_${n}` : n;
+      const chairRoot = n.startsWith('Chair_')
+        ? child
+        : pName.startsWith('Chair_')
+        ? child.parent
+        : null;
 
       const isSmallDetail =
         fullName.includes('Plate') ||
@@ -2282,7 +2288,8 @@ gltfLoader.load(
         n.startsWith('B5_Doorway_ExitSign_')
       ) {
         ceilingMeshes.push(child);
-      } else {
+      } else if (!chairRoot) {
+        // Keep Chair_ nodes unbatched so NPCs can physically pull and push 3D chairs when sitting/standing!
         mainStaticMeshes.push(child);
       }
 
@@ -2296,6 +2303,8 @@ gltfLoader.load(
             tableRegistry.set(meta.num, {
               meta,
               meshes: [],
+              chairNodes: new Set(),
+              seatSlots: [],
               topMesh: null,
               glassPad: null,
               glassBorder: null,
@@ -2309,6 +2318,9 @@ gltfLoader.load(
           }
           const entry = tableRegistry.get(meta.num);
           entry.meshes.push(child);
+          if (chairRoot && (chairRoot.name.includes(meta.nodeKey) || chairRoot.name.includes(`_${meta.num}_`))) {
+            entry.chairNodes.add(chairRoot);
+          }
           if (n.startsWith('TableTop_')) {
             entry.topMesh = child;
           }
@@ -2325,6 +2337,52 @@ gltfLoader.load(
       const topBox = new THREE.Box3().setFromObject(entry.topMesh);
       topBox.getCenter(entry.center);
       topBox.getSize(entry.size);
+
+      // Build exact 3D seat slots (freestanding movable chairs + opposite banquette sofa seats if any)
+      const cBox = new THREE.Box3();
+      const cCenter = new THREE.Vector3();
+      const sortedChairs = Array.from(entry.chairNodes).sort((a, b) => a.name.localeCompare(b.name));
+      for (const chairObj of sortedChairs) {
+        cBox.setFromObject(chairObj);
+        cBox.getCenter(cCenter);
+        const dx = cCenter.x - entry.center.x;
+        const dz = cCenter.z - entry.center.z;
+        const normDx = Math.abs(dx) / Math.max(0.45, entry.size.x);
+        const normDz = Math.abs(dz) / Math.max(0.45, entry.size.z);
+        const outDir =
+          normDx > normDz
+            ? new THREE.Vector3(Math.sign(dx) || 1, 0, 0)
+            : new THREE.Vector3(0, 0, Math.sign(dz) || 1);
+        entry.seatSlots.push({
+          chairObj,
+          restPos: chairObj.position.clone(),
+          seatPos: new THREE.Vector3(
+            cCenter.x + outDir.x * 0.08,
+            0,
+            cCenter.z + outDir.z * 0.08
+          ),
+          outDir,
+          faceYaw: Math.atan2(-outDir.x, -outDir.z),
+        });
+      }
+
+      // If table has banquette sofa seats (seatSlots < meta.pax), add mirrored banquette slots across table center
+      const freeCount = entry.seatSlots.length;
+      for (let i = 0; entry.seatSlots.length < entry.meta.pax && i < freeCount; i++) {
+        const src = entry.seatSlots[i];
+        const sofaOut = src.outDir.clone().negate();
+        entry.seatSlots.push({
+          chairObj: null,
+          restPos: null,
+          seatPos: new THREE.Vector3(
+            2 * entry.center.x - src.seatPos.x,
+            0,
+            2 * entry.center.z - src.seatPos.z
+          ),
+          outDir: sofaOut,
+          faceYaw: Math.atan2(-sofaOut.x, -sofaOut.z),
+        });
+      }
 
       const fullBox = new THREE.Box3();
       for (const m of entry.meshes) {
@@ -2414,6 +2472,7 @@ gltfLoader.load(
     applyAccessSession(activeSession);
     interiorGlbLoaded = true;
     checkAllLoaded();
+    npcCrowdSystem.syncWithSelectedTables(selectedTables);
   },
   (xhr) => {
     if (xhr && xhr.total > 0 && pendingEnterInterior && loaderTitleEl) {
@@ -2427,6 +2486,522 @@ gltfLoader.load(
     checkAllLoaded();
   }
 );
+
+// ============================================================================
+// 4B. REALISTIC EUROPEAN 3D NPC CROWD & CHAIR INTERACTION SYSTEM (15 HUMANS)
+//     Loaded from separate ./arlecchino_npcs_european.glb
+// ============================================================================
+const npcCrowdSystem = (() => {
+  const npcGroup = new THREE.Group();
+  npcGroup.name = 'Arlecchino_Interactive_NPCs';
+  restaurantGroup.add(npcGroup);
+
+  const NPC_DEFS = [
+    { id: 'NPC_Man_01', arch: 'Man', isChild: false },
+    { id: 'NPC_Man_02', arch: 'Man', isChild: false },
+    { id: 'NPC_Man_03', arch: 'Man', isChild: false },
+    { id: 'NPC_Man_04', arch: 'Man', isChild: false },
+    { id: 'NPC_Man_05', arch: 'Man', isChild: false },
+    { id: 'NPC_Woman_01', arch: 'Woman', isChild: false },
+    { id: 'NPC_Woman_02', arch: 'Woman', isChild: false },
+    { id: 'NPC_Woman_03', arch: 'Woman', isChild: false },
+    { id: 'NPC_Woman_04', arch: 'Woman', isChild: false },
+    { id: 'NPC_Woman_05', arch: 'Woman', isChild: false },
+    { id: 'NPC_Kid_01', arch: 'Kid3', isChild: true },
+    { id: 'NPC_Kid_02', arch: 'Kid3', isChild: true },
+    { id: 'NPC_Kid_03', arch: 'Kid45', isChild: true },
+    { id: 'NPC_Kid_04', arch: 'Kid45', isChild: true },
+    { id: 'NPC_Kid_05', arch: 'Kid45', isChild: true },
+  ];
+
+  const templates = new Map();
+  const clipMap = new Map();
+  const activeTableGroups = new Map(); // tableNum -> Array<NpcAgent>
+  const exitingNpcs = new Set();
+  let npcsLoaded = false;
+  let spawnCounter = 0;
+
+  gltfLoader.load(
+    './arlecchino_npcs_european.glb?v=20261028c',
+    (gltf) => {
+      for (const clip of gltf.animations || []) {
+        clipMap.set(clip.name, clip);
+      }
+      for (const def of NPC_DEFS) {
+        const node = gltf.scene.getObjectByName(def.id);
+        if (node) {
+          node.position.set(0, 0, 0);
+          node.rotation.set(0, 0, 0);
+          node.updateMatrixWorld(true);
+          templates.set(def.id, { ...def, templateNode: node });
+        }
+      }
+      npcsLoaded = true;
+      syncWithSelectedTables(selectedTables);
+    },
+    undefined,
+    (err) => {
+      console.error('Error loading arlecchino_npcs_european.glb:', err);
+    }
+  );
+
+  function pickGuestCast(slots) {
+    const men = NPC_DEFS.filter((d) => d.arch === 'Man');
+    const women = NPC_DEFS.filter((d) => d.arch === 'Woman');
+    const kids3 = NPC_DEFS.filter((d) => d.arch === 'Kid3');
+    const kids45 = NPC_DEFS.filter((d) => d.arch === 'Kid45');
+    const allKids = [...kids3, ...kids45];
+
+    const count = slots.length;
+    const chosen = new Array(count);
+
+    // Determine how many children to include (1-2 kids for 4+ pax tables, occasional kid for 2-pax)
+    let kidTarget = 0;
+    if (count >= 6) kidTarget = 2;
+    else if (count >= 4) kidTarget = (spawnCounter % 2 === 0) ? 2 : 1;
+    else if (count >= 2 && spawnCounter % 3 === 1) kidTarget = 1;
+
+    // Assign kids preferentially to freestanding chairs (chairObj != null) so climb/hop animations shine
+    let kidsPlaced = 0;
+    for (let i = 0; i < count && kidsPlaced < kidTarget; i++) {
+      if (slots[i].chairObj) {
+        const kDef =
+          kidsPlaced === 0
+            ? allKids[(spawnCounter + i) % allKids.length]
+            : kidsPlaced % 2 === 1
+            ? kids3[(spawnCounter + i) % kids3.length]
+            : kids45[(spawnCounter + i) % kids45.length];
+        chosen[i] = kDef;
+        kidsPlaced++;
+      }
+    }
+
+    // Fill remaining seats alternating Men and Women
+    for (let i = 0; i < count; i++) {
+      if (!chosen[i]) {
+        const useWoman = (i + spawnCounter) % 2 === 1;
+        const pool = useWoman ? women : men;
+        chosen[i] = pool[(spawnCounter + i) % pool.length];
+      }
+    }
+    spawnCounter++;
+    return chosen;
+  }
+
+  function computeSpawnPosition(entry, slot, idx, total) {
+    const tCenter = entry.center;
+    const camPos = activeCamera.position;
+    let dirToCam = new THREE.Vector3(camPos.x - tCenter.x, 0, camPos.z - tCenter.z);
+    if (dirToCam.lengthSq() < 0.25 || currentCamMode === 'top2d') {
+      // In overhead 2D mode, spawn from the Central Corridor side (z = -8.73)
+      dirToCam.set(-0.6, 0, Math.sign(-8.73 - tCenter.z) || 1);
+    }
+    dirToCam.normalize();
+    const rightVec = new THREE.Vector3(-dirToCam.z, 0, dirToCam.x);
+    const latOffset = (idx - (total - 1) * 0.5) * 0.46;
+    const depthOffset = 2.35 + (idx % 3) * 0.42;
+
+    let sx = slot.seatPos.x + dirToCam.x * depthOffset + rightVec.x * latOffset;
+    let sz = slot.seatPos.z + dirToCam.z * depthOffset + rightVec.z * latOffset;
+
+    // In first-person walk mode, spawn right behind/beside the active camera (~2.2m) if camera is close
+    if (currentCamMode === 'walk') {
+      const camDist = Math.hypot(camPos.x - tCenter.x, camPos.z - tCenter.z);
+      if (camDist < 6.5) {
+        const fwd = new THREE.Vector3(-Math.sin(walkYaw), 0, -Math.cos(walkYaw));
+        const rgt = new THREE.Vector3(Math.cos(walkYaw), 0, -Math.sin(walkYaw));
+        const sideSign = idx % 2 === 0 ? 1 : -1;
+        sx = camPos.x - fwd.x * (1.8 + (idx % 2) * 0.45) + rgt.x * sideSign * (0.85 + idx * 0.18);
+        sz = camPos.z - fwd.z * (1.8 + (idx % 2) * 0.45) + rgt.z * sideSign * (0.85 + idx * 0.18);
+      }
+    }
+
+    // Clamp cleanly within restaurant floor bounds
+    sx = Math.max(-1.65, Math.min(40.2, sx));
+    sz = Math.max(-16.85, Math.min(-0.6, sz));
+    return new THREE.Vector3(sx, 0, sz);
+  }
+
+  function playClip(npc, clipName, loopMode = THREE.LoopRepeat, fadeSec = 0.22, timeScale = 1.0, startOffset = 0.0) {
+    const clip = clipMap.get(clipName);
+    if (!clip) return null;
+    const nextAction = npc.mixer.clipAction(clip);
+    nextAction.reset();
+    nextAction.setLoop(loopMode, loopMode === THREE.LoopOnce ? 1 : Infinity);
+    nextAction.clampWhenFinished = loopMode === THREE.LoopOnce;
+    nextAction.timeScale = timeScale;
+    if (startOffset > 0) {
+      nextAction.time = startOffset % Math.max(0.1, clip.duration);
+    }
+    nextAction.play();
+    if (npc.currentAction && npc.currentAction !== nextAction) {
+      npc.currentAction.crossFadeTo(nextAction, fadeSec, false);
+    }
+    npc.currentAction = nextAction;
+    return clip.duration;
+  }
+
+  function setChairPullOffset(slot, offsetMeters) {
+    if (!slot || !slot.chairObj || !slot.restPos) return;
+    slot.chairObj.position.set(
+      slot.restPos.x + slot.outDir.x * offsetMeters,
+      slot.restPos.y,
+      slot.restPos.z + slot.outDir.z * offsetMeters
+    );
+  }
+
+  function spawnForTable(tableNum) {
+    if (!npcsLoaded || !interiorGlbLoaded) return;
+    if (activeTableGroups.has(tableNum)) return;
+    const entry = tableRegistry.get(tableNum);
+    if (!entry || !entry.seatSlots || entry.seatSlots.length === 0) return;
+
+    const slots = entry.seatSlots;
+    const castDefs = pickGuestCast(slots);
+    const groupAgents = [];
+
+    for (let i = 0; i < slots.length; i++) {
+      const slot = slots[i];
+      const def = castDefs[i];
+      const tpl = templates.get(def.id);
+      if (!tpl) continue;
+
+      const clonedRoot = SkeletonUtils.clone(tpl.templateNode);
+      clonedRoot.traverse((ch) => {
+        if (ch.isMesh) {
+          ch.castShadow = true;
+          ch.receiveShadow = true;
+          ch.frustumCulled = false;
+        }
+      });
+
+      const spawnPos = computeSpawnPosition(entry, slot, i, slots.length);
+      const standBehindPos = new THREE.Vector3(
+        slot.seatPos.x + slot.outDir.x * 0.32,
+        0,
+        slot.seatPos.z + slot.outDir.z * 0.32
+      );
+
+      clonedRoot.position.copy(spawnPos);
+      const initDx = standBehindPos.x - spawnPos.x;
+      const initDz = standBehindPos.z - spawnPos.z;
+      clonedRoot.rotation.set(0, Math.atan2(initDx, initDz), 0);
+      npcGroup.add(clonedRoot);
+
+      const mixer = new THREE.AnimationMixer(clonedRoot);
+      const npc = {
+        tableNum,
+        arch: def.arch,
+        isChild: def.isChild,
+        root: clonedRoot,
+        mixer,
+        currentAction: null,
+        slot,
+        standBehindPos,
+        state: 'WALK_IN',
+        stateTimer: 0,
+        stateDuration: 1.0,
+        walkSpeed: (def.isChild ? 1.48 : 1.62) + (i % 3) * 0.08,
+        idleSwitchTimer: 4.5 + Math.random() * 4.0,
+        idleVariant: i % 2 === 0 ? 'A' : 'B',
+        exitStagger: (i % 4) * 0.07,
+        waypoints: [],
+        waypointIdx: 0,
+        fadingMaterials: null,
+      };
+
+      playClip(
+        npc,
+        `Walk_Cycle_${npc.arch}`,
+        THREE.LoopRepeat,
+        0.05,
+        1.08 + (i % 3) * 0.06,
+        i * 0.22
+      );
+      groupAgents.push(npc);
+    }
+
+    activeTableGroups.set(tableNum, groupAgents);
+  }
+
+  function buildExitWaypoints(fromPos, idx) {
+    const pts = [];
+    const laneZ = -8.73 + ((idx % 3) - 1) * 0.38;
+    // If inside Block 5 (x > 28.0), pass through the Block 5 central entrance (x = 27.6, z = laneZ)
+    if (fromPos.x > 28.0 && Math.abs(fromPos.z - (-8.73)) > 1.35) {
+      pts.push(new THREE.Vector3(Math.min(31.2, fromPos.x), 0, laneZ));
+    } else if (Math.abs(fromPos.z - (-8.73)) > 0.85) {
+      // Step into Central Corridor (z = -8.73) with a slight forward slant
+      pts.push(new THREE.Vector3(Math.max(-1.2, fromPos.x - 0.65), 0, laneZ));
+    }
+    // Walk Forward (-X) along the Central Corridor through the front wall between Block 1 & 2 (x = -1.95m)
+    pts.push(new THREE.Vector3(-2.35, 0, laneZ));
+    return pts;
+  }
+
+  function dismissTable(tableNum) {
+    const groupAgents = activeTableGroups.get(tableNum);
+    if (!groupAgents) return;
+    activeTableGroups.delete(tableNum);
+
+    groupAgents.forEach((npc, idx) => {
+      npc.exitIdx = idx;
+      if (npc.state === 'WALK_IN') {
+        // Has not sat down yet: ensure chair is at restPos and immediately walk out to corridor
+        setChairPullOffset(npc.slot, 0);
+        npc.state = 'WALK_OUT';
+        npc.stateTimer = 0;
+        npc.waypoints = buildExitWaypoints(npc.root.position, idx);
+        npc.waypointIdx = 0;
+        playClip(npc, `Walk_Cycle_${npc.arch}`, THREE.LoopRepeat, 0.2, 1.15);
+      } else {
+        // Seated or sitting: stand up, push/tidy chair, then walk out
+        npc.state = 'EXIT_DELAY';
+        npc.stateTimer = 0;
+      }
+      exitingNpcs.add(npc);
+    });
+  }
+
+  function syncWithSelectedTables(currentSelectedSet) {
+    if (!npcsLoaded || !interiorGlbLoaded) return;
+    // Dismiss any table that is no longer in currentSelectedSet
+    for (const activeNum of Array.from(activeTableGroups.keys())) {
+      if (!currentSelectedSet.has(activeNum)) {
+        dismissTable(activeNum);
+      }
+    }
+    // Spawn for any newly selected table
+    for (const selNum of currentSelectedSet) {
+      if (!activeTableGroups.has(selNum)) {
+        spawnForTable(selNum);
+      }
+    }
+  }
+
+  function ensureFadeMaterials(npc) {
+    if (npc.fadingMaterials) return;
+    npc.fadingMaterials = [];
+    npc.root.traverse((ch) => {
+      if (ch.isMesh && ch.material) {
+        if (Array.isArray(ch.material)) {
+          ch.material = ch.material.map((m) => {
+            const cm = m.clone();
+            cm.transparent = true;
+            npc.fadingMaterials.push(cm);
+            return cm;
+          });
+        } else {
+          const cm = ch.material.clone();
+          cm.transparent = true;
+          ch.material = cm;
+          npc.fadingMaterials.push(cm);
+        }
+      }
+    });
+  }
+
+  function disposeNpc(npc) {
+    npc.mixer.stopAllAction();
+    if (npc.root.parent) {
+      npc.root.parent.remove(npc.root);
+    }
+    if (npc.fadingMaterials) {
+      for (const m of npc.fadingMaterials) {
+        m.dispose();
+      }
+      npc.fadingMaterials = null;
+    }
+  }
+
+  function updateSingleNpc(npc, dt) {
+    npc.mixer.update(dt);
+
+    if (npc.state === 'WALK_IN') {
+      const pos = npc.root.position;
+      const target = npc.standBehindPos;
+      const dx = target.x - pos.x;
+      const dz = target.z - pos.z;
+      const dist = Math.hypot(dx, dz);
+      const step = npc.walkSpeed * dt;
+
+      if (dist <= step + 0.03) {
+        // Arrived behind chair -> transition seamlessly into Sit_{arch}
+        // At Frame 1 of Sit_{arch}, Hips is at local dz = -0.32, which equals standBehindPos when root is at seatPos!
+        pos.copy(npc.slot.seatPos);
+        npc.root.rotation.set(0, npc.slot.faceYaw, 0);
+        npc.state = 'SITTING';
+        npc.stateTimer = 0;
+        const dur = playClip(npc, `Sit_${npc.arch}`, THREE.LoopOnce, 0.16, 1.0) || 2.25;
+        npc.stateDuration = dur;
+      } else {
+        pos.x += (dx / dist) * step;
+        pos.z += (dz / dist) * step;
+        const targetYaw = Math.atan2(dx, dz);
+        let diffYaw = targetYaw - npc.root.rotation.y;
+        while (diffYaw > Math.PI) diffYaw -= Math.PI * 2;
+        while (diffYaw < -Math.PI) diffYaw += Math.PI * 2;
+        npc.root.rotation.y += diffYaw * Math.min(1.0, dt * 10.0);
+      }
+    } else if (npc.state === 'SITTING') {
+      npc.stateTimer += dt;
+      const u = Math.min(1.0, npc.stateTimer / Math.max(0.1, npc.stateDuration));
+
+      // Physical 3D chair pull-back (~22 cm) and push-in (~17 cm) choreography
+      if (npc.slot.chairObj) {
+        let pullM = 0.0;
+        if (!npc.isChild) {
+          if (u < 0.20) {
+            pullM = 0.0;
+          } else if (u < 0.42) {
+            // Pull chair backward 22 cm
+            const t = (u - 0.20) / 0.22;
+            pullM = 0.22 * (t * t * (3 - 2 * t));
+          } else if (u < 0.62) {
+            // Hold chair pulled back while stepping into gap
+            pullM = 0.22;
+          } else if (u < 0.92) {
+            // Scoot chair forward 17 cm (from +0.22m to +0.05m) as knees bend to sit
+            const t = (u - 0.62) / 0.30;
+            pullM = 0.22 - 0.17 * (t * t * (3 - 2 * t));
+          } else {
+            pullM = 0.05;
+          }
+        } else {
+          // Child climbing/hopping onto cushion: slight chair settle
+          pullM = u < 0.5 ? 0.04 * (u / 0.5) : 0.04 - 0.02 * ((u - 0.5) / 0.5);
+        }
+        setChairPullOffset(npc.slot, pullM);
+      }
+
+      if (u >= 1.0) {
+        npc.state = 'SEATED_IDLE';
+        npc.stateTimer = 0;
+        playClip(
+          npc,
+          `Idle_${npc.idleVariant}_${npc.arch}`,
+          THREE.LoopRepeat,
+          0.35,
+          0.9 + Math.random() * 0.22,
+          Math.random() * 2.5
+        );
+      }
+    } else if (npc.state === 'SEATED_IDLE') {
+      npc.stateTimer += dt;
+      if (npc.stateTimer >= npc.idleSwitchTimer) {
+        npc.stateTimer = 0;
+        npc.idleSwitchTimer = 5.0 + Math.random() * 4.5;
+        npc.idleVariant = npc.idleVariant === 'A' ? 'B' : 'A';
+        playClip(
+          npc,
+          `Idle_${npc.idleVariant}_${npc.arch}`,
+          THREE.LoopRepeat,
+          0.65,
+          0.9 + Math.random() * 0.22
+        );
+      }
+    } else if (npc.state === 'EXIT_DELAY') {
+      npc.stateTimer += dt;
+      if (npc.stateTimer >= npc.exitStagger) {
+        npc.state = 'STANDING_UP';
+        npc.stateTimer = 0;
+        const exitVar = (npc.exitIdx || 0) % 2 === 0 ? 'A' : 'B';
+        const dur = playClip(npc, `Exit_${exitVar}_${npc.arch}`, THREE.LoopOnce, 0.2, 1.08) || 1.85;
+        npc.stateDuration = dur / 1.08;
+      }
+    } else if (npc.state === 'STANDING_UP') {
+      npc.stateTimer += dt;
+      const u = Math.min(1.0, npc.stateTimer / Math.max(0.1, npc.stateDuration));
+
+      // Push chair back slightly when rising, then push chair back to exact restPos (0.0m) to tidy it!
+      if (npc.slot.chairObj) {
+        let pullM = 0.0;
+        if (u < 0.35) {
+          const t = u / 0.35;
+          pullM = 0.05 + 0.16 * Math.sin(t * Math.PI * 0.5);
+        } else if (u < 0.62) {
+          pullM = 0.21;
+        } else if (u < 0.94) {
+          const t = (u - 0.62) / 0.32;
+          pullM = 0.21 * (1.0 - t * t * (3 - 2 * t));
+        } else {
+          pullM = 0.0;
+        }
+        setChairPullOffset(npc.slot, pullM);
+      }
+
+      if (u >= 1.0) {
+        setChairPullOffset(npc.slot, 0.0);
+        // At end of Exit_{A/B}, Hips is at local dz = -0.32, which in world space is standBehindPos!
+        npc.root.position.copy(npc.standBehindPos);
+        npc.state = 'WALK_OUT';
+        npc.stateTimer = 0;
+        npc.waypoints = buildExitWaypoints(npc.root.position, npc.exitIdx || 0);
+        npc.waypointIdx = 0;
+        playClip(npc, `Walk_Cycle_${npc.arch}`, THREE.LoopRepeat, 0.2, 1.16);
+      }
+    } else if (npc.state === 'WALK_OUT') {
+      const pos = npc.root.position;
+      const wp = npc.waypoints[npc.waypointIdx];
+      if (!wp) {
+        disposeNpc(npc);
+        exitingNpcs.delete(npc);
+        return;
+      }
+
+      const dx = wp.x - pos.x;
+      const dz = wp.z - pos.z;
+      const dist = Math.hypot(dx, dz);
+      const step = npc.walkSpeed * 1.15 * dt;
+
+      if (dist <= step + 0.05) {
+        pos.copy(wp);
+        npc.waypointIdx++;
+        if (npc.waypointIdx >= npc.waypoints.length) {
+          disposeNpc(npc);
+          exitingNpcs.delete(npc);
+          return;
+        }
+      } else {
+        pos.x += (dx / dist) * step;
+        pos.z += (dz / dist) * step;
+        const targetYaw = Math.atan2(dx, dz);
+        let diffYaw = targetYaw - npc.root.rotation.y;
+        while (diffYaw > Math.PI) diffYaw -= Math.PI * 2;
+        while (diffYaw < -Math.PI) diffYaw += Math.PI * 2;
+        npc.root.rotation.y += diffYaw * Math.min(1.0, dt * 10.0);
+      }
+
+      // Smooth fade-out as NPC approaches and walks through the Forward wall (x = -1.95m)
+      if (pos.x < -0.35) {
+        ensureFadeMaterials(npc);
+        const alpha = Math.max(0.0, Math.min(1.0, (pos.x - (-2.18)) / 1.83));
+        for (const m of npc.fadingMaterials) {
+          m.opacity = alpha;
+        }
+      }
+    }
+  }
+
+  function update(dt) {
+    if (!npcsLoaded || currentStage !== 'interior') return;
+    for (const [, agents] of activeTableGroups) {
+      for (const npc of agents) {
+        updateSingleNpc(npc, dt);
+      }
+    }
+    for (const npc of Array.from(exitingNpcs)) {
+      updateSingleNpc(npc, dt);
+    }
+  }
+
+  return {
+    spawnForTable,
+    dismissTable,
+    syncWithSelectedTables,
+    update,
+  };
+})();
 
 // ============================================================================
 // 5. STATE MANAGEMENT: 3-STAGE HIERARCHY (GATE -> SHIP -> INTERIOR)
@@ -2952,6 +3527,8 @@ function syncSelectionUI() {
     selectedTables.size > 0
       ? `<span>Confirm Group Seating (${totalPax} Pax)</span>`
       : '<span>Confirm Group Seating (0 Pax)</span>';
+
+  npcCrowdSystem.syncWithSelectedTables(selectedTables);
 }
 
 // ============================================================================
@@ -3418,6 +3995,8 @@ function animate(now) {
     } else {
       controls.update();
     }
+
+    npcCrowdSystem.update(dt);
 
     for (const [num, entry] of tableRegistry) {
       if (!entry.glassPad) continue;
