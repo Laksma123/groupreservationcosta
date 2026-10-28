@@ -16,14 +16,14 @@ os.makedirs(TEX_DIR, exist_ok=True)
 # ==============================================================================
 def generate_block5_textures():
     from PIL import Image, ImageDraw, ImageFilter
-    # 1. Green Arlecchino Carpet Texture (Calibrated to Real Photo Linear/sRGB Contrast + Baked Table Contact Shadows)
+    # 1. Green Arlecchino Carpet Texture (Bright Vibrant Tones + Crisp Contrast Outlines & Soft Contact AO)
     w_c, h_c = 2048, 2048
-    teal_border = (16, 56, 76)
-    teal_dark   = (20, 66, 88)
-    sage_green  = (58, 88, 98)
-    cream_white = (158, 150, 138)
-    peach_terra = (146, 94, 70)
-    coral_red   = (124, 36, 40)
+    teal_border = (24, 78, 100)
+    teal_dark   = (30, 92, 114)
+    sage_green  = (98, 128, 134)
+    cream_white = (214, 208, 198)
+    peach_terra = (196, 142, 114)
+    coral_red   = (170, 66, 68)
 
     img_c = Image.new("RGB", (w_c, h_c), teal_dark)
     draw_c = ImageDraw.Draw(img_c)
@@ -63,16 +63,16 @@ def generate_block5_textures():
                 [(x0, ym), (x0, y0), (xm, ym)],
             ]
             for t_i, pts in enumerate(tris):
-                draw_c.polygon(pts, fill=pal[t_i], outline=(18, 42, 54))
+                draw_c.polygon(pts, fill=pal[t_i], outline=(20, 56, 72))
 
     # Outer deep-teal carpet border
     draw_c.rectangle([0, 0, w_c, b_px], fill=teal_border)
     draw_c.rectangle([0, h_c - b_px, w_c, h_c], fill=teal_border)
     draw_c.rectangle([0, 0, b_px, h_c], fill=teal_border)
     draw_c.rectangle([w_c - b_px, 0, w_c, h_c], fill=teal_border)
-    draw_c.rectangle([b_px, b_px, w_c - b_px, h_c - b_px], outline=(10, 38, 52), width=8)
+    draw_c.rectangle([b_px, b_px, w_c - b_px, h_c - b_px], outline=(16, 52, 68), width=8)
 
-    # Bake soft ambient-occlusion contact shadows under the 10 central tables & 2 black marble pillars
+    # Bake balanced ambient-occlusion contact shadows under the 10 central tables & 2 black marble pillars
     # Carpet spans X = [30.65, 37.80] (dx=7.15), Y = [3.36, 14.10] (dy=10.74)
     # UV mapping: u = (y - 3.36)/10.74 -> col = u * w_c; w = (x - 30.65)/7.15 -> row = (1 - w) * h_c
     ao_img = Image.new("L", (w_c, h_c), 255)
@@ -88,19 +88,19 @@ def generate_block5_textures():
 
     # Pillars at (33.15, 5.95) & (33.15, 11.51)
     for py in (5.95, 11.51):
-        ao_draw.ellipse(world_box_to_carpet_px(33.15, py, 1.25, 1.25), fill=85)
+        ao_draw.ellipse(world_box_to_carpet_px(33.15, py, 1.25, 1.25), fill=150)
     # 4 Forward 4x tables at X = 31.85
     for ty in (4.55, 7.35, 10.11, 12.91):
-        ao_draw.rounded_rectangle(world_box_to_carpet_px(31.85, ty, 1.85, 1.45), radius=52, fill=95)
+        ao_draw.rounded_rectangle(world_box_to_carpet_px(31.85, ty, 1.85, 1.45), radius=52, fill=165)
     # 2 Long 10x Oak tables at X = 35.55
     for ty in (7.35, 10.11):
-        ao_draw.rounded_rectangle(world_box_to_carpet_px(35.55, ty, 3.95, 1.60), radius=60, fill=90)
+        ao_draw.rounded_rectangle(world_box_to_carpet_px(35.55, ty, 3.95, 1.60), radius=60, fill=160)
     # 4 Side 4x tables at X = 34.475, 36.625
     for tx in (34.475, 36.625):
         for ty in (4.55, 12.91):
-            ao_draw.rounded_rectangle(world_box_to_carpet_px(tx, ty, 1.85, 1.45), radius=52, fill=95)
+            ao_draw.rounded_rectangle(world_box_to_carpet_px(tx, ty, 1.85, 1.45), radius=52, fill=165)
     # Aft glass partition wall base shadow at X = 37.80 (top of image r = 0..58)
-    ao_draw.rectangle([0, 0, w_c, 58], fill=85)
+    ao_draw.rectangle([0, 0, w_c, 58], fill=155)
     ao_img = ao_img.filter(ImageFilter.GaussianBlur(radius=42))
     ao_factor = np.array(ao_img, dtype=np.float32)[:, :, None] / 255.0
 
@@ -114,65 +114,65 @@ def generate_block5_textures():
     carpet_path = os.path.join(TEX_DIR, "block5_green_carpet.png")
     Image.fromarray(arr_c).save(carpet_path)
 
-    # 2. Rich Walnut-Honey Wood Plank Walkway Texture (Calibrated to Photo 14.30.44 (1).jpeg)
+    # 2. Warm Honey-Walnut Wood Plank Walkway Texture (Bright warm wood + crisp 3D bevel seams)
     w_w, h_w = 1024, 1024
     y_g, x_g = np.mgrid[0:h_w, 0:w_w].astype(np.float32)
     n_planks = 8
     plank_h = h_w / n_planks
     plank_idx = np.floor(y_g / plank_h).astype(np.int32)
     rng_w = np.random.default_rng(77)
-    plank_shift = rng_w.uniform(-14.0, 14.0, size=(n_planks, 3))
+    plank_shift = rng_w.uniform(-13.0, 13.0, size=(n_planks, 3))
     grain = (
         np.sin(x_g * 0.045 + np.sin(y_g * 0.12) * 1.8 + plank_idx * 2.1) * 8.5
         + np.sin(y_g * 0.65 + plank_idx * 1.3) * 4.0
         + rng_w.normal(0, 2.8, (h_w, w_w))
     )
-    # Strong bevel shadow near plank edges so every plank has 3D relief
+    # Bevel shadow near plank edges so every plank has 3D relief while staying warm and bright
     plank_local_y = np.mod(y_g, plank_h) / plank_h
-    plank_edge_ao = 0.72 + 0.30 * np.sin(plank_local_y * math.pi)
+    plank_edge_ao = 0.82 + 0.22 * np.sin(plank_local_y * math.pi)
     base_rgb = np.zeros((h_w, w_w, 3), dtype=np.float32)
-    base_rgb[:, :, 0] = (106.0 + plank_shift[plank_idx % n_planks, 0] + grain) * plank_edge_ao
-    base_rgb[:, :, 1] = (72.0  + plank_shift[plank_idx % n_planks, 1] * 0.8 + grain * 0.78) * plank_edge_ao
-    base_rgb[:, :, 2] = (44.0  + plank_shift[plank_idx % n_planks, 2] * 0.6 + grain * 0.55) * plank_edge_ao
+    base_rgb[:, :, 0] = (154.0 + plank_shift[plank_idx % n_planks, 0] + grain) * plank_edge_ao
+    base_rgb[:, :, 1] = (110.0 + plank_shift[plank_idx % n_planks, 1] * 0.8 + grain * 0.78) * plank_edge_ao
+    base_rgb[:, :, 2] = (72.0  + plank_shift[plank_idx % n_planks, 2] * 0.6 + grain * 0.55) * plank_edge_ao
 
-    # Dark V-groove plank seams (horizontal along X and staggered butt joints)
-    seam_y = (np.mod(y_g, plank_h) < 4.0) | (np.mod(y_g, plank_h) > plank_h - 3.0)
-    butt_x = np.mod(x_g + plank_idx * 317.0, 512.0) < 4.0
+    # Crisp dark V-groove plank seams (horizontal along X and staggered butt joints)
+    seam_y = (np.mod(y_g, plank_h) < 3.5) | (np.mod(y_g, plank_h) > plank_h - 2.5)
+    butt_x = np.mod(x_g + plank_idx * 317.0, 512.0) < 3.5
     seams = seam_y | butt_x
-    base_rgb[seams] *= 0.18
+    base_rgb[seams] *= 0.28
     wood_path = os.path.join(TEX_DIR, "block5_wood_plank.png")
     Image.fromarray(np.clip(base_rgb, 0, 255).astype(np.uint8)).save(wood_path)
 
-    # 3. Warm Golden-Caramel Oak Texture (for 10x Tables 419 & 484 and their 20 Wooden Chairs, Photo 14.30.53 (1).jpeg)
+    # 3. Bright Golden-Natural Oak Texture (for 10x Tables 419 & 484 and their 20 Wooden Chairs, Photo 14.30.53 (1).jpeg)
     oak_rgb = np.zeros((512, 512, 3), dtype=np.float32)
     yo, xo = np.mgrid[0:512, 0:512].astype(np.float32)
-    cathedral = np.sin(xo * 0.045 + np.sin(yo * 0.035) * 3.2) * 11.5
-    fine_pore = np.sin(xo * 0.38 + yo * 0.06) * 4.2 + np.cos(yo * 0.95) * 3.0
+    cathedral = np.sin(xo * 0.045 + np.sin(yo * 0.035) * 3.2) * 10.5
+    fine_pore = np.sin(xo * 0.38 + yo * 0.06) * 3.8 + np.cos(yo * 0.95) * 2.8
     oak_grain = cathedral + fine_pore
-    # Bake curved self-shading along V (yo) so chair legs/rails & table bevels have natural dark underside contrast
+    # Bake curved self-shading along V (yo) so chair legs/rails & table bevels have natural underside contrast
     v_oak = 1.0 - (yo / 512.0)
-    oak_shade = 0.56 + 0.48 * np.sin(np.clip(v_oak, 0.03, 0.97) * math.pi)
-    oak_rgb[:, :, 0] = (146.0 + oak_grain) * oak_shade
-    oak_rgb[:, :, 1] = (106.0 + oak_grain * 0.84) * oak_shade
-    oak_rgb[:, :, 2] = (68.0  + oak_grain * 0.65) * oak_shade
+    oak_shade = 0.72 + 0.32 * np.sin(np.clip(v_oak, 0.03, 0.97) * math.pi)
+    oak_rgb[:, :, 0] = (208.0 + oak_grain) * oak_shade
+    oak_rgb[:, :, 1] = (172.0 + oak_grain * 0.84) * oak_shade
+    oak_rgb[:, :, 2] = (126.0 + oak_grain * 0.65) * oak_shade
     oak_path = os.path.join(TEX_DIR, "block5_light_oak.png")
     Image.fromarray(np.clip(oak_rgb, 0, 255).astype(np.uint8)).save(oak_path)
 
-    # 4. Deep Espresso/Wenge Wood Tabletop Texture (for Block 5 2x and 4x Tables, Photo 14.30.44 (2).jpeg)
+    # 4. Rich Espresso/Wenge Wood Tabletop Texture (for Block 5 2x and 4x Tables, Photo 14.30.44 (2).jpeg)
     dk_rgb = np.zeros((512, 512, 3), dtype=np.float32)
     dk_grain = (
-        np.sin(xo * 0.07 + np.sin(yo * 0.08) * 1.8) * 4.2
-        + np.sin(xo * 0.42) * 1.6
-        + np.cos(yo * 0.95) * 1.4
+        np.sin(xo * 0.07 + np.sin(yo * 0.08) * 1.8) * 4.8
+        + np.sin(xo * 0.42) * 1.8
+        + np.cos(yo * 0.95) * 1.6
     )
-    dk_rgb[:, :, 0] = 30.0 + dk_grain
-    dk_rgb[:, :, 1] = 24.0 + dk_grain * 0.85
-    dk_rgb[:, :, 2] = 21.0 + dk_grain * 0.76
+    dk_rgb[:, :, 0] = 48.0 + dk_grain
+    dk_rgb[:, :, 1] = 39.0 + dk_grain * 0.85
+    dk_rgb[:, :, 2] = 34.0 + dk_grain * 0.76
     dk_path = os.path.join(TEX_DIR, "block5_dark_wood_top.png")
     Image.fromarray(np.clip(dk_rgb, 0, 255).astype(np.uint8)).save(dk_path)
 
-    # 4A-bis. Shaded Upholstery & Wall Panel Textures with Deep Baked Self-Occlusion (so Material Preview & Rendered have rich dark sides!)
-    # (i) Mushroom-Taupe / Warm Greige Outer Chair Shell Texture (block5_chair_ivory_shell.png)
+    # 4A-bis. Shaded Upholstery & Wall Panel Textures (Bright True-to-Life Highlights + Crisp Crevice/Edge Depth)
+    # (i) Warm Ivory-Greige Outer Chair Shell Texture (block5_chair_ivory_shell.png)
     sh_rgb = np.zeros((512, 512, 3), dtype=np.float32)
     u_sh = xo / 512.0
     v_sh = 1.0 - (yo / 512.0)
@@ -182,46 +182,45 @@ def generate_block5_textures():
         + np.cos(yo * 0.60 - np.sin(xo * 0.50) * 2.0) * 2.5
         + rng_sh.normal(0, 2.0, (512, 512))
     )
-    # Strong vertical + side-wrap shading: lower shell/legs darken to (42, 38, 34), upper crown rises to (142, 132, 120)
-    vert_grad = 0.28 + 0.74 * (np.clip(v_sh, 0.0, 1.0) ** 0.72)
-    seam_darken = 1.0 - 0.58 * np.exp(-((v_sh - 0.985) / 0.024) ** 2) - 0.48 * np.exp(-((v_sh - 0.02) / 0.035) ** 2)
-    side_wrap = 0.74 + 0.26 * np.sin(u_sh * math.pi)
+    vert_grad = 0.52 + 0.50 * (np.clip(v_sh, 0.0, 1.0) ** 0.58)
+    seam_darken = 1.0 - 0.38 * np.exp(-((v_sh - 0.985) / 0.024) ** 2) - 0.34 * np.exp(-((v_sh - 0.02) / 0.035) ** 2)
+    side_wrap = 0.84 + 0.18 * np.sin(u_sh * math.pi)
     sh_mult = vert_grad * seam_darken * side_wrap
-    sh_rgb[:, :, 0] = 142.0 * sh_mult + pebble
-    sh_rgb[:, :, 1] = 132.0 * sh_mult + pebble * 0.95
-    sh_rgb[:, :, 2] = 118.0 * sh_mult + pebble * 0.88
+    sh_rgb[:, :, 0] = 216.0 * sh_mult + pebble
+    sh_rgb[:, :, 1] = 206.0 * sh_mult + pebble * 0.95
+    sh_rgb[:, :, 2] = 192.0 * sh_mult + pebble * 0.88
     ivory_shell_path = os.path.join(TEX_DIR, "block5_chair_ivory_shell.png")
     Image.fromarray(np.clip(sh_rgb, 0, 255).astype(np.uint8)).save(ivory_shell_path)
 
-    # (ii) Deep Prussian/Petrol Teal Leather Chair Inner Cushion Texture (block5_chair_teal_leather.png)
+    # (ii) Rich Petrol-Teal Leather Chair Inner Cushion Texture (block5_chair_teal_leather.png)
     tl_rgb = np.zeros((512, 512, 3), dtype=np.float32)
-    tl_grad = 0.24 + 0.78 * (np.clip(v_sh, 0.0, 1.0) ** 0.68)
-    tl_seam = 1.0 - 0.58 * np.exp(-((v_sh - 0.985) / 0.025) ** 2) - 0.52 * np.exp(-((v_sh - 0.02) / 0.04) ** 2)
-    tl_mult = tl_grad * tl_seam * (0.75 + 0.25 * np.sin(u_sh * math.pi))
-    tl_rgb[:, :, 0] = 20.0  * tl_mult + pebble * 0.45
-    tl_rgb[:, :, 1] = 72.0  * tl_mult + pebble * 0.75
-    tl_rgb[:, :, 2] = 98.0  * tl_mult + pebble * 0.90
+    tl_grad = 0.46 + 0.56 * (np.clip(v_sh, 0.0, 1.0) ** 0.55)
+    tl_seam = 1.0 - 0.42 * np.exp(-((v_sh - 0.985) / 0.025) ** 2) - 0.38 * np.exp(-((v_sh - 0.02) / 0.04) ** 2)
+    tl_mult = tl_grad * tl_seam * (0.84 + 0.18 * np.sin(u_sh * math.pi))
+    tl_rgb[:, :, 0] = 32.0  * tl_mult + pebble * 0.45
+    tl_rgb[:, :, 1] = 108.0 * tl_mult + pebble * 0.75
+    tl_rgb[:, :, 2] = 138.0 * tl_mult + pebble * 0.90
     teal_leather_path = os.path.join(TEX_DIR, "block5_chair_teal_leather.png")
     Image.fromarray(np.clip(tl_rgb, 0, 255).astype(np.uint8)).save(teal_leather_path)
 
-    # (iii) Smoky Olive-Sage Architectural Wall Panel Texture with Deep Corner & Edge Vignette AO (block5_sage_wall_panel.png)
+    # (iii) Architectural Sage-Olive Wall Panel Texture with Subtle Corner & Edge Vignette AO (block5_sage_wall_panel.png)
     sw_rgb = np.zeros((512, 512, 3), dtype=np.float32)
-    edge_x = np.sin(np.clip(u_sh, 0.015, 0.985) * math.pi) ** 0.42
-    edge_y = np.sin(np.clip(v_sh, 0.015, 0.985) * math.pi) ** 0.42
-    panel_ao = (0.48 + 0.52 * (edge_x * edge_y)) * (0.76 + 0.24 * np.sin(v_sh * math.pi * 0.85))
+    edge_x = np.sin(np.clip(u_sh, 0.015, 0.985) * math.pi) ** 0.35
+    edge_y = np.sin(np.clip(v_sh, 0.015, 0.985) * math.pi) ** 0.35
+    panel_ao = (0.68 + 0.34 * (edge_x * edge_y)) * (0.86 + 0.16 * np.sin(v_sh * math.pi * 0.85))
     stucco = rng_sh.normal(0, 2.4, (512, 512)) + np.sin(xo * 0.25) * np.cos(yo * 0.25) * 1.8
-    sw_rgb[:, :, 0] = 86.0  * panel_ao + stucco
-    sw_rgb[:, :, 1] = 92.0  * panel_ao + stucco * 1.02
-    sw_rgb[:, :, 2] = 82.0  * panel_ao + stucco * 0.94
+    sw_rgb[:, :, 0] = 138.0 * panel_ao + stucco
+    sw_rgb[:, :, 1] = 148.0 * panel_ao + stucco * 1.02
+    sw_rgb[:, :, 2] = 140.0 * panel_ao + stucco * 0.94
     sage_wall_path = os.path.join(TEX_DIR, "block5_sage_wall_panel.png")
     Image.fromarray(np.clip(sw_rgb, 0, 255).astype(np.uint8)).save(sage_wall_path)
 
-    # (iv) Deep Muted Sage-Olive Leather Banquette Seat Texture (block5_sofa_sage_leather.png)
+    # (iv) Muted Sage-Olive Leather Banquette Seat Texture (block5_sofa_sage_leather.png)
     sf_rgb = np.zeros((512, 512, 3), dtype=np.float32)
-    sf_ao = (0.38 + 0.62 * np.sin(np.clip(v_sh, 0.02, 0.98) * math.pi) ** 0.52)
-    sf_rgb[:, :, 0] = 86.0  * sf_ao + pebble * 0.8
-    sf_rgb[:, :, 1] = 100.0 * sf_ao + pebble * 0.9
-    sf_rgb[:, :, 2] = 90.0  * sf_ao + pebble * 0.85
+    sf_ao = (0.58 + 0.44 * np.sin(np.clip(v_sh, 0.02, 0.98) * math.pi) ** 0.45)
+    sf_rgb[:, :, 0] = 128.0 * sf_ao + pebble * 0.8
+    sf_rgb[:, :, 1] = 144.0 * sf_ao + pebble * 0.9
+    sf_rgb[:, :, 2] = 136.0 * sf_ao + pebble * 0.85
     sofa_sage_path = os.path.join(TEX_DIR, "block5_sofa_sage_leather.png")
     Image.fromarray(np.clip(sf_rgb, 0, 255).astype(np.uint8)).save(sofa_sage_path)
 
@@ -233,14 +232,14 @@ def generate_block5_textures():
     r_sq = nx_ao ** 2 + ny_ao ** 2
     alpha_ao = np.clip(np.exp(-r_sq * 2.8) * (1.0 - np.clip(r_sq, 0.0, 1.0) ** 1.5), 0.0, 1.0)
     ao_rgba = np.zeros((ao_w, ao_w, 4), dtype=np.uint8)
-    ao_rgba[:, :, 0] = 6
-    ao_rgba[:, :, 1] = 8
-    ao_rgba[:, :, 2] = 10
-    ao_rgba[:, :, 3] = np.clip(alpha_ao * 175.0, 0, 255).astype(np.uint8)
+    ao_rgba[:, :, 0] = 8
+    ao_rgba[:, :, 1] = 12
+    ao_rgba[:, :, 2] = 14
+    ao_rgba[:, :, 3] = np.clip(alpha_ao * 135.0, 0, 255).astype(np.uint8)
     contact_ao_path = os.path.join(TEX_DIR, "block5_contact_ao.png")
     Image.fromarray(ao_rgba).save(contact_ao_path)
 
-    # 4B. Venetian Murano Ribbed Blown-Glass Lathe Textures (Deep Jewel-Toned Emerald & Cognac Amber)
+    # 4B. Venetian Murano Ribbed Blown-Glass Lathe Textures (Luminous Emerald-Jade & Cognac-Amber)
     #     u (0..1 around circumference) -> 24 vertical optic glass flutes/ribs
     #     v (0..1 from bottom finial z=0 to top tulip cup z=1.10m) -> warm radial bulb glow at v=0.335
     mw, mh = 512, 512
@@ -249,51 +248,51 @@ def generate_block5_textures():
     v_norm = 1.0 - (vv / mh)  # v_norm=0 at bottom finial, v_norm=1 at top crown
 
     rib_wave = np.cos(u_norm * 24.0 * 2.0 * math.pi)
-    rib_spec = np.power(np.clip(0.5 + 0.5 * np.sin(u_norm * 24.0 * 2.0 * math.pi + 0.6), 0.0, 1.0), 4.5)
+    rib_spec = np.power(np.clip(0.5 + 0.5 * np.sin(u_norm * 24.0 * 2.0 * math.pi + 0.6), 0.0, 1.0), 4.2)
 
     # Warm internal filament bulb glow concentrated in the main lantern bowl (v_norm = 0.335)
-    bulb_glow = np.exp(-((v_norm - 0.335) / 0.078) ** 2)
-    brim_highlight = np.exp(-((v_norm - 0.465) / 0.026) ** 2) * 0.32
-    cup1_rim = np.exp(-((v_norm - 0.835) / 0.024) ** 2) * 0.22
-    cup2_rim = np.exp(-((v_norm - 0.975) / 0.024) ** 2) * 0.22
+    bulb_glow = np.exp(-((v_norm - 0.335) / 0.088) ** 2)
+    brim_highlight = np.exp(-((v_norm - 0.465) / 0.028) ** 2) * 0.35
+    cup1_rim = np.exp(-((v_norm - 0.835) / 0.026) ** 2) * 0.25
+    cup2_rim = np.exp(-((v_norm - 0.975) / 0.026) ** 2) * 0.25
     neck_shadow = (
         np.exp(-((v_norm - 0.205) / 0.024) ** 2)
         + np.exp(-((v_norm - 0.615) / 0.024) ** 2)
         + np.exp(-((v_norm - 0.755) / 0.022) ** 2)
         + np.exp(-((v_norm - 0.875) / 0.022) ** 2)
-    ) * 0.52
+    ) * 0.48
 
     def build_murano_tex(base_col, deep_col, glow_tint, out_name):
         rgb = np.zeros((mh, mw, 3), dtype=np.float32)
         for c_i in range(3):
-            glass_body = base_col[c_i] * (0.72 + 0.28 * rib_wave) + deep_col[c_i] * neck_shadow
-            spec_add = (240.0 - glass_body) * (0.32 * rib_spec + brim_highlight + cup1_rim + cup2_rim)
-            body_with_spec = np.clip(glass_body + spec_add, 8.0, 245.0)
-            core_col = glow_tint[c_i] * 0.62 + 255.0 * 0.38
-            rgb[:, :, c_i] = body_with_spec * (1.0 - 0.72 * bulb_glow) + core_col * (0.72 * bulb_glow)
+            glass_body = base_col[c_i] * (0.76 + 0.24 * rib_wave) + deep_col[c_i] * neck_shadow
+            spec_add = (245.0 - glass_body) * (0.30 * rib_spec + brim_highlight + cup1_rim + cup2_rim)
+            body_with_spec = np.clip(glass_body + spec_add, 12.0, 248.0)
+            core_col = glow_tint[c_i] * 0.58 + 255.0 * 0.42
+            rgb[:, :, c_i] = body_with_spec * (1.0 - 0.76 * bulb_glow) + core_col * (0.76 * bulb_glow)
         out_p = os.path.join(TEX_DIR, out_name)
         Image.fromarray(np.clip(rgb, 0, 255).astype(np.uint8)).save(out_p)
         return out_p
 
     murano_green_path = build_murano_tex(
-        base_col=(24.0, 118.0, 92.0),
-        deep_col=(-18.0, -68.0, -52.0),
-        glow_tint=(165.0, 250.0, 205.0),
+        base_col=(42.0, 162.0, 130.0),
+        deep_col=(-24.0, -72.0, -56.0),
+        glow_tint=(185.0, 255.0, 220.0),
         out_name="block5_murano_green.png",
     )
     murano_amber_path = build_murano_tex(
-        base_col=(138.0, 74.0, 48.0),
-        deep_col=(-62.0, -38.0, -26.0),
-        glow_tint=(255.0, 195.0, 130.0),
+        base_col=(172.0, 104.0, 76.0),
+        deep_col=(-66.0, -44.0, -32.0),
+        glow_tint=(255.0, 210.0, 150.0),
         out_name="block5_murano_amber.png",
     )
 
-    # 5. High-Contrast Smoked & Frosted Geometric Patterned Glass Texture (matching Photo 14.31.15 (3).jpeg)
+    # 5. High-Contrast Frosted & Smoked Geometric Patterned Glass Texture (matching Photo 14.31.15 (3).jpeg)
     gw, gh = 1024, 512
-    img_g = Image.new("RGBA", (gw, gh), (24, 30, 34, 228))
+    img_g = Image.new("RGBA", (gw, gh), (46, 56, 62, 215))
     draw_g = ImageDraw.Draw(img_g)
-    frosted = (188, 184, 174, 246)
-    semi_frost = (118, 124, 122, 232)
+    frosted = (232, 228, 220, 244)
+    semi_frost = (164, 172, 170, 228)
     g_cols, g_rows = 8, 5
     gcw = gw / g_cols
     gch = gh / g_rows
@@ -304,12 +303,12 @@ def generate_block5_textures():
             gxm = 0.5 * (gx0 + gx1)
             gym = 0.5 * (gy0 + gy1)
             if (gr + gc) % 2 == 0:
-                draw_g.polygon([(gx0, gy1), (gxm, gy0), (gx1, gy1)], fill=frosted, outline=(42, 48, 52, 240))
-                draw_g.polygon([(gx0, gy0), (gxm, gym), (gx0, gy1)], fill=semi_frost, outline=(42, 48, 52, 240))
+                draw_g.polygon([(gx0, gy1), (gxm, gy0), (gx1, gy1)], fill=frosted, outline=(52, 60, 66, 235))
+                draw_g.polygon([(gx0, gy0), (gxm, gym), (gx0, gy1)], fill=semi_frost, outline=(52, 60, 66, 235))
             else:
-                draw_g.polygon([(gx0, gy0), (gx1, gy0), (gxm, gy1)], fill=frosted, outline=(42, 48, 52, 240))
-                draw_g.polygon([(gx1, gy0), (gx1, gy1), (gxm, gym)], fill=semi_frost, outline=(42, 48, 52, 240))
-        draw_g.line([(0, gr * gch), (gw, gr * gch)], fill=(195, 190, 180, 240), width=3)
+                draw_g.polygon([(gx0, gy0), (gx1, gy0), (gxm, gy1)], fill=frosted, outline=(52, 60, 66, 235))
+                draw_g.polygon([(gx1, gy0), (gx1, gy1), (gxm, gym)], fill=semi_frost, outline=(52, 60, 66, 235))
+        draw_g.line([(0, gr * gch), (gw, gr * gch)], fill=(225, 220, 212, 235), width=3)
     glass_path = os.path.join(TEX_DIR, "block5_patterned_glass.png")
     img_g.save(glass_path)
 
@@ -641,42 +640,42 @@ mats = {
     "art_1": bpy.data.materials.get("Mat_Framed_Art_1"),
     "art_2": bpy.data.materials.get("Mat_Framed_Art_2"),
     "art_3": bpy.data.materials.get("Mat_Framed_Art_3"),
-    # Block 5 Dedicated Materials (Calibrated Linear RGB + Self-Occlusion & Bump Normal Maps)
-    "b5_green_carpet": make_textured_mat("Mat_Block5_Green_Carpet", tex_paths["carpet"], roughness=0.88, bump_strength=0.14, bump_dist=0.012),
-    "b5_wood_floor": make_textured_mat("Mat_Block5_Wood_Plank_Floor", tex_paths["wood_plank"], roughness=0.35, coat=0.18, bump_strength=0.12, bump_dist=0.010),
+    # Block 5 Dedicated Materials (Bright True-to-Life Colors + Self-Occlusion & Bump Normal Maps)
+    "b5_green_carpet": make_textured_mat("Mat_Block5_Green_Carpet", tex_paths["carpet"], roughness=0.86, bump_strength=0.14, bump_dist=0.012),
+    "b5_wood_floor": make_textured_mat("Mat_Block5_Wood_Plank_Floor", tex_paths["wood_plank"], roughness=0.34, coat=0.20, bump_strength=0.12, bump_dist=0.010),
     "b5_light_oak": make_textured_mat("Mat_Block5_Light_Oak_Wood", tex_paths["light_oak"], roughness=0.28, coat=0.35, bump_strength=0.08, bump_dist=0.008),
     "b5_dark_wood_top": make_textured_mat("Mat_Block5_Dark_Wood_Tabletop", tex_paths["dark_wood"], roughness=0.22, coat=0.45, bump_strength=0.06, bump_dist=0.006),
-    "b5_patterned_glass": make_textured_mat("Mat_Block5_Patterned_Glass", tex_paths["patterned_glass"], roughness=0.28, alpha_tex=True, coat=0.12, bump_strength=0.06),
+    "b5_patterned_glass": make_textured_mat("Mat_Block5_Patterned_Glass", tex_paths["patterned_glass"], roughness=0.26, alpha_tex=True, coat=0.14, bump_strength=0.06),
     "b5_art_rope": make_textured_mat("Mat_Block5_Art_Rope", tex_paths["art_rope"], roughness=0.32),
     "b5_art_shoes": make_textured_mat("Mat_Block5_Art_Shoes", tex_paths["art_shoes"], roughness=0.32),
     "b5_plate_single": make_textured_mat("Mat_Block5_Fornasetti_Plate", tex_paths["plate_single"], roughness=0.16, coat=0.6),
-    "b5_sage_wall": make_textured_mat("Mat_Block5_Sage_Wall", tex_paths["sage_wall"], roughness=0.58, bump_strength=0.07, bump_dist=0.008),
-    "b5_turquoise_wall": make_solid_mat("Mat_Block5_Turquoise_Wall", (0.008, 0.11, 0.16, 1.0), roughness=0.32, coat=0.25),
-    "b5_teal_metal": make_solid_mat("Mat_Block5_Teal_Metal_Grille", (0.015, 0.12, 0.14, 1.0), roughness=0.28, metallic=0.72),
+    "b5_sage_wall": make_textured_mat("Mat_Block5_Sage_Wall", tex_paths["sage_wall"], roughness=0.55, bump_strength=0.07, bump_dist=0.008),
+    "b5_turquoise_wall": make_solid_mat("Mat_Block5_Turquoise_Wall", (0.032, 0.34, 0.42, 1.0), roughness=0.32, coat=0.25),
+    "b5_teal_metal": make_solid_mat("Mat_Block5_Teal_Metal_Grille", (0.08, 0.36, 0.38, 1.0), roughness=0.28, metallic=0.65),
     "b5_teal_leather": make_textured_mat("Mat_Block5_Teal_Leather", tex_paths["teal_leather"], roughness=0.30, coat=0.22, bump_strength=0.08, bump_dist=0.006),
     "b5_ivory_shell": make_textured_mat("Mat_Block5_Ivory_Shell", tex_paths["ivory_shell"], roughness=0.34, coat=0.18, bump_strength=0.06, bump_dist=0.006),
     "b5_sofa_sage": make_textured_mat("Mat_Block5_Sofa_Sage_Leather", tex_paths["sofa_sage"], roughness=0.36, coat=0.18, bump_strength=0.07, bump_dist=0.006),
-    "b5_Bronze_Ped": make_solid_mat("Mat_Block5_Bronze_Pedestal", (0.055, 0.040, 0.028, 1.0), roughness=0.26, metallic=0.82),
-    "b5_black_marble_pillar": make_solid_mat("Mat_Block5_Black_Marble_Pillar", (0.018, 0.018, 0.022, 1.0), roughness=0.10, coat=0.95),
-    "b5_teal_blind": make_solid_mat("Mat_Block5_Teal_Roman_Blind", (0.025, 0.085, 0.12, 1.0), roughness=0.68),
+    "b5_Bronze_Ped": make_solid_mat("Mat_Block5_Bronze_Pedestal", (0.14, 0.10, 0.07, 1.0), roughness=0.26, metallic=0.80),
+    "b5_black_marble_pillar": make_solid_mat("Mat_Block5_Black_Marble_Pillar", (0.035, 0.035, 0.040, 1.0), roughness=0.10, coat=0.95),
+    "b5_teal_blind": make_solid_mat("Mat_Block5_Teal_Roman_Blind", (0.07, 0.20, 0.27, 1.0), roughness=0.65),
     "b5_pendant_green": make_textured_mat(
         "Mat_Block5_Murano_Pendant_Green",
-        tex_paths["murano_green"], roughness=0.04, metallic=0.10, alpha_tex=False, coat=1.0, emission_strength=0.16, bump_strength=0.10
+        tex_paths["murano_green"], roughness=0.04, metallic=0.10, alpha_tex=False, coat=1.0, emission_strength=0.45, bump_strength=0.10
     ),
     "b5_pendant_amber": make_textured_mat(
         "Mat_Block5_Murano_Pendant_Amber",
-        tex_paths["murano_amber"], roughness=0.04, metallic=0.12, alpha_tex=False, coat=1.0, emission_strength=0.16, bump_strength=0.10
+        tex_paths["murano_amber"], roughness=0.04, metallic=0.12, alpha_tex=False, coat=1.0, emission_strength=0.45, bump_strength=0.10
     ),
-    "b5_glass_shelf": make_solid_mat("Mat_Block5_Glass_Shelf", (0.55, 0.68, 0.65, 1.0), roughness=0.05, alpha=0.42, coat=1.0),
-    "coffer_dark": make_solid_mat("Mat_Block5_Coffer_Charcoal_Slate", (0.032, 0.030, 0.028, 1.0), roughness=0.58),
-    "coffer_rib": make_solid_mat("Mat_Block5_Coffer_Rib_Dark", (0.018, 0.017, 0.016, 1.0), roughness=0.40, metallic=0.28),
-    "mirror_chrome": make_solid_mat("Mat_Block5_Ceiling_DarkChrome", (0.24, 0.25, 0.27, 1.0), roughness=0.06, metallic=0.94),
-    "aft_gallery_dark": make_solid_mat("Mat_Block5_Aft_Gallery_Shadow", (0.045, 0.052, 0.048, 1.0), roughness=0.62),
-    "vase_ruby": make_solid_mat("Mat_Vase_Ruby_Glass", (0.48, 0.04, 0.10, 1.0), roughness=0.08, coat=1.0),
-    "vase_amber": make_solid_mat("Mat_Vase_Amber_Gold", (0.58, 0.34, 0.08, 1.0), roughness=0.12, metallic=0.35, coat=0.8),
-    "vase_harlequin": make_solid_mat("Mat_Vase_Harlequin_Yellow", (0.68, 0.48, 0.10, 1.0), roughness=0.25),
-    "vase_smoked": make_solid_mat("Mat_Vase_Smoked_Grey", (0.14, 0.16, 0.18, 1.0), roughness=0.10, coat=0.9),
-    "niche_smoked_glass": make_solid_mat("Mat_Block5_Niche_SmokedGlass", (0.04, 0.05, 0.06, 1.0), roughness=0.08, alpha=0.36, coat=0.9),
+    "b5_glass_shelf": make_solid_mat("Mat_Block5_Glass_Shelf", (0.76, 0.86, 0.84, 1.0), roughness=0.05, alpha=0.40, coat=1.0),
+    "coffer_dark": make_solid_mat("Mat_Block5_Coffer_Charcoal_Slate", (0.075, 0.068, 0.062, 1.0), roughness=0.55),
+    "coffer_rib": make_solid_mat("Mat_Block5_Coffer_Rib_Dark", (0.042, 0.038, 0.035, 1.0), roughness=0.38, metallic=0.28),
+    "mirror_chrome": make_solid_mat("Mat_Block5_Ceiling_DarkChrome", (0.42, 0.44, 0.46, 1.0), roughness=0.06, metallic=0.94),
+    "aft_gallery_dark": make_solid_mat("Mat_Block5_Aft_Gallery_Shadow", (0.12, 0.14, 0.13, 1.0), roughness=0.60),
+    "vase_ruby": make_solid_mat("Mat_Vase_Ruby_Glass", (0.62, 0.08, 0.16, 1.0), roughness=0.08, coat=1.0),
+    "vase_amber": make_solid_mat("Mat_Vase_Amber_Gold", (0.72, 0.48, 0.14, 1.0), roughness=0.12, metallic=0.35, coat=0.8),
+    "vase_harlequin": make_solid_mat("Mat_Vase_Harlequin_Yellow", (0.88, 0.68, 0.16, 1.0), roughness=0.25),
+    "vase_smoked": make_solid_mat("Mat_Vase_Smoked_Grey", (0.26, 0.28, 0.30, 1.0), roughness=0.10, coat=0.9),
+    "niche_smoked_glass": make_solid_mat("Mat_Block5_Niche_SmokedGlass", (0.08, 0.10, 0.12, 1.0), roughness=0.08, alpha=0.34, coat=0.9),
     "b5_contact_ao": make_textured_mat("Mat_Block5_Contact_AO", tex_paths["contact_ao"], roughness=1.0, alpha_tex=True),
 }
 
@@ -1308,14 +1307,19 @@ for l_existing in bpy.data.lights:
         l_existing.use_custom_distance = True
         l_existing.cutoff_distance = 7.5
 
-# Lower ambient world fill slightly so shadow sides of chairs, tables & corners have deep contrast
+# Clean up any orphan B5_Light_ datablocks before creating lights
+for l_old in list(bpy.data.lights):
+    if l_old.name.startswith("B5_Light_"):
+        bpy.data.lights.remove(l_old, do_unlink=True)
+
+# Bright, balanced ambient world fill so room walls & ceiling are bright while object crevices retain rich contrast
 world = bpy.data.worlds.get("Arlecchino_World")
 if world and world.use_nodes:
     bg_node = world.node_tree.nodes.get("Background")
     if bg_node:
-        bg_node.inputs["Strength"].default_value = 0.42
+        bg_node.inputs["Strength"].default_value = 0.92
 
-def add_b5_spot_downlight(name, location, energy, spot_deg=105.0, spot_blend=0.55, radius=0.16, color=(1.0, 0.85, 0.68)):
+def add_b5_spot_downlight(name, location, energy, spot_deg=118.0, spot_blend=0.60, radius=0.18, color=(1.0, 0.88, 0.72)):
     ldata = bpy.data.lights.new(name=name, type='SPOT')
     ldata.energy = energy
     ldata.color = color
@@ -1324,10 +1328,10 @@ def add_b5_spot_downlight(name, location, energy, spot_deg=105.0, spot_blend=0.5
     if hasattr(ldata, "shadow_soft_size"):
         ldata.shadow_soft_size = radius
     if hasattr(ldata, "specular_factor"):
-        ldata.specular_factor = 0.35
+        ldata.specular_factor = 0.28
     ldata.use_shadow = True
     ldata.use_custom_distance = True
-    ldata.cutoff_distance = 6.2
+    ldata.cutoff_distance = 8.5
     lobj = bpy.data.objects.new(name=name, object_data=ldata)
     lobj.location = location
     lobj.rotation_euler = (0.0, 0.0, 0.0)
@@ -1337,25 +1341,46 @@ def add_b5_spot_downlight(name, location, energy, spot_deg=105.0, spot_blend=0.5
 # 15 Focused Downward 2700K Spot Downlights over the Block 5 dining zones (1 shadow cone each -> zero shadow pool overflow!)
 b5_spot_zones = [
     # Forward Sofa Row (Portside & Starboardside)
-    (29.25, 2.00, 52.0), (29.25, 5.45, 52.0), (29.25, 12.01, 52.0), (29.25, 15.45, 52.0),
+    (29.25, 2.00, 88.0), (29.25, 5.45, 88.0), (29.25, 12.01, 88.0), (29.25, 15.45, 88.0),
     # Forward Carpet Row & Window/Wall Pairs
-    (32.10, 1.55, 56.0), (32.10, 5.80, 58.0), (32.10, 11.66, 58.0), (32.85, 15.85, 56.0),
+    (32.10, 1.55, 92.0), (32.10, 5.80, 96.0), (32.10, 11.66, 96.0), (32.85, 15.85, 92.0),
     # Mid/Aft Carpet Row (Tables 419, 484, 381/379, 444/442) & Window/Wall Pairs
-    (35.55, 1.55, 56.0), (35.55, 4.55, 56.0), (35.55, 7.35, 64.0), (35.55, 10.11, 64.0), (35.55, 12.91, 56.0), (36.10, 15.85, 56.0),
+    (35.55, 1.55, 92.0), (35.55, 4.55, 95.0), (35.55, 7.35, 108.0), (35.55, 10.11, 108.0), (35.55, 12.91, 95.0), (36.10, 15.85, 92.0),
     # Aft Service & Waiter Station Gallery
-    (39.15, 8.73, 42.0),
+    (39.15, 8.73, 82.0),
 ]
 for idx_l, (lx, ly, l_en) in enumerate(b5_spot_zones):
     add_b5_spot_downlight(f"B5_Light_CeilSpot_{idx_l:02d}_{lx:.1f}_{ly:.1f}", (lx, ly, 2.74), energy=l_en)
 
-# 3 Subtle Sea-Window Rim Lights along Portside Windows (shadowless fill so they don't consume shadow tiles)
+# 8 Shadowless Warm Room-Bounce Area Fill Lights across Block 5 (keeps the room bright & lively without consuming shadow pool or creating specular glare!)
+b5_room_bounce_zones = [
+    (29.80, 3.80, 62.0), (29.80, 13.66, 62.0),
+    (33.20, 3.20, 68.0), (33.20, 8.73, 75.0), (33.20, 14.26, 68.0),
+    (36.60, 3.20, 68.0), (36.60, 8.73, 75.0), (36.60, 14.26, 68.0),
+]
+for b_idx, (bx, by, b_en) in enumerate(b5_room_bounce_zones):
+    bdata = bpy.data.lights.new(name=f"B5_Light_RoomBounce_{b_idx:02d}", type='AREA')
+    bdata.shape = 'RECTANGLE'
+    bdata.size = 3.6
+    bdata.size_y = 3.6
+    bdata.energy = b_en
+    bdata.color = (1.0, 0.92, 0.80)
+    bdata.use_shadow = False
+    if hasattr(bdata, "specular_factor"):
+        bdata.specular_factor = 0.0
+    bobj = bpy.data.objects.new(name=f"B5_Light_RoomBounce_{b_idx:02d}", object_data=bdata)
+    bobj.location = (bx, by, 2.68)
+    bobj.rotation_euler = (0.0, 0.0, 0.0)
+    link_to_collection(bobj, light_col)
+
+# 3 Sea-Window Rim Lights along Portside Windows (shadowless fill so they don't consume shadow tiles)
 for w_i, (wx0, wx1) in enumerate(b5_port_windows):
     wcx = 0.5 * (wx0 + wx1)
     ldata = bpy.data.lights.new(name=f"B5_Light_WinPortal_{w_i}", type='AREA')
     ldata.shape = 'DISK'
-    ldata.size = 0.85
-    ldata.energy = 16.0
-    ldata.color = (0.86, 0.94, 1.0)
+    ldata.size = 0.95
+    ldata.energy = 42.0
+    ldata.color = (0.88, 0.95, 1.0)
     ldata.use_shadow = False
     if hasattr(ldata, "specular_factor"):
         ldata.specular_factor = 0.0
@@ -2046,7 +2071,7 @@ for tid, tx, ty in b5_center_side_4x:
 try:
     scene.view_settings.view_transform = 'AgX'
     scene.view_settings.look = 'AgX - Medium High Contrast'
-    scene.view_settings.exposure = -0.15
+    scene.view_settings.exposure = 0.22
 except Exception:
     pass
 
@@ -2060,7 +2085,7 @@ for scr in bpy.data.screens:
                     sp.shading.cavity_ridge_factor = 1.25
                     sp.shading.cavity_valley_factor = 1.45
                     sp.shading.use_scene_lights = True
-                    sp.shading.use_scene_world = False
+                    sp.shading.use_scene_world = True
 
 bpy.ops.wm.save_as_mainfile(filepath=BLEND_PATH)
 bpy.ops.export_scene.gltf(

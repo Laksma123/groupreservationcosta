@@ -18,12 +18,12 @@ for obj in list(bpy.data.objects):
         bpy.data.objects.remove(obj, do_unlink=True)
 
 pendant_light_specs = [
-    ("B5_Light_Pendant_419_1", (34.10, 7.35, 2.02),  10.0, (1.0, 0.84, 0.62), 0.14),
-    ("B5_Light_Pendant_419_2", (35.55, 7.35, 2.02),  10.0, (1.0, 0.80, 0.56), 0.14),
-    ("B5_Light_Pendant_419_3", (37.00, 7.35, 2.02),  10.0, (1.0, 0.84, 0.62), 0.14),
-    ("B5_Light_Pendant_484_1", (34.10, 10.11, 2.02), 10.0, (1.0, 0.84, 0.62), 0.14),
-    ("B5_Light_Pendant_484_2", (35.55, 10.11, 2.02), 10.0, (1.0, 0.80, 0.56), 0.14),
-    ("B5_Light_Pendant_484_3", (37.00, 10.11, 2.02), 10.0, (1.0, 0.84, 0.62), 0.14),
+    ("B5_Light_Pendant_419_1", (34.10, 7.35, 2.02),  18.0, (1.0, 0.86, 0.65), 0.16),
+    ("B5_Light_Pendant_419_2", (35.55, 7.35, 2.02),  18.0, (1.0, 0.82, 0.58), 0.16),
+    ("B5_Light_Pendant_419_3", (37.00, 7.35, 2.02),  18.0, (1.0, 0.86, 0.65), 0.16),
+    ("B5_Light_Pendant_484_1", (34.10, 10.11, 2.02), 18.0, (1.0, 0.86, 0.65), 0.16),
+    ("B5_Light_Pendant_484_2", (35.55, 10.11, 2.02), 18.0, (1.0, 0.82, 0.58), 0.16),
+    ("B5_Light_Pendant_484_3", (37.00, 10.11, 2.02), 18.0, (1.0, 0.86, 0.65), 0.16),
 ]
 for l_name, l_loc, l_energy, l_col, l_rad in pendant_light_specs:
     ldata = bpy.data.lights.new(name=l_name, type='POINT')
@@ -42,9 +42,6 @@ for l_name, l_loc, l_energy, l_col, l_rad in pendant_light_specs:
 if hasattr(scene.eevee, "shadow_pool_size"):
     scene.eevee.shadow_pool_size = '1024'
 
-# Save the updated .blend with AAA Block 5 lighting!
-bpy.ops.wm.save_as_mainfile(filepath=BLEND_PATH)
-
 scene.render.engine = 'BLENDER_EEVEE'
 scene.eevee.taa_render_samples = 64
 if hasattr(scene.eevee, "use_shadows"):
@@ -55,9 +52,12 @@ if hasattr(scene.eevee, "use_raytracing"):
 try:
     scene.view_settings.view_transform = 'AgX'
     scene.view_settings.look = 'AgX - Medium High Contrast'
-    scene.view_settings.exposure = -0.12
+    scene.view_settings.exposure = 0.22
 except Exception:
     pass
+
+# Save the updated .blend with AAA Block 5 lighting & exposure!
+bpy.ops.wm.save_as_mainfile(filepath=BLEND_PATH)
 
 scene.render.resolution_x = 1600
 scene.render.resolution_y = 960
