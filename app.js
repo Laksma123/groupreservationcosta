@@ -2236,7 +2236,7 @@ const hitProxyMat = new THREE.MeshBasicMaterial({
 });
 
 gltfLoader.load(
-  './arlecchino_block1.glb?v=20261028a',
+  './arlecchino_block1.glb?v=20261028b',
   (gltf) => {
     const model = gltf.scene;
     restaurantGroup.add(model);

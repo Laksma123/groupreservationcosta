@@ -736,23 +736,22 @@ def build_see_through_vase_niche(niche_tag, y0, y1):
     x_mid = 0.5 * (B34_AFT_WALL_X + B5_FWD_WALL_X)  # 27.75m
     depth_x = B5_FWD_WALL_X - B34_AFT_WALL_X        # 0.80m
 
-    # 1. Lower Solid Wall behind Waiter Station & Sofa (Z = 0.00 .. 1.16m, X = 27.96 .. 28.15m)
-    add_box(f"{niche_tag}_LowerSolidWall", (0.19, n_len + 0.04, 1.16), (28.055, n_cy, 0.58), mats["wall_white"], arch_col)
+    # 1. Lower Solid Wall behind Waiter Station & Sofa (Z = 0.00 .. 1.16m, X = 27.78 .. 28.15m)
+    niche_x_center = 27.96
+    niche_frame_depth = 0.36
+    add_box(f"{niche_tag}_LowerSolidWall", (niche_frame_depth, n_len + 0.04, 1.16), (niche_x_center, n_cy, 0.58), mats["wall_white"], arch_col)
 
-    # 2. Upper Solid Header Wall above Niche (Z = 2.40 .. 2.86m, spanning full depth X = 27.35 .. 28.15m)
-    add_box(f"{niche_tag}_UpperHeaderWall", (depth_x, n_len + 0.04, 0.46), (x_mid, n_cy, 2.63), mats["wall_white"], arch_col)
+    # 2. Upper Solid Header Wall above Niche (Z = 2.40 .. 2.86m, flush with the niche wall X = 27.78 .. 28.15m, plus clean alcove ceiling soffit)
+    add_box(f"{niche_tag}_UpperHeaderWall", (niche_frame_depth, n_len + 0.04, 0.46), (niche_x_center, n_cy, 2.63), mats["wall_white"], arch_col)
+    add_box(f"{niche_tag}_AlcoveCeilSoffit", (depth_x, n_len + 0.04, 0.14), (x_mid, n_cy, CEIL_H - 0.03), mats["wall_white"], arch_col)
     uh_s = add_box(f"{niche_tag}_UpperSagePanel", (0.016, n_len - 0.12, 0.28), (B5_FWD_WALL_X + 0.008, n_cy, 2.57), mats["b5_sage_wall"], arch_col)
     apply_normalized_face_uv(uh_s)
     add_box(f"{niche_tag}_UpperCrown", (0.045, n_len + 0.04, 0.08), (B5_FWD_WALL_X + 0.015, n_cy, CEIL_H - 0.04), mats["wall_white"], arch_col, bevel=0.005)
 
     # 3. Niche Sill (Z = 1.15..1.18m) & Niche Ceiling Soffit (Z = 2.38..2.41m) & Frame Jambs
-    niche_x_center = 27.96
-    niche_frame_depth = 0.36
+    #    100% Open See-Through Wall Opening ('dinding bolong tanpa kaca') on BOTH Block 3/4 and Block 5 sides!
     add_box(f"{niche_tag}_Sill",   (niche_frame_depth, n_len, 0.035), (niche_x_center, n_cy, 1.165), mats["wall_white"], arch_col, bevel=0.004)
     add_box(f"{niche_tag}_Soffit", (niche_frame_depth, n_len, 0.035), (niche_x_center, n_cy, 2.395), mats["wall_white"], arch_col, bevel=0.004)
-
-    # Subtle tinted glass backing pane inside the see-through niche for rich depth & reflections while keeping Block 3/4 visible
-    add_box(f"{niche_tag}_SmokedPane", (0.008, n_len - 0.06, 1.19), (niche_x_center - 0.14, n_cy, 1.78), mats["niche_smoked_glass"], arch_col)
 
     # Vertical White Dividers (6 bays: center structural post + 5 thin frame mullions)
     n_bays = 6
@@ -764,9 +763,9 @@ def build_see_through_vase_niche(niche_tag, y0, y1):
         post_w = 0.055 if b_i in (0, 3, 6) else 0.026
         add_box(f"{niche_tag}_Mullion_{b_i}", (niche_frame_depth - 0.02, post_w, niche_h), (niche_x_center, by, niche_cz), mats["wall_white"], arch_col, bevel=0.003)
 
-    # 2 Horizontal Glass Shelves + Thin White Guard Rails (at Z = 1.56m and Z = 1.98m)
+    # 2 Thin Horizontal Open Shelves + Guard Rails (at Z = 1.56m and Z = 1.98m, NO glass panes!)
     for s_idx, sz in enumerate((1.56, 1.98)):
-        add_box(f"{niche_tag}_GlassShelf_{s_idx}", (niche_frame_depth - 0.06, n_len - 0.04, 0.012), (niche_x_center, n_cy, sz), mats["b5_glass_shelf"], arch_col)
+        add_box(f"{niche_tag}_GlassShelf_{s_idx}", (niche_frame_depth - 0.06, n_len - 0.04, 0.014), (niche_x_center, n_cy, sz), mats["wall_white"], arch_col)
         for rail_dx in (-0.13, 0.13):
             add_box(f"{niche_tag}_GuardRail_{s_idx}_{rail_dx:.2f}", (0.008, n_len - 0.04, 0.008), (niche_x_center + rail_dx, n_cy, sz + 0.035), mats["wall_white"], arch_col)
 
@@ -1389,22 +1388,19 @@ for w_i, (wx0, wx1) in enumerate(b5_port_windows):
     lobj.rotation_euler = (-math.pi * 0.5, 0.0, 0.0)
     link_to_collection(lobj, light_col)
 
-def build_murano_pendant_lamp(lamp_name, cx, cy, z_bottom, glass_mat):
+def build_murano_pendant_lamp(lamp_name, cx, cy, z_bottom, glass_mat, is_long_amber=False):
     """
     Builds the AAA high-detail Venetian Murano blown-glass pendant chandelier over
     the 10-pax oak tables 419 and 484 (matching Photo 14.31.14.jpeg):
-    - 64 radial segments x 45 vertical profile stations with 24 smooth optic flutes
-    - Explicit (u, v) lathe UVs mapped to the ribbed glass & warm radial inner bulb glow texture
-    - Opaque hardware depth sorting (alpha_tex=False) so all 6 lamps sort with 100% physical
-      hierarchy from ANY 360° camera angle (zero alpha overlap!)
-    - Separate Polished Brass collar rings between the glass tiers & flared trumpet ceiling canopy
+    - The 4 Green chandeliers hang down to z_bottom = 1.72m (total_h = 1.10m).
+    - The 2 Middle Amber/Orange chandeliers extend ~30 cm lower to z_bottom = 1.42m (total_h = 1.40m)
+      with 2 additional graduated ribbed stem boules above the bell, while still remaining
+      nearly 70 cm clear above the tabletop!
     """
     me = bpy.data.meshes.new(lamp_name + "_Glass_mesh")
     bm = bmesh.new()
 
-    total_h = 1.10
-    # Smooth high-resolution Venetian Murano profile (r, z_offset_from_bottom)
-    profile = [
+    base_lower_profile = [
         # Pointed bottom tear-drop finial & 3 graduated lower ribbed drops (z = 0.00 .. 0.21m)
         (0.000, 0.000), (0.016, 0.012), (0.030, 0.028), (0.018, 0.046),
         (0.044, 0.068), (0.056, 0.088), (0.030, 0.112),
@@ -1412,25 +1408,67 @@ def build_murano_pendant_lamp(lamp_name, cx, cy, z_bottom, glass_mat):
         # Main bulbous ribbed lantern bowl (z = 0.21 .. 0.45m)
         (0.095, 0.232), (0.142, 0.268), (0.168, 0.315), (0.175, 0.365),
         (0.168, 0.410), (0.155, 0.440),
-        # Wide flared scalloped Venetian bell brim / shade (z = 0.44 .. 0.54m)
+        # Wide flared scalloped Venetian bell brim / shade (z = 0.44 .. 0.615m)
         (0.215, 0.456), (0.258, 0.472), (0.264, 0.484), (0.235, 0.498),
         (0.178, 0.525), (0.132, 0.560), (0.092, 0.592), (0.046, 0.615),
-        # Lower stem ribbed sphere / boule #1 (z = 0.615 .. 0.755m)
-        (0.078, 0.645), (0.098, 0.685), (0.082, 0.725), (0.042, 0.755),
-        # Upper stem ribbed sphere / boule #2 (z = 0.755 .. 0.865m)
-        (0.068, 0.785), (0.084, 0.815), (0.068, 0.845), (0.042, 0.868),
-        # Lower fluted tulip crown cup (z = 0.868 .. 0.985m)
-        (0.062, 0.895), (0.088, 0.935), (0.114, 0.968), (0.106, 0.978), (0.046, 0.988),
-        # Upper taller fluted tulip crown cup (z = 0.988 .. 1.100m)
-        (0.065, 1.015), (0.092, 1.055), (0.122, 1.088), (0.114, 1.096), (0.038, 1.100),
     ]
+
+    if not is_long_amber:
+        total_h = 1.10
+        upper_stem_profile = [
+            # Lower stem ribbed sphere / boule #1 (z = 0.615 .. 0.755m)
+            (0.078, 0.645), (0.098, 0.685), (0.082, 0.725), (0.042, 0.755),
+            # Upper stem ribbed sphere / boule #2 (z = 0.755 .. 0.868m)
+            (0.068, 0.785), (0.084, 0.815), (0.068, 0.845), (0.042, 0.868),
+            # Lower fluted tulip crown cup (z = 0.868 .. 0.988m)
+            (0.062, 0.895), (0.088, 0.935), (0.114, 0.968), (0.106, 0.978), (0.046, 0.988),
+            # Upper taller fluted tulip crown cup (z = 0.988 .. 1.100m)
+            (0.065, 1.015), (0.092, 1.055), (0.122, 1.088), (0.114, 1.096), (0.038, 1.100),
+        ]
+        collar_specs = [
+            (0.045, 0.210),
+            (0.050, 0.615),
+            (0.046, 0.755),
+            (0.046, 0.868),
+            (0.050, 0.988),
+        ]
+    else:
+        total_h = 1.40
+        upper_stem_profile = [
+            # Stem ribbed boule #1 (z = 0.615 .. 0.755m)
+            (0.078, 0.648), (0.098, 0.688), (0.082, 0.728), (0.042, 0.755),
+            # Stem ribbed boule #2 (z = 0.755 .. 0.890m)
+            (0.074, 0.788), (0.092, 0.825), (0.074, 0.862), (0.040, 0.890),
+            # Stem ribbed boule #3 (z = 0.890 .. 1.020m)
+            (0.068, 0.922), (0.085, 0.955), (0.068, 0.990), (0.040, 1.020),
+            # Stem ribbed boule #4 (z = 1.020 .. 1.145m)
+            (0.064, 1.050), (0.080, 1.082), (0.064, 1.115), (0.040, 1.145),
+            # Lower fluted tulip crown cup (z = 1.145 .. 1.272m)
+            (0.062, 1.175), (0.088, 1.218), (0.114, 1.252), (0.106, 1.262), (0.046, 1.272),
+            # Upper taller fluted tulip crown cup (z = 1.272 .. 1.400m)
+            (0.065, 1.302), (0.092, 1.348), (0.122, 1.385), (0.114, 1.394), (0.038, 1.400),
+        ]
+        collar_specs = [
+            (0.045, 0.210),
+            (0.050, 0.615),
+            (0.046, 0.755),
+            (0.044, 0.890),
+            (0.044, 1.020),
+            (0.046, 1.145),
+            (0.050, 1.272),
+        ]
+
+    profile = base_lower_profile + upper_stem_profile
     segs = 64
     rings = []
     for r_val, dz in profile:
         ring = []
-        v_coord = dz / total_h
+        if dz <= 0.615:
+            v_coord = dz / 1.10
+        else:
+            v_coord = (0.615 / 1.10) + (1.0 - 0.615 / 1.10) * ((dz - 0.615) / (total_h - 0.615))
         # Scalloped wavy brim modulation on the wide bell rim and tulip cup rims
-        is_rim = (0.455 <= dz <= 0.505) or (0.955 <= dz <= 0.982) or (1.075 <= dz <= 1.098)
+        is_rim = (0.455 <= dz <= 0.505) or (total_h - 0.148 <= dz <= total_h - 0.118) or (total_h - 0.025 <= dz <= total_h - 0.002)
         for s in range(segs):
             ang = 2.0 * math.pi * s / segs
             flute = 1.0 + (0.032 * math.cos(24.0 * ang) if r_val > 0.048 else 0.0)
@@ -1469,13 +1507,7 @@ def build_murano_pendant_lamp(lamp_name, cx, cy, z_bottom, glass_mat):
     link_to_collection(glass_obj, arch_col)
 
     # Polished Brass Collar Rings between the Venetian glass tiers (matching Photo 14.31.14.jpeg)
-    for c_idx, (c_r, c_dz) in enumerate([
-        (0.045, 0.210),
-        (0.050, 0.615),
-        (0.046, 0.755),
-        (0.046, 0.868),
-        (0.050, 0.988),
-    ]):
+    for c_idx, (c_r, c_dz) in enumerate(collar_specs):
         add_cylinder(f"{lamp_name}_BrassCollar_{c_idx}", c_r, 0.018, (cx, cy, z_bottom + c_dz), mats["brass"], arch_col, vertices=32)
 
     # Flared Trumpet Polished Brass Ceiling Canopy (CeilCup) & Suspension Rod up to Z = 2.96m
@@ -1505,16 +1537,17 @@ def build_murano_pendant_lamp(lamp_name, cx, cy, z_bottom, glass_mat):
     link_to_collection(cup_obj, arch_col)
 
 # 3 Murano Pendants over Table 419 (Y = 7.35m) & 3 Murano Pendants over Table 484 (Y = 10.11m)
-# All 6 hung at the exact same architectural elevation (z_bottom = 1.66m) and spaced 1.45m apart
-# along the 3.60m oak tables, matching Photo 14.31.14.jpeg with zero overlap!
+# The 4 Green lamps hang at z_bottom = 1.72m (total_h = 1.10m), while the 2 middle Amber/Orange lamps
+# extend 30 cm lower to z_bottom = 1.42m (total_h = 1.40m, still ~68 cm clear above the tabletop!),
+# matching Photo 14.31.14.jpeg!
 pendant_x_specs = [
-    ("FwdGreen", 34.10, 1.66, mats["b5_pendant_green"]),
-    ("MidAmber", 35.55, 1.66, mats["b5_pendant_amber"]),
-    ("AftGreen", 37.00, 1.66, mats["b5_pendant_green"]),
+    ("FwdGreen", 34.10, 1.72, mats["b5_pendant_green"], False),
+    ("MidAmber", 35.55, 1.42, mats["b5_pendant_amber"], True),
+    ("AftGreen", 37.00, 1.72, mats["b5_pendant_green"], False),
 ]
 for tbl_tag, py in [("419", 7.35), ("484", 10.11)]:
-    for p_tag, px, pz_bot, p_mat in pendant_x_specs:
-        build_murano_pendant_lamp(f"B5_Pendant_{tbl_tag}_{p_tag}", px, py, pz_bot, p_mat)
+    for p_tag, px, pz_bot, p_mat, is_amb in pendant_x_specs:
+        build_murano_pendant_lamp(f"B5_Pendant_{tbl_tag}_{p_tag}", px, py, pz_bot, p_mat, is_long_amber=is_amb)
 
 # ==============================================================================
 # 9. CREATE BLOCK 5 CUSTOM CHAIR TEMPLATES (100% CONTINUOUS SEAMLESS CURVES!)
@@ -1835,42 +1868,6 @@ def create_b5_light_oak_chair_mesh():
 chair_teal_mesh = create_b5_teal_ivory_tub_chair_mesh()
 chair_oak_mesh  = create_b5_light_oak_chair_mesh()
 
-# Shared Tabletop Condiment / Menu Stand / Planter Set Mesh (matching Photos 14.30.44 (2) & 14.30.53 (1))
-def create_b5_table_condiment_mesh():
-    me = bpy.data.meshes.new("B5_TableCondiment_Mesh")
-    me.materials.append(mats["chrome"])      # 0: Chrome shakers & menu holder base
-    me.materials.append(mats["wall_white"])  # 1: Menu card & ceramic planter pot
-    me.materials.append(mats["b5_pendant_green"])  # 2: Green succulent leaves
-    bm = bmesh.new()
-
-    def add_c(r1, r2, h, loc, mat_idx, segs=16):
-        ret = bmesh.ops.create_cone(bm, cap_ends=True, cap_tris=False, segments=segs, radius1=r1, radius2=r2, depth=h)
-        verts = ret["verts"]
-        bmesh.ops.translate(bm, vec=loc, verts=verts)
-        for f in bm.faces:
-            if all(v in verts for v in f.verts):
-                f.material_index = mat_idx
-                f.smooth = True
-
-    # Two sleek chrome & glass Salt & Pepper shakers
-    add_c(0.014, 0.012, 0.068, (-0.032, -0.018, 0.034), mat_idx=0)
-    add_c(0.014, 0.012, 0.068, (-0.002, -0.022, 0.034), mat_idx=0)
-
-    # Upright Acrylic/Menu Card Stand
-    ret = bmesh.ops.create_cube(bm, size=1.0)
-    v_card = ret["verts"]
-    bmesh.ops.scale(bm, vec=(0.006, 0.105, 0.165), verts=v_card)
-    bmesh.ops.translate(bm, vec=(0.022, 0.0, 0.085), verts=v_card)
-    for f in bm.faces:
-        if all(v in v_card for v in f.verts):
-            f.material_index = 1
-
-    bm.to_mesh(me)
-    bm.free()
-    return me
-
-condiment_mesh = create_b5_table_condiment_mesh()
-
 def spawn_chair(name, chair_mesh, location, yaw_rad, col):
     obj = bpy.data.objects.new(name, chair_mesh)
     obj.location = location
@@ -1970,14 +1967,6 @@ def build_b5_table_assembly(table_id, center_xy, length_x, width_y, yaw_rad, top
                 yaw_rad + math.pi,
                 t_col,
             )
-
-    # Spawn tabletop Salt & Pepper shakers + Acrylic Menu Stand (matching Photos 14.30.44 (2) & 14.30.53 (1))
-    cond_xs = [-1.05, 0.0, 1.05] if length_x > 2.0 else [0.0]
-    for cd_i, cd_x in enumerate(cond_xs):
-        c_obj = bpy.data.objects.new(f"B5_Condiment_{table_id}_{cd_i}", condiment_mesh)
-        c_obj.location = to_world(cd_x, 0.0, 0.759)
-        c_obj.rotation_euler = (0.0, 0.0, yaw_rad)
-        link_to_collection(c_obj, t_col)
 
     return top_obj
 
