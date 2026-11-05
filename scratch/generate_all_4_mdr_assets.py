@@ -426,15 +426,15 @@ elevators_d7 = [
 # 3. RENDER 8K MONOCHROME TEXTURES & BUMP MAPS FOR ALL 4 MDR CONFIGS
 # ==============================================================================
 def save_monochrome_textures(out_prefix, out_page):
-    pix = out_page.get_pixmap(dpi=800)
+    pix = out_page.get_pixmap(dpi=1500)
     tex_path = os.path.join(SCRATCH_DIR, f"{out_prefix}_monochrome_plan_8k.png")
     pix.save(tex_path)
     im_color = Image.open(tex_path).convert("L")
     im_bump = ImageOps.autocontrast(im_color)
-    im_bump = im_bump.filter(ImageFilter.GaussianBlur(radius=0.8))
+    im_bump = im_bump.filter(ImageFilter.GaussianBlur(radius=1.0))
     bump_path = os.path.join(SCRATCH_DIR, f"{out_prefix}_monochrome_bump_8k.png")
     im_bump.save(bump_path)
-    print(f"Saved {out_prefix} 8K plan & bump ({pix.width}x{pix.height})")
+    print(f"Saved {out_prefix} 14K plan & bump ({pix.width}x{pix.height})")
     return tex_path, bump_path
 
 

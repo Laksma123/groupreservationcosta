@@ -93,7 +93,7 @@ def build_and_render_mdr_deck(json_filename, png_filename, blend_filename, glb_f
 
         tex_color = nodes.new("ShaderNodeTexImage")
         tex_color.image = bpy.data.images.load(TEX_PLAN)
-        tex_color.interpolation = 'Smart'
+        tex_color.interpolation = 'Cubic'
 
         if tint_rgba != (1.0, 1.0, 1.0, 1.0):
             mix = nodes.new("ShaderNodeMix")
@@ -448,11 +448,13 @@ def build_and_render_mdr_deck(json_filename, png_filename, blend_filename, glb_f
     bg_node.inputs["Color"].default_value = (0.12, 0.13, 0.15, 1.0)
     bg_node.inputs["Strength"].default_value = 0.92
 
-    # 100% Transparent Background in Render & Viewport
+    # 100% Transparent Background in Render & Viewport + Sharp Subpixel Filter
     scene.render.film_transparent = True
+    scene.render.filter_size = 0.85
     scene.render.image_settings.file_format = 'PNG'
     scene.render.image_settings.color_mode = 'RGBA'
     scene.render.image_settings.color_depth = '8'
+    scene.render.image_settings.compression = 15
 
     scene.view_settings.view_transform = 'AgX'
     scene.view_settings.look = 'AgX - Medium High Contrast'
@@ -461,7 +463,7 @@ def build_and_render_mdr_deck(json_filename, png_filename, blend_filename, glb_f
 
     scene.render.engine = 'BLENDER_EEVEE'
     if hasattr(scene.eevee, "taa_render_samples"):
-        scene.eevee.taa_render_samples = 64
+        scene.eevee.taa_render_samples = 128
     if hasattr(scene.eevee, "use_raytracing"):
         scene.eevee.use_raytracing = True
 
@@ -495,10 +497,12 @@ def build_and_render_mdr_deck(json_filename, png_filename, blend_filename, glb_f
         fill_obj.location = (fx, 0.0, 18.0)
         scene.collection.objects.link(fill_obj)
 
-    # 6. Exact User-Preferred Camera Angle (matching Arlecchino Deck Plan.png / media_1793887944507_03f0c86c.jpg)
+    # 6. Exact User-Preferred Camera Angle with Tight Ultra-HD 8K Framing
+    #    - Same exact 47.23-deg tilt: Euler((0.8243613, 0.0, 0.0), 'XYZ')
+    #    - Centered at X=0.0 with ortho_scale=70.5 so the 67.33m ship fills ~96% of the 7680px width!
     cam_data = bpy.data.cameras.new("Iso_Camera")
     cam_data.type = 'ORTHO'
-    cam_data.ortho_scale = 97.2
+    cam_data.ortho_scale = 70.5
     cam_data.clip_start = 0.1
     cam_data.clip_end = 400.0
     cam_obj = bpy.data.objects.new("Iso_Camera", cam_data)
@@ -506,16 +510,24 @@ def build_and_render_mdr_deck(json_filename, png_filename, blend_filename, glb_f
     scene.camera = cam_obj
 
     view_rot = Euler((0.8243613, 0.0, 0.0), 'XYZ')
-    view_loc = Vector((-3.80, 0.0, 0.20))
+    view_loc = Vector((0.0, 0.0, 0.20))
     forward = view_rot.to_matrix() @ Vector((0.0, 0.0, -1.0))
     cam_obj.location = view_loc - forward * 44.0
     cam_obj.rotation_euler = view_rot
 
-    scene.render.resolution_x = 2560
+    # Render Transparent RGBA PNG at Ultra-HD 8K Width (7680 x 1600 px -> ~7,350 x 850 px ship pixels!)
+    scene.render.resolution_x = 7680
     scene.render.resolution_y = 1600
     scene.render.resolution_percentage = 100
 
-    # Save .blend and .glb into MDR_3D_Deck_Plans
+    png_out = os.path.join(OUT_FOLDER, png_filename)
+    scene.render.filepath = png_out
+    bpy.ops.render.render(write_still=True)
+    print(f"Rendered 8K Ultra-HD transparent PNG: {png_out}")
+
+    # Save .blend with 8K 16:9 (7680 x 4320) resolution so Viewport Render Image in GUI is also 8K!
+    scene.render.resolution_x = 7680
+    scene.render.resolution_y = 4320
     blend_out = os.path.join(OUT_FOLDER, blend_filename)
     glb_out = os.path.join(OUT_FOLDER, glb_filename)
     bpy.ops.wm.save_as_mainfile(filepath=blend_out)
@@ -529,12 +541,6 @@ def build_and_render_mdr_deck(json_filename, png_filename, blend_filename, glb_f
         export_format='GLB',
         export_apply=True
     )
-
-    # Render Transparent RGBA PNG
-    png_out = os.path.join(OUT_FOLDER, png_filename)
-    scene.render.filepath = png_out
-    bpy.ops.render.render(write_still=True)
-    print(f"Rendered transparent PNG: {png_out}")
 
     # If this is Arlecchino Deck 6, also update the root-level .blend and .glb
     if "Arlecchino" in png_filename:

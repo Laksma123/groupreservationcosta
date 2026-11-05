@@ -4,11 +4,15 @@ from mathutils import Vector, Euler
 
 scene = bpy.context.scene
 scene.render.film_transparent = True
+scene.render.filter_size = 0.85
+scene.render.resolution_x = 7680
+scene.render.resolution_y = 4320
+scene.render.resolution_percentage = 100
 scene.render.image_settings.file_format = 'PNG'
 scene.render.image_settings.color_mode = 'RGBA'
 
 view_rot = Euler((0.8243613, 0.0, 0.0), 'XYZ')
-view_loc = Vector((-3.80, 0.0, 0.20))
+view_loc = Vector((0.0, 0.0, 0.20))
 
 def _align_viewport():
     for win in bpy.context.window_manager.windows:
@@ -26,7 +30,7 @@ def _align_viewport():
                             r3d.view_perspective = 'ORTHO'
                             r3d.view_location = view_loc
                             r3d.view_rotation = view_rot.to_quaternion()
-                            r3d.view_distance = 88.0
+                            r3d.view_distance = 65.0
     return None
 
 bpy.app.timers.register(_align_viewport, first_interval=0.5)
